@@ -483,9 +483,9 @@ namespace RBX_Alt_Manager
 
             try { ClientSettingsPatcher.PatchSettings(); } catch (Exception Ex) { Program.Logger.Error($"Failed to patch ClientAppSettings: {Ex}"); }
 
-            var authorization = await RequestSessionAsync(true);
-            if (!authorization.Success) return authorization.Error;
-            string Token = authorization.Csrf;
+            var csrfReply = await RequestSessionAsync(false);
+            if (!csrfReply.Success) return csrfReply.Error;
+            string Token = csrfReply.Csrf;
 
             RobloxLaunchTarget target = null;
             if (!FollowUser && !JoinVIP)
@@ -496,9 +496,13 @@ namespace RBX_Alt_Manager
                 JoinVIP = target.IsPrivate;
             }
 
-            if (AccountManager.ShuffleJobID && string.IsNullOrEmpty(JobID))
+            if (!JoinVIP && AccountManager.ShuffleJobID && string.IsNullOrEmpty(JobID))
                 JobID = await Utilities.GetRandomJobId(PlaceID);
 
+            // Resolve invitations and choose servers before issuing the short-lived ticket.
+            var authorization = await RequestSessionAsync(true);
+            if (!authorization.Success) return authorization.Error;
+            Token = authorization.Csrf;
             if (authorization.Success)
             {
                 string Ticket = authorization.Ticket;
