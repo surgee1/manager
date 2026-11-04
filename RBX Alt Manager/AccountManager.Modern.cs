@@ -187,13 +187,14 @@ namespace RBX_Alt_Manager
             Hint(EditTheme, "Настроить цвета интерфейса.");
             Hint(Add, "Открыть вход Roblox в основном браузере Windows. После входа нажми «Добавить в менеджер» в расширении.");
             Hint(Remove, "Удалить выбранные записи из менеджера после подтверждения.");
-            Hint(OpenBrowser, "Открыть выбранный аккаунт Roblox в браузере Windows через расширение Spectrum Manager 0.4.0+. Сменит аккаунт во всех вкладках Roblox этого профиля браузера.");
+            Hint(OpenBrowser, "Один аккаунт — браузер Windows через расширение. Несколько — отдельные окна Chromium с независимыми сессиями. Через меню можно открыть в Chromium и один аккаунт.");
             Hint(HideUsernamesCheckbox, "Скрыть имена аккаунтов в списке.");
             Hint(DonateButton, "бог этого мира surgee");
             Hint(JoinDiscord, "Открыть Discord сообщества исходного проекта.");
             TranslateModernMenus();
             OpenBrowserStrip.Items.Clear();
             OpenBrowserStrip.Items.Add("Открыть выбранный аккаунт", null, (sender, e) => OpenSelectedAccountBrowser());
+            OpenBrowserStrip.Items.Add("Открыть выбранные в Chromium", null, (sender, e) => OpenSelectedInChromium());
             OpenBrowserStrip.Items.Add("Открыть Roblox с текущим входом браузера", null, (sender, e) => SystemBrowser.Open("https://www.roblox.com/"));
             AddAccountsStrip.Items.Remove(bulkUserPassToolStripMenuItem);
             AddAccountsStrip.Items.Remove(customURLJSToolStripMenuItem);
@@ -238,6 +239,7 @@ namespace RBX_Alt_Manager
                 if (advancedWindow != null && advancedWindow.Visible) advancedWindow.Invalidate(true);
             };
             glowTimer.Start();
+            InitializeClientModes();
             ApplyModernPalette();
             LayoutModernInterface();
             ResumeLayout(false);
@@ -301,6 +303,8 @@ namespace RBX_Alt_Manager
             Put(JoinServer, right - 4, 383, 450, 48);
             Put(ServerList, right - 4, 445, 220, 42);
             Put(advancedButton, right + 224, 445, 222, 42);
+            Put(legitModeButton, right - 4, 503, 220, 38);
+            Put(cheatModeButton, right + 224, 503, 222, 38);
             Put(DownloadProgressBar, 24, h - 15, leftWidth, 8);
             Put(DLChromiumLabel, 40, h - 173, leftWidth - 32, 24);
             PasswordPanel.Bounds = ClientRectangle;

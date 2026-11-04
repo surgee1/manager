@@ -48,6 +48,14 @@ class UiSmoke
             main.Load -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Load", Flags));
             main.Shown -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Shown", Flags));
             main.Show();
+            var legitMode = (Button)Field(main, "legitModeButton");
+            var cheatMode = (Button)Field(main, "cheatModeButton");
+            var advancedMode = (Button)Field(main, "advancedButton");
+            Check(legitMode.Visible && cheatMode.Visible && legitMode.Top > advancedMode.Bottom && legitMode.Bottom < main.ClientSize.Height, "Legit and Cheat switch is visible below connection actions");
+            cheatMode.PerformClick();
+            Check(File.ReadAllText("RAMSettings.ini").Contains("ClientLaunchMode=Cheat") && (bool)cheatMode.GetType().GetProperty("Accent").GetValue(cheatMode, null), "Cheat selection persists and highlights active launch mode");
+            legitMode.PerformClick();
+            Check(File.ReadAllText("RAMSettings.ini").Contains("ClientLaunchMode=Legit") && (bool)legitMode.GetType().GetProperty("Accent").GetValue(legitMode, null), "Legit selection persists and highlights active launch mode");
             Check(main.Text == "Spectrum Manager" && ((Control)Field(main, "modernTitle")).Text == "Spectrum Manager", "Spectrum Manager branding appears in window title and main heading");
             // Startup loading is detached in this isolated test; dismiss its designer overlay.
             ((Control)Field(main, "PasswordPanel")).Visible = false;
@@ -81,6 +89,9 @@ class UiSmoke
             TabPage launchPage = null;
             foreach (TabPage page in tabs.TabPages) if (page.Text == "Запуск") launchPage = page;
             Check(launchPage != null, "launch options included in unified settings");
+            tabs.SelectedTab = launchPage;
+            Application.DoEvents();
+            Capture(settings, "client-launch-settings.png");
             var launch = FindLaunch(launchPage);
             var teleport = (CheckBox)Field(launch, "TeleportCB");
             teleport.Checked = true;

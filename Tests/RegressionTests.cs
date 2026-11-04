@@ -31,6 +31,11 @@ class RegressionTests
     static int Main(string[] arguments)
     {
         if (arguments.Length == 2 && arguments[0] == "--process-probe") { Thread.Sleep(int.Parse(arguments[1])); return 0; }
+        if (arguments.Length == 1 && arguments[0] == "--chromium-smoke")
+        {
+            try { ClientBrowserTests.Run(Check).GetAwaiter().GetResult(); Console.WriteLine("Passed " + checks + " Chromium checks."); return 0; }
+            catch (Exception error) { Console.Error.WriteLine("FAIL " + error); return 1; }
+        }
         try { Run().GetAwaiter().GetResult(); Console.WriteLine("Passed " + checks + " regression checks."); return 0; }
         catch (Exception ex) { Console.Error.WriteLine("FAIL " + ex); return 1; }
     }
@@ -41,6 +46,7 @@ class RegressionTests
         ExtensionUpdateTests.Run(Check, Reject);
         AccountImportTests.Run(Check, Reject);
         StartupUpdateTests.Run(Check, Reject);
+        await ClientLaunchTests.Run(Check, Reject);
         var fake = new Fake { Reply = (request, call) =>
         {
             Check(request.RequestUri.Host == "auth.roblox.com", "ticket sent only to Roblox auth");

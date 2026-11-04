@@ -1330,7 +1330,7 @@ namespace RBX_Alt_Manager
             RefreshView();
         }
 
-        private void JoinServer_Click(object sender, EventArgs e)
+        private async void JoinServer_Click(object sender, EventArgs e)
         {
             Match IDMatch = Regex.Match(PlaceID.Text, @"\/games\/(\d+)[\/|\?]?"); // idiotproofing
 
@@ -1347,13 +1347,21 @@ namespace RBX_Alt_Manager
             bool VIPServer = JobID.TextLength > 4 && JobID.Text.Substring(0, 4) == "VIP:";
 
             if (!long.TryParse(PlaceID.Text, out long PlaceId)) return;
+            if (SelectedAccounts.Count == 0) { MessageBox.Show(this, "Выбери аккаунт для подключения.", "Запуск Roblox"); return; }
+
+            string clientExecutable;
+            try { clientExecutable = await PrepareSelectedClientAsync(); }
+            catch (Exception error) { MessageBox.Show(this, error.Message, "Клиент Roblox"); return; }
+            if (clientExecutable == null) return;
 
             if (!PlaceTimer.Enabled)
                 _ = Task.Run(() => AddRecentGame(new Game(PlaceId)));
 
             CancelLaunching();
 
-            bool LaunchMultiple = AccountsView.SelectedObjects.Count > 1;
+            var accountsToLaunch = SelectedAccounts.ToList();
+            string serverToLaunch = VIPServer ? JobID.Text.Substring(4) : JobID.Text;
+            bool LaunchMultiple = accountsToLaunch.Count > 1;
 
             new Thread(async () => // finally fixing an ancient bug in a dumb way, p.s. i do not condone this.
             {
@@ -1361,11 +1369,11 @@ namespace RBX_Alt_Manager
                 {
                     LauncherToken = new CancellationTokenSource();
 
-                    await LaunchAccounts(SelectedAccounts, PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+                    await LaunchAccounts(accountsToLaunch, PlaceId, serverToLaunch, false, VIPServer, clientExecutable);
                 }
-                else if (SelectedAccount != null)
+                else if (accountsToLaunch.Count == 1)
                 {
-                    string res = await SelectedAccount.JoinServer(PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+                    string res = await accountsToLaunch[0].JoinServer(PlaceId, serverToLaunch, false, VIPServer, clientExecutable: clientExecutable);
 
                     if (!res.Contains("Success"))
                         MessageBox.Show(res);
@@ -1375,6 +1383,10 @@ namespace RBX_Alt_Manager
 
         private async void Follow_Click(object sender, EventArgs e)
         {
+            string clientExecutable;
+            try { clientExecutable = await PrepareSelectedClientAsync(); }
+            catch (Exception error) { MessageBox.Show(this, error.Message, "Клиент Roblox"); return; }
+            if (clientExecutable == null) return;
             if (!GetUserID(UserID.Text, out long UserId, out var Response))
             {
                 MessageBox.Show($"[{Response.StatusCode} {Response.StatusDescription}] Failed to get UserId: {Response.Content}");
@@ -1390,11 +1402,11 @@ namespace RBX_Alt_Manager
             {
                 LauncherToken = new CancellationTokenSource();
 
-                await LaunchAccounts(SelectedAccounts, UserId, "", true);
+                await LaunchAccounts(SelectedAccounts, UserId, "", true, clientExecutable: clientExecutable);
             }
             else if (SelectedAccount != null)
             {
-                string res = await SelectedAccount.JoinServer(UserId, "", true);
+                string res = await SelectedAccount.JoinServer(UserId, "", true, clientExecutable: clientExecutable);
 
                 if (!res.Contains("Success"))
                     MessageBox.Show(res);
@@ -1857,8 +1869,10 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private async Task LaunchAccounts(List<Account> Accounts, long PlaceID, string JobID, bool FollowUser = false, bool VIPServer = false)
+        private async Task LaunchAccounts(List<Account> Accounts, long PlaceID, string JobID, bool FollowUser = false, bool VIPServer = false, string clientExecutable = null)
         {
+            try { clientExecutable = RobloxClients.Validate(clientExecutable ?? RobloxClients.SelectedPath()); }
+            catch (IOException error) { MessageBox.Show(error.Message, "Клиент Roblox"); return; }
             int Delay = General.Exists("AccountJoinDelay") ? General.Get<int>("AccountJoinDelay") : 8;
 
             bool AsyncJoin = General.Get<bool>("AsyncJoin");
@@ -1877,7 +1891,8 @@ namespace RBX_Alt_Manager
                     if (!string.IsNullOrEmpty(account.GetField("SavedJobId"))) JobId = account.GetField("SavedJobId");
                 }
 
-                await account.JoinServer(PlaceId, JobId, FollowUser, VIPServer);
+                string result = await account.JoinServer(PlaceId, JobId, FollowUser, VIPServer, clientExecutable: clientExecutable);
+                if (!result.Contains("Success")) { MessageBox.Show(result, "Запуск Roblox"); continue; }
 
                 if (AsyncJoin)
                 {

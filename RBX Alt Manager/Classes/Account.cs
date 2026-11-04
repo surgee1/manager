@@ -502,8 +502,11 @@ namespace RBX_Alt_Manager
             return RobloxLaunchTarget.TryReadAccessCode(response?.Content, out Code);
         }
 
-        public async Task<string> JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false, bool Internal = false) // oh god i am not refactoring everything to be async im sorry
+        public async Task<string> JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false, bool Internal = false, string clientExecutable = null)
         {
+            // Snapshot the chosen client before authentication can yield to the UI.
+            try { clientExecutable = RobloxClients.Validate(clientExecutable ?? RobloxClients.SelectedPath()); }
+            catch (IOException error) { return error.Message; }
             if (string.IsNullOrEmpty(BrowserTrackerID))
             {
                 Random r = new Random();
@@ -511,7 +514,7 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(100000, 175000).ToString() + r.Next(100000, 900000).ToString(); // oh god this is ugly
             }
 
-            try { ClientSettingsPatcher.PatchSettings(); } catch (Exception Ex) { Program.Logger.Error($"Failed to patch ClientAppSettings: {Ex}"); }
+            try { ClientSettingsPatcher.PatchSettings(clientExecutable); } catch { Program.Logger.Error("Failed to patch ClientAppSettings for selected client."); }
 
             var csrfReply = await RequestSessionAsync(false);
             if (!csrfReply.Success) return csrfReply.Error;
@@ -633,21 +636,15 @@ namespace RBX_Alt_Manager
 
                 if (AccountManager.UseOldJoin)
                 {
-                    string RPath = @"C:\Program Files (x86)\Roblox\Versions\" + AccountManager.CurrentVersion;
-
-                    if (!Directory.Exists(RPath))
-                        RPath = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), @"Roblox\Versions\" + AccountManager.CurrentVersion);
-
-                    if (!Directory.Exists(RPath))
-                        return "ERROR: Failed to find ROBLOX executable";
-
-                    RPath += @"\RobloxPlayerBeta.exe";
+                    string RPath = clientExecutable;
 
                     AccountManager.Instance.NextAccount();
 
                     await Task.Run(() =>
                     {
                         ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
+                        Roblox.UseShellExecute = false;
+                        Roblox.WorkingDirectory = Path.GetDirectoryName(RPath);
                         
                         if (JoinVIP)
                             Roblox.Arguments = $"--app -t {Ticket} -j \"{privateLauncher}\"";
@@ -677,9 +674,10 @@ namespace RBX_Alt_Manager
                                 LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={PlaceID}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
                             else
                                 LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{(string.IsNullOrEmpty(JobID) ? "" : "Job")}&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
-                            Process Launcher = Process.Start(LaunchInfo);
-                            
-                            Launcher.WaitForExit();
+                            // Invoke the selected executable directly; Windows' protocol handler
+                            // may point at the other installation. Never wait for the game to close.
+                            Process Launcher = Process.Start(RobloxClients.ProtocolStart(clientExecutable, LaunchInfo.FileName));
+                            Launcher?.Dispose();
 
                             AccountManager.Instance.NextAccount();
 

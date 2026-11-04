@@ -120,6 +120,7 @@ namespace RBX_Alt_Manager.Forms
             Setting(accounts, EncryptionSelectionButton, "Защита файла аккаунтов…", "Выбрать защиту Windows или мастер-пароль для сохранённой базы.");
 
             var launch = SettingsPage("Запуск");
+            InitializeClientSettings(launch);
             Section(launch, "ПОДКЛЮЧЕНИЕ К ИГРЕ");
             SettingRow(launch, DelayLabel, LaunchDelayNumber, "Задержка между запусками, сек.", "Пауза перед запуском следующего выбранного аккаунта.");
             Setting(launch, AsyncJoinCB, "Ждать завершения предыдущего запуска", "Перед запуском следующего аккаунта дождаться сигнала от предыдущего клиента.");

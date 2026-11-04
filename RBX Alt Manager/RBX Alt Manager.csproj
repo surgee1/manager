@@ -389,6 +389,11 @@
     <Compile Include="Classes\RoundedWindow.cs" />
     <Compile Include="Classes\UpdateParentProcess.cs" />
     <Compile Include="Classes\StartupDirectory.cs" />
+    <Compile Include="Classes\RobloxClients.cs" />
+    <Compile Include="Classes\IsolatedAccountBrowser.cs" />
+    <Compile Include="Classes\OfficialRobloxInstaller.cs" />
+    <Compile Include="AccountManager.Clients.cs" />
+    <Compile Include="Forms\SettingsForm.Clients.cs" />
     <Compile Include="Classes\Cryptography.cs" />
     <Compile Include="Classes\MenuButton.cs">
       <SubType>Component</SubType>

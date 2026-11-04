@@ -13,6 +13,28 @@ namespace RBX_Alt_Manager
 {
     public partial class AccountManager
     {
+        private readonly IsolatedAccountBrowser isolatedBrowser = new IsolatedAccountBrowser();
+        private bool openingBrowserWindows;
+        private async void OpenSelectedInChromium()
+        {
+            if (openingBrowserWindows) return;
+            var accounts = AccountsView.SelectedObjects.Cast<Account>().Select(account => new { account.UserID, account.Username, Cookie = account.SecurityToken }).ToArray();
+            if (accounts.Length == 0) { MessageBox.Show(this, "Выбери аккаунты для открытия.", "Браузер"); return; }
+            openingBrowserWindows = true; string caption = OpenBrowser.Text;
+            var failures = new System.Collections.Generic.List<string>();
+            try
+            {
+                for (int index = 0; index < accounts.Length; index++)
+                {
+                    if (IsDisposed) break;
+                    OpenBrowser.Text = "Открытие " + (index + 1) + "/" + accounts.Length;
+                    try { await isolatedBrowser.OpenAsync(accounts[index].UserID, accounts[index].Cookie); }
+                    catch (Exception error) { failures.Add(accounts[index].Username + ": " + (error is InvalidOperationException ? error.Message : "Не удалось открыть отдельное окно Chromium.")); }
+                }
+            }
+            finally { openingBrowserWindows = false; if (!IsDisposed) OpenBrowser.Text = caption; }
+            if (failures.Count > 0 && !IsDisposed) MessageBox.Show(this, string.Join("\n\n", failures.Take(8)) + (failures.Count > 8 ? "\n… ещё " + (failures.Count - 8) : ""), "Открытие аккаунтов", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
         private BrowserBridge browserBridge;
         private readonly BrowserIntents browserIntents = new BrowserIntents();
         public string BrowserBridgeStatus { get; private set; } = "Подключение ещё не запущено";
@@ -34,6 +56,7 @@ namespace RBX_Alt_Manager
         }
         private void StartBrowserBridge()
         {
+            FormClosed += (sender, e) => isolatedBrowser.Disconnect();
             try
             {
                 browserBridge = new BrowserBridge(7964, BrowserPairingCode, ImportBrowserSessionAsync, CheckBrowserUpdatesAsync, HandleBrowserActionAsync);
@@ -84,7 +107,8 @@ namespace RBX_Alt_Manager
         private void OpenSelectedAccountBrowser()
         {
             var selection = AccountsView.SelectedObjects.Cast<Account>().ToList();
-            if (selection.Count != 1) { MessageBox.Show(this, "Выбери один аккаунт, который нужно открыть в браузере.", "Браузер"); return; }
+            if (selection.Count > 1) { OpenSelectedInChromium(); return; }
+            if (selection.Count == 0) { MessageBox.Show(this, "Выбери аккаунт, который нужно открыть в браузере.", "Браузер"); return; }
             if (browserBridge == null) { MessageBox.Show(this, BrowserBridgeStatus, "Подключение расширения"); return; }
             try
             {
