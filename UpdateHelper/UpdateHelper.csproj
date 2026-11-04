@@ -2,7 +2,8 @@
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <OutputType>WinExe</OutputType><TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <AssemblyName>SurgeeUpdater</AssemblyName><RootNamespace>SurgeeUpdating</RootNamespace>
+    <AssemblyName>SpectrumUpdater</AssemblyName><RootNamespace>SurgeeUpdating</RootNamespace>
+    <ApplicationIcon>..\RBX Alt Manager\Resources\Spectrum.ico</ApplicationIcon>
     <OutputPath>..\build\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <ItemGroup><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Windows.Forms"/>

@@ -1,4 +1,4 @@
-﻿using RestSharp;
+using RestSharp;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -30,7 +30,7 @@ namespace RBX_Alt_Manager.Classes
                 if (Disposing) return;
 
                 this.InvokeIfRequired(() => GameName.Text = Game.Details.name);
-                
+
                 GameImage.LoadAsync(Game.ImageUrl);
             });
         }
@@ -69,7 +69,7 @@ namespace RBX_Alt_Manager.Classes
         {
             if (AccountManager.LastValidAccount == null)
             {
-                MessageBox.Show("Select a valid account then try again", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                UiMessageBox.Show("Select a valid account then try again", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

@@ -62,7 +62,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\team_KX4_icon.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\Spectrum.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -390,9 +390,15 @@
     <Compile Include="Classes\UpdateParentProcess.cs" />
     <Compile Include="Classes\StartupDirectory.cs" />
     <Compile Include="Classes\RobloxClients.cs" />
+    <Compile Include="Classes\UpdaterNaming.cs" />
+    <Compile Include="Classes\UiText.cs" />
+    <Compile Include="Classes\SpectrumBrand.cs" />
+    <Compile Include="UiMessageBox.cs" />
     <Compile Include="Classes\IsolatedAccountBrowser.cs" />
     <Compile Include="Classes\OfficialRobloxInstaller.cs" />
     <Compile Include="AccountManager.Clients.cs" />
+    <Compile Include="AccountManager.Prefixes.cs" />
+    <Compile Include="AccountManager.UpdateOffers.cs" />
     <Compile Include="Forms\SettingsForm.Clients.cs" />
     <Compile Include="Classes\Cryptography.cs" />
     <Compile Include="Classes\MenuButton.cs">
@@ -490,7 +496,6 @@
     <Compile Include="AccountManager.Modern.cs" />
     <Compile Include="AccountManager.Folders.cs" />
     <Compile Include="AccountManager.LaunchPreferences.cs" />
-    <Compile Include="Forms\RoflForm.cs" />
     <Compile Include="AccountManager.Browser.cs" />
     <Compile Include="Classes\BrowserBridge.cs" />
     <Compile Include="Classes\BrowserIntents.cs" />
@@ -599,6 +604,8 @@
     <EmbeddedResource Include="Forms\ThemeEditor.resx">
       <DependentUpon>ThemeEditor.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Localization\en.tsv" />
+    <EmbeddedResource Include="Resources\Spectrum.ico" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>

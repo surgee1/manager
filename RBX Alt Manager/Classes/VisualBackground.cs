@@ -50,6 +50,10 @@ namespace RBX_Alt_Manager.Classes
                 case "zerotwo":
                 case "akame":
                 case "deathnote":
+                case "kagami":
+                case "ichigo":
+                case "baki":
+                case "nogamenolife":
                     Portrait(g, size, time, ThemeEditor.VisualProfile);
                     Stars(g, size, time);
                     break;
@@ -73,7 +77,13 @@ namespace RBX_Alt_Manager.Classes
                 using (var canvas = Graphics.FromImage(fitted))
                 {
                     canvas.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    canvas.DrawImage(image, new Rectangle(Point.Empty, size));
+                    if (profile == "ichigo")
+                    {
+                        float ratio = Math.Min(size.Width * .64f / image.Width, (float)size.Height / image.Height);
+                        int width = (int)(image.Width * ratio), height = (int)(image.Height * ratio);
+                        canvas.DrawImage(image, new Rectangle(size.Width - width, (size.Height - height) / 2, width, height));
+                    }
+                    else canvas.DrawImage(image, new Rectangle(Point.Empty, size));
                 }
                 FittedImages[key] = fitted;
             }

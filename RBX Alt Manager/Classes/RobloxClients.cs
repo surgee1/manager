@@ -12,7 +12,19 @@ namespace RBX_Alt_Manager.Classes
     {
         internal const string ExecutableName = "RobloxPlayerBeta.exe";
         internal static string ManagedRoot => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Spectrum Manager", "Roblox-Legit");
-        internal static bool Cheat => AccountManager.General.Get("ClientLaunchMode") == "Cheat";
+        internal static string Prefix(Account account)
+        {
+            string value = account.GetField("ClientPrefix");
+            return value == "Legit" || value == "Cheat" ? value : "";
+        }
+        internal static string PathForPrefix(string prefix)
+        {
+            if (string.IsNullOrEmpty(prefix)) return "";
+            if (prefix != "Legit" && prefix != "Cheat") throw new ArgumentException("Неизвестный префикс клиента.");
+            return Validate(ConfiguredPath(prefix == "Cheat"));
+        }
+        internal static System.Collections.Generic.Dictionary<Account, string> SnapshotRoutes(System.Collections.Generic.IEnumerable<Account> accounts)
+            => accounts.ToDictionary(account => account, account => PathForPrefix(Prefix(account)));
         internal static string ConfiguredPath(bool cheat)
         {
             string configured = AccountManager.General.Get(cheat ? "CheatRobloxPath" : "LegitRobloxPath");
@@ -34,11 +46,11 @@ namespace RBX_Alt_Manager.Classes
                 throw new IOException("Клиент Roblox не найден. Открой Настройки → Запуск: скачай Legit или укажи клиент Cheat.");
             return Path.GetFullPath(path);
         }
-        internal static string SelectedPath() => Validate(ConfiguredPath(Cheat));
         internal static ProcessStartInfo ProtocolStart(string executable, string protocol)
         {
             if (protocol == null || !protocol.StartsWith("roblox-player:", StringComparison.Ordinal) || protocol.IndexOfAny(new[] { '"', '\r', '\n' }) >= 0)
                 throw new ArgumentException("Некорректная команда запуска Roblox.");
+            if (executable == "") return new ProcessStartInfo(protocol) { UseShellExecute = true };
             return new ProcessStartInfo(Validate(executable), "\"" + protocol + "\"")
             { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(Path.GetFullPath(executable)) };
         }

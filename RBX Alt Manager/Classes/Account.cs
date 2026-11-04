@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RBX_Alt_Manager.Classes;
 using RBX_Alt_Manager.Forms;
@@ -133,7 +133,7 @@ namespace RBX_Alt_Manager
         public Account(string Cookie, string AccountJSON = null)
         {
             SecurityToken = Cookie;
-            
+
             AccountJSON ??= AccountManager.MainClient.Execute(MakeRequest("my/account/json", Method.Get)).Content;
 
             if (!string.IsNullOrEmpty(AccountJSON) && Utilities.TryParseJson(AccountJSON, out AccountJson Data))
@@ -178,7 +178,7 @@ namespace RBX_Alt_Manager
         {
             if (!GetCSRFToken(out _))
             {
-                if (!Internal) MessageBox.Show("Invalid Account Session!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (!Internal) UiMessageBox.Show("Invalid Account Session!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 return false;
             }
@@ -197,7 +197,7 @@ namespace RBX_Alt_Manager
                 if (!pinInfo["isEnabled"].Value<bool>() || (pinInfo["unlockedUntil"].Type != JTokenType.Null && pinInfo["unlockedUntil"].Value<int>() > 0)) return true;
             }
 
-            if (!Internal) MessageBox.Show("Pin required!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (!Internal) UiMessageBox.Show("Pin required!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             return false;
         }
@@ -226,7 +226,7 @@ namespace RBX_Alt_Manager
 
                 if (PinUnlocked > DateTime.Now)
                 {
-                    MessageBox.Show("Pin unlocked for 5 minutes", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    UiMessageBox.Show("Pin unlocked for 5 minutes", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     return true;
                 }
@@ -332,14 +332,14 @@ namespace RBX_Alt_Manager
                     AccountManager.SaveAccounts();
                 }
                 else
-                    MessageBox.Show("An error occured while changing passwords, you will need to re-login with your new password!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    UiMessageBox.Show("An error occured while changing passwords, you will need to re-login with your new password!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                MessageBox.Show("Password changed!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UiMessageBox.Show("Password changed!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
 
-            MessageBox.Show("Failed to change password!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UiMessageBox.Show("Failed to change password!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             return false;
         }
@@ -360,12 +360,12 @@ namespace RBX_Alt_Manager
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
-                MessageBox.Show("Email changed!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UiMessageBox.Show("Email changed!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
 
-            MessageBox.Show("Failed to change email, maybe your password is incorrect!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UiMessageBox.Show("Failed to change email, maybe your password is incorrect!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             return false;
         }
@@ -392,14 +392,14 @@ namespace RBX_Alt_Manager
                     AccountManager.SaveAccounts(true);
                 }
                 else if (!Internal)
-                    MessageBox.Show("An error occured, you will need to re-login!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    UiMessageBox.Show("An error occured, you will need to re-login!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                if (!Internal) MessageBox.Show("Signed out of all other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (!Internal) UiMessageBox.Show("Signed out of all other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
 
-            if (!Internal) MessageBox.Show("Failed to log out of other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (!Internal) UiMessageBox.Show("Failed to log out of other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             return false;
         }
@@ -474,7 +474,7 @@ namespace RBX_Alt_Manager
 
                 Response = "Unblocking Everyone";
 
-                return true; 
+                return true;
             }
 
             Response = "Failed to unblock everyone";
@@ -505,7 +505,7 @@ namespace RBX_Alt_Manager
         public async Task<string> JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false, bool Internal = false, string clientExecutable = null)
         {
             // Snapshot the chosen client before authentication can yield to the UI.
-            try { clientExecutable = RobloxClients.Validate(clientExecutable ?? RobloxClients.SelectedPath()); }
+            try { clientExecutable = clientExecutable ?? RobloxClients.PathForPrefix(RobloxClients.Prefix(this)); if (clientExecutable != "") clientExecutable = RobloxClients.Validate(clientExecutable); }
             catch (IOException error) { return error.Message; }
             if (string.IsNullOrEmpty(BrowserTrackerID))
             {
@@ -514,7 +514,7 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(100000, 175000).ToString() + r.Next(100000, 900000).ToString(); // oh god this is ugly
             }
 
-            try { ClientSettingsPatcher.PatchSettings(clientExecutable); } catch { Program.Logger.Error("Failed to patch ClientAppSettings for selected client."); }
+            try { ClientSettingsPatcher.PatchSettings(clientExecutable == "" ? null : clientExecutable); } catch { Program.Logger.Error("Failed to patch ClientAppSettings for selected client."); }
 
             var csrfReply = await RequestSessionAsync(false);
             if (!csrfReply.Success) return csrfReply.Error;
@@ -634,7 +634,7 @@ namespace RBX_Alt_Manager
 
                 double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
 
-                if (AccountManager.UseOldJoin)
+                if (AccountManager.UseOldJoin && clientExecutable != "")
                 {
                     string RPath = clientExecutable;
 
@@ -645,7 +645,7 @@ namespace RBX_Alt_Manager
                         ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
                         Roblox.UseShellExecute = false;
                         Roblox.WorkingDirectory = Path.GetDirectoryName(RPath);
-                        
+
                         if (JoinVIP)
                             Roblox.Arguments = $"--app -t {Ticket} -j \"{privateLauncher}\"";
                         else if (FollowUser)
@@ -685,7 +685,7 @@ namespace RBX_Alt_Manager
                         }
                         catch (Exception)
                         {
-                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show("Не удалось запустить клиент Roblox. Проверь, установлен ли Roblox для Windows, и попробуй открыть игру через сайт.", "Запуск Roblox", MessageBoxButtons.OK, MessageBoxIcon.Error));
+                            Utilities.InvokeIfRequired(AccountManager.Instance, () => UiMessageBox.Show("Не удалось запустить клиент Roblox. Проверь, установлен ли Roblox для Windows, и попробуй открыть игру через сайт.", "Запуск Roblox", MessageBoxButtons.OK, MessageBoxIcon.Error));
                             AccountManager.Instance.CancelLaunching();
                             AccountManager.Instance.NextAccount();
                         }

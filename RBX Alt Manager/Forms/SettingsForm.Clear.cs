@@ -102,6 +102,20 @@ namespace RBX_Alt_Manager.Forms
 
             var main = SettingsPage("Основные");
             Section(main, "ПРИЛОЖЕНИЕ");
+            var language = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Flat,
+                BackColor = ThemeEditor.TextBoxesBackground, ForeColor = ThemeEditor.TextBoxesForeground };
+            language.Items.AddRange(new object[] { "Русский", "English" }); language.SelectedIndex = UiText.IsEnglish ? 1 : 0;
+            SettingRow(main, new Label(), language, "Язык интерфейса", "Русский или English. Применяется сразу и сохраняется.");
+            language.SelectedIndexChanged += (sender, e) => { if (UiText.IsEnglish != (language.SelectedIndex == 1)) UiText.SetLanguage(language.SelectedIndex == 1 ? "en" : "ru"); };
+            var tooltips = new CheckBox { Checked = UiText.ShowHints };
+            Setting(main, tooltips, "Показывать подсказки при наведении", "Можно отключить всплывающие пояснения у кнопок и настроек.");
+            tooltips.CheckedChanged += (sender, e) => { if (UiText.ShowHints != tooltips.Checked) UiText.SetHints(tooltips.Checked); };
+            EventHandler preferencesChanged = (sender, e) => { if (IsDisposed) return; language.SelectedIndex = UiText.IsEnglish ? 1 : 0; tooltips.Checked = UiText.ShowHints; };
+            UiText.Changed += preferencesChanged;
+            Disposed += (sender, e) => UiText.Changed -= preferencesChanged;
+            var automaticUpdates = new CheckBox { Checked = !AccountManager.General.Exists("AutoOfferUpdates") || AccountManager.General.Get<bool>("AutoOfferUpdates") };
+            Setting(main, automaticUpdates, "Предлагать обновления при запуске", "При запуске менеджер предложит новую версию. Установка начинается только после твоего выбора.");
+            automaticUpdates.CheckedChanged += (sender, e) => { AccountManager.General.Set("AutoOfferUpdates", automaticUpdates.Checked.ToString()); AccountManager.IniSettings.Save("RAMSettings.ini"); };
             var economy = new CheckBox { Checked = !AccountManager.General.Exists("AnimationEconomy") || AccountManager.General.Get<bool>("AnimationEconomy") };
             Setting(main, economy, "Экономить ресурсы в фоне", "Когда работаешь в другом приложении, анимация менеджера обновляется реже. В активном менеджере и его настройках движение остаётся плавным.");
             economy.CheckedChanged += (sender, e) => { AccountManager.General.Set("AnimationEconomy", economy.Checked.ToString()); AccountManager.IniSettings.Save("RAMSettings.ini"); };

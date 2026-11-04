@@ -29,7 +29,7 @@ namespace RBX_Alt_Manager.Forms
             installUpdate.Click += async (sender, e) =>
             {
                 if (availableRelease == null) return;
-                if (MessageBox.Show(this, "Установить Spectrum Manager " + availableRelease.Version + "? Менеджер скачает обновление и перезапустится.", "Обновление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                if (UiMessageBox.Show(this, "Установить Spectrum Manager " + availableRelease.Version + "? Менеджер скачает обновление и перезапустится.", "Обновление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
                 SetUpdateBusy(true);
                 try
                 {
@@ -44,7 +44,7 @@ namespace RBX_Alt_Manager.Forms
             {
                 using var dialog = new OpenFileDialog { Filter = "Обновление Spectrum Manager (*.zip)|*.zip", Title = "Выбери ZIP менеджера версии 6 или новее" };
                 if (dialog.ShowDialog(this) != DialogResult.OK) return;
-                if (MessageBox.Show(this, "Установить обновление из выбранного ZIP и перезапустить менеджер?", "Обновление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                if (UiMessageBox.Show(this, "Установить обновление из выбранного ZIP и перезапустить менеджер?", "Обновление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
                 SetUpdateBusy(true);
                 try { await InstallArchive(dialog.FileName); }
                 catch (Exception ex) { updateStatus.Text = "Обновление не установлено: " + ex.Message; }
@@ -81,6 +81,15 @@ namespace RBX_Alt_Manager.Forms
             updateStatus.Text = "Перезапускаем менеджер…";
             ManagerUpdates.StartInstaller(stage);
             AccountManager.Instance.Close();
+        }
+        internal async Task InstallOfferedReleaseAsync(ReleaseInfo release)
+        {
+            SettingsTC.SelectedTab = updatesTab;
+            if (!checkUpdate.Enabled) return;
+            SetUpdateBusy(true);
+            try { updateStatus.Text = "Скачиваем обновление…"; await InstallArchive(await ManagerUpdates.DownloadAsync(release)); }
+            catch (Exception error) { updateStatus.Text = "Обновление не установлено: " + error.Message; }
+            finally { SetUpdateBusy(false); }
         }
         private void SetUpdateBusy(bool busy)
         {

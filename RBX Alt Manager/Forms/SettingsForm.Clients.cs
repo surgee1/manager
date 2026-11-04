@@ -15,7 +15,7 @@ namespace RBX_Alt_Manager.Forms
         private void InitializeClientSettings(FlowLayoutPanel flow)
         {
             Section(flow, "LEGIT / CHEAT");
-            Description(flow, "Legit — отдельный официальный Roblox. Cheat — клиент, который ты открыл через свой инжектор. Выбор режима находится под кнопкой подключения.");
+            Description(flow, "Режим задаётся каждому аккаунту в колонке Prefix: Legit — официальный клиент, Cheat — привязанный. Без префикса используется обычный запуск Windows.");
             var legit = ClientPathRow(flow, false);
             var download = new NeonButton();
             Setting(flow, download, "Скачать / обновить Legit", "Скачивает актуальную версию LIVE с серверов Roblox, проверяет пакеты и устанавливает отдельно. Старый клиент и привязка Cheat сохраняются.");
@@ -23,7 +23,7 @@ namespace RBX_Alt_Manager.Forms
             {
                 download.Enabled = false;
                 try { var path = await AccountManager.Instance.DownloadLegitClientAsync(); if (path != null) legit.Text = path; }
-                catch (Exception error) { MessageBox.Show(this, error.Message, "Загрузка Legit", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+                catch (Exception error) { UiMessageBox.Show(this, error.Message, "Загрузка Legit", MessageBoxButtons.OK, MessageBoxIcon.Error); }
                 finally { if (!download.IsDisposed) download.Enabled = true; }
             };
             var cheat = ClientPathRow(flow, true);
@@ -60,7 +60,7 @@ namespace RBX_Alt_Manager.Forms
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
                     try { SaveClientPath(cheat, dialog.FileName); path.Text = dialog.FileName; }
-                    catch (Exception error) { MessageBox.Show(this, error.Message, "Клиент Roblox"); }
+                    catch (Exception error) { UiMessageBox.Show(this, error.Message, "Клиент Roblox"); }
                 }
             };
             row.Controls.Add(path); row.Controls.Add(browse); flow.Controls.Add(row);

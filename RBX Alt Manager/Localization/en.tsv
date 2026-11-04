@@ -1,0 +1,446 @@
+Аккаунт	Account
+Аккаунты	Accounts
+АККАУНТЫ	ACCOUNTS
+АККАУНТЫ  ·  	ACCOUNTS  ·\s\s
+Браузер	Browser
+Добавить	Add
+Добавить аккаунт	Add account
+Удалить	Remove
+Удалить аккаунт	Remove account
+Импорт	Import
+Импортировать	Import
+Импорт аккаунтов	Import accounts
+Импорт аккаунтов • Spectrum Manager	Import accounts • Spectrum Manager
+Импорт аккаунтов из файла другого менеджера	Import accounts from another manager
+Импорт логин:пароль	Import username:password
+Импорт cookie	Import cookie
+Логин:пароль	Username:password
+Скрыть ники	Hide usernames
+Об авторе	About
+Настройки	Settings
+Настройки • Spectrum Manager	Settings • Spectrum Manager
+Настройки  ·  Ctrl+,	Settings  ·  Ctrl+,
+Обновить	Update
+Обновления	Updates
+Обновление	Update
+Обновление не установлено: 	Update was not installed:\s
+Проверить обновления	Check for updates
+Проверяем GitHub Releases…	Checking GitHub Releases…
+Проверяем файлы обновления…	Verifying update files…
+Скачиваем обновление…	Downloading update…
+Перезапускаем менеджер…	Restarting manager…
+Проверка не завершена: 	Update check failed:\s
+У тебя актуальная версия: 	You are up to date:\s
+Доступна версия 	Version available:\s
+. Нажми «Обновить».	. Click Update.
+Установить из ZIP…	Install from ZIP…
+Нажми «Проверить», чтобы найти новую версию.	Click Check for updates to find a new release.
+Обновления из surgee1/manager. Аккаунты, папки, избранное и оформление сохраняются.	Updates from surgee1/manager. Accounts, folders, favorites and appearance are preserved.
+Для установки интернет-обновления браузер открывать не нужно. ZIP можно установить вручную, если GitHub недоступен.	Updates download inside the manager. You can install a ZIP manually when GitHub is unavailable.
+Установить обновление из выбранного ZIP и перезапустить менеджер?	Install the selected ZIP and restart the manager?
+Установить Spectrum Manager 	Install Spectrum Manager\s
+? Менеджер скачает обновление и перезапустится.	? The manager will download the update and restart.
+Обновление Spectrum Manager (*.zip)|*.zip	Spectrum Manager update (*.zip)|*.zip
+Выбери ZIP менеджера версии 6 или новее	Choose a manager update ZIP (version 6 or newer)
+Доступно обновление	Update available
+Доступна новая версия. Установить обновление сейчас?\nАккаунты и настройки сохранятся.	A new version is available. Install it now?\nYour accounts and settings will be preserved.
+Обновить сейчас	Update now
+Позже	Later
+Предлагать обновления при запуске	Check for updates at startup
+При запуске менеджер предложит новую версию. Установка начинается только после твоего выбора.	Checks for a new version at startup. Installation only starts when you choose to update.
+Основные	General
+Основной	Primary
+Основной текст	Main text
+Второй	Secondary
+Аккаунты	Accounts
+Запуск	Launch
+Дополнительно	Advanced
+Расширение	Extension
+Цвета	Colors
+Параметры	Options
+Оформление	Appearance
+Настрой под себя	Make it yours
+Изменения сохраняются автоматически. Наведи на настройку, чтобы узнать больше.	Changes save automatically. Hover over a setting to learn more.
+ПРИЛОЖЕНИЕ	APPLICATION
+СЕССИИ И ДАННЫЕ	SESSIONS AND DATA
+ПОДКЛЮЧЕНИЕ К ИГРЕ	JOIN GAME
+ПРОИЗВОДИТЕЛЬНОСТЬ	PERFORMANCE
+ДОПОЛНИТЕЛЬНЫЕ ПАРАМЕТРЫ ЗАПУСКА	EXTRA LAUNCH OPTIONS
+ФУНКЦИИ ИСХОДНОГО ПРОЕКТА	LEGACY FEATURES
+ВИЗУАЛЬНЫЕ ПРОФИЛИ	VISUAL PROFILES
+СВОИ ЦВЕТА	CUSTOM COLORS
+ПЕРЕНОСИМЫЕ РЕЗЕРВНЫЕ КОПИИ	PORTABLE BACKUPS
+Язык интерфейса	Interface language
+Русский или English. Применяется сразу и сохраняется.	Choose Russian or English. Applies immediately and saves automatically.
+Показывать подсказки при наведении	Show hover tooltips
+Можно отключить всплывающие пояснения у кнопок и настроек.	Show or hide hover explanations on buttons and settings.
+Экономить ресурсы в фоне	Reduce background resource use
+Когда работаешь в другом приложении, анимация менеджера обновляется реже. В активном менеджере и его настройках движение остаётся плавным.	Reduces animation updates while another app is active. The active manager and settings stay smooth.
+Быстрые действия: Ctrl+K — команды; Ctrl+F — поиск; Ctrl+Shift+A — выбрать видимые аккаунты; Ctrl+, — настройки.	Shortcuts: Ctrl+K commands; Ctrl+F search; Ctrl+Shift+A select visible accounts; Ctrl+, settings.
+Открывать менеджер при запуске Windows	Start manager with Windows
+Добавляет менеджер в автозагрузку текущего пользователя.	Adds the manager to startup for the current Windows user.
+Показывать статус аккаунтов	Show account presence
+Отображает, находится ли аккаунт на сайте или в игре.	Shows whether an account is on the website or in a game.
+Обновлять статус каждые, мин.	Presence interval, minutes
+Частота запроса состояния аккаунтов.	How often account presence is refreshed.
+Количество недавних игр	Recent games limit
+Сколько игр сохранять в истории для быстрого открытия.	How many games are kept in recent history.
+Сохранять пароли при ручном добавлении	Save manually entered passwords
+Расширение добавляет сессию и ник; пароль Roblox оно не читает.	The extension imports the session and username. It does not read your Roblox password.
+Скрывать отметки о долгом простое	Hide inactivity markers
+Отключает жёлтые и красные индикаторы у аккаунтов, которыми давно не пользовались.	Hides yellow and red markers for accounts that have not been used recently.
+Автоматически обновлять старые сессии	Automatically refresh old sessions
+Старый механизм обновления может завершать другие сеансы Roblox этого аккаунта. По умолчанию выключен.	The legacy refresh mechanism may sign out other sessions for this account. Disabled by default.
+Защита файла аккаунтов…	Account file protection…
+Выбрать защиту Windows или мастер-пароль для сохранённой базы.	Choose Windows protection or a master password for the account database.
+Задержка между запусками, сек.	Launch delay, seconds
+Пауза перед запуском следующего выбранного аккаунта.	Delay before launching the next selected account.
+Ждать завершения предыдущего запуска	Wait for the previous launch
+Перед запуском следующего аккаунта дождаться сигнала от предыдущего клиента.	Wait for the previous client before launching the next account.
+Разрешить несколько клиентов Roblox	Allow multiple Roblox clients
+Использует механизм нескольких экземпляров из исходного проекта. Для изменения закрой Roblox.	Uses the existing multi-instance mechanism. Close Roblox before changing this setting.
+Скрывать предупреждение о нескольких клиентах	Hide multi-client warning
+Отключает уведомление, если Roblox уже открыт при запуске менеджера.	Hides the warning when Roblox is already running at manager startup.
+Выбирать наименее заполненный сервер	Choose the least populated server
+Применяется при включённом случайном выборе сервера в дополнительных действиях.	Used when random server selection is enabled in advanced actions.
+Задавать свой лимит кадров	Use a custom FPS limit
+Передаёт ограничение FPS через настройки клиента Roblox.	Sets the FPS limit through Roblox client settings.
+Максимум кадров в секунду	Maximum FPS
+Используется, когда включён свой лимит кадров.	Used when the custom FPS limit is enabled.
+Использовать свой файл настроек клиента	Use a custom client settings file
+Выбрать ClientAppSettings.json вместо настроек FPS выше.	Use your ClientAppSettings.json instead of the FPS settings above.
+Показывать дополнительные действия аккаунтов	Show advanced account actions
+Открывает поля аккаунта и действия с сессиями в контекстном меню.	Adds account fields and session actions to the context menu.
+Включить старый локальный API	Enable legacy local API
+Этот API не нужен расширению Spectrum Manager. Для изменения нужен перезапуск.	The Spectrum extension does not need this API. Restart to apply changes.
+Порт старого API	Legacy API port
+Порт расширения Spectrum Manager отдельный: 7964.	The Spectrum extension uses a separate port: 7964.
+Требовать пароль для каждого запроса API	Require password for every API request
+Настройка только для старого API исходного проекта.	Applies only to the legacy API.
+Разрешить API получать cookie	Allow API to retrieve cookies
+Относится только к старому API. Расширение Spectrum Manager использует отдельное подключение с кодом.	Applies only to the legacy API. The Spectrum extension uses separate code-based pairing.
+Разрешить API читать список аккаунтов	Allow API to list accounts
+Доступ к списку через старый API.	Account list access through the legacy API.
+Разрешить API запускать аккаунты	Allow API to launch accounts
+Запуск игр командами старого API.	Launch games through legacy API commands.
+Разрешить API изменять данные аккаунтов	Allow API to edit account data
+Редактирование псевдонимов и заметок через старый API.	Edit aliases and notes through the legacy API.
+Разрешить подключения к старому API по сети	Allow network access to legacy API
+По умолчанию выключено. Расширение Spectrum Manager работает локально без этой настройки.	Disabled by default. The Spectrum extension works locally without this setting.
+Пароль старого API	Legacy API password
+Отдельный пароль API; не пароль Roblox и не код подключения расширения.	A separate API password, not your Roblox password or extension pairing code.
+Формат региона сервера (старый механизм)	Server region format (legacy)
+Шаблон названия региона из исходного проекта.	Name format used by the legacy server region feature.
+Анимация фона и переливов	Animate backgrounds and gradients
+Выбери анимированный стиль или профиль с персонажем. Ниже можно менять цвета и отключать движение.	Choose an animated style or character profile. Customize colors and animation below.
+Сила движения персонажей: 	Character motion:\s
+0% — неподвижный персонаж. Выше — заметнее дыхание, наклон головы и ветер в волосах.	0% keeps the character still. Higher values increase breathing, head movement and hair sway.
+Начало перелива	Gradient start
+Конец перелива	Gradient end
+Фон приложения	App background
+Фон полей ввода	Input background
+Фон списка аккаунтов и панелей	Account list and panel background
+Выбрать свой цвет: 	Choose custom color:\s
+Резервные копии и восстановление	Backups and restore
+Восстанавливаются после переустановки Windows без старых ключей шифрования. Сохраняются аккаунты, сессии, пароли, заметки и папки.	Restore after reinstalling Windows without old encryption keys. Includes accounts, sessions, passwords, notes and folders.
+Создавать копии автоматически	Create automatic backups
+После изменения данных и раз в день при открытом менеджере. Храним 30 автоматических копий; ручные не удаляются.	Backs up changes and checks daily while running. Keeps 30 automatic backups; manual backups are retained.
+Папка для переносимых копий аккаунтов	Portable account backup folder
+Выбрать папку…	Choose folder…
+Открыть папку	Open folder
+Создать / экспортировать копию…	Create / export backup…
+Сохраняет переносимый JSON в выбранный файл. Его можно перенести на другой компьютер.	Saves portable JSON to the chosen file. You can move it to another computer.
+Восстановить из копии…	Restore from backup…
+Объединяет без дублей. Текущие сессии и заполненные данные сохраняются; недостающие данные добавляются из копии. Перед восстановлением создаётся отдельная копия текущей базы.	Merges without duplicates and keeps current sessions and metadata. Missing data is restored. A backup is created before restoring.
+Копии без пароля содержат данные входа. Не отправляй их другим людям. Перед очисткой диска C: скопируй Backups на другой диск или флешку.	Unprotected backups contain account sessions. Keep them private. Copy Backups to another drive before erasing C:.
+Копия содержит данные входа — храни её у себя	Contains account sessions — keep this backup private
+Последняя копия: 	Last backup:\s
+Копия будет создана после загрузки аккаунтов.	A backup will be created after accounts load.
+Копия сохранена: 	Backup saved:\s
+Копия от 	Backup from\s
+Копия восстановлена. Добавлено: 	Backup restored. Added:\s
+Копия не создана. Проверь свободное место и доступ к папке резервных копий.	Backup failed. Check free space and backup folder permissions.
+Копия Spectrum Manager (*.surgee-backup.json)|*.surgee-backup.json	Spectrum Manager backup (*.surgee-backup.json)|*.surgee-backup.json
+Копия Spectrum Manager (*.surgee-backup.json)|*.surgee-backup.json|JSON (*.json)|*.json	Spectrum Manager backup (*.surgee-backup.json)|*.surgee-backup.json|JSON (*.json)|*.json
+Путь Legit	Legit path
+Путь Cheat	Cheat path
+Скачать / обновить Legit	Download / update Legit
+Определить Cheat	Detect Cheat
+Выбрать…	Browse…
+Выбрать клиент Cheat	Choose Cheat client
+Выбрать официальный клиент	Choose official client
+Привязывается путь клиента, а не DLL инжектора.	Links the client executable path, not the injector DLL.
+Режим задаётся каждому аккаунту в колонке Prefix: Legit — официальный клиент, Cheat — привязанный. Без префикса используется обычный запуск Windows.	Set each account's mode in Prefix: Legit for the official client, Cheat for the linked client, or no prefix for normal Windows launch.
+Скачивает актуальную версию LIVE с серверов Roblox, проверяет пакеты и устанавливает отдельно. Старый клиент и привязка Cheat сохраняются.	Downloads the current official LIVE client, verifies packages and installs separately. Keeps the existing client and Cheat link.
+Находит путь запущенного Roblox. Если игра закрыта, нажми кнопку и затем открой Roblox через свой инжектор. Закрывать игры менеджер не будет.	Finds the running Roblox client. If none is running, click here and launch Roblox through your injector. Games are not closed.
+Путь сохраняется автоматически. После обновления инжектора можно определить клиент повторно.	The path saves automatically. Detect it again if an injector update changes the client path.
+Legit и Cheat должны находиться в разных папках.	Legit and Cheat must be in separate folders.
+Legit уже скачивается. Дождись завершения загрузки.	Legit is already downloading. Please wait.
+Legit, Cheat или обычный запуск Windows без префикса.	Legit, Cheat, or normal Windows launch with no prefix.
+Клиент Roblox	Roblox client
+Загрузка Legit	Download Legit
+Официальный Roblox · Spectrum Manager	Official Roblox · Spectrum Manager
+Проверка версии Roblox…	Checking Roblox version…
+Официальный канал LIVE • отдельная папка Spectrum Manager\nТекущий клиент останется доступен до завершения загрузки.	Official LIVE channel • separate Spectrum Manager folder\nThe existing client remains available until download completes.
+Отмена загрузки…	Cancelling download…
+Отменить определение	Cancel detection
+Ждать новый запуск…	Wait for a new launch…
+Открой Roblox через свой инжектор. Ожидаю новый процесс (2 минуты)…	Launch Roblox through your injector. Waiting up to 2 minutes for a new process…
+Определение остановлено. Прежняя привязка сохранена.	Detection stopped. The previous link is preserved.
+Запущено несколько разных клиентов. Нажми «Определить Cheat» и выбери нужный путь.	Several different clients are running. Click Detect Cheat and choose the right path.
+Проверь путь к клиенту Roblox.	Check the Roblox client path.
+Cheat привязан · 	Cheat linked ·\s
+Сборка 	Build\s
+Не удалось скачать Legit. Предыдущая установка сохранена.\n	Could not download Legit. The previous installation is preserved.\n
+Профили ▾	Profiles ▾
+Профили	Profiles
+Профиль: 	Profile:\s
+Сохранить текущие поля…	Save current fields…
+Сохранить профиль запуска	Save launch profile
+Новый профиль запуска	New launch profile
+Название профиля	Profile name
+Сохранится игра, сервер и текущая папка аккаунтов.	Saves the game, server and current account folder.
+Пока нет сохранённых профилей	No saved profiles yet
+Заменить существующий профиль?	Replace the existing profile?
+Удалить профиль	Delete profile
+Удалить профиль «	Delete profile “
+»? Аккаунты останутся.	”? Accounts will be kept.
+Сохрани игру, приватную ссылку и папку аккаунтов под одним названием. Выбор профиля заполняет поля.	Save a game, private link and account folder under one name. Choosing a profile fills in the fields.
+Папка профиля была удалена. Выбери папку и сохрани профиль заново.	The profile's folder was deleted. Choose a folder and save the profile again.
+Не удалось сохранить файл профилей.	Could not save launch profiles.
+Все аккаунты	All accounts
+Без папки	Unfiled
+Без префикса	No prefix
++ Папка	+ Folder
++ Новая папка и перенести…	+ Create folder and move…
+Создать папку	Create folder
+Создать новую папку аккаунтов.	Create a new account folder.
+Действия с папками	Folder actions
+Папки аккаунтов	Account folders
+Папка аккаунтов	Account folder
+Новая папка аккаунтов	New account folder
+Название новой папки	New folder name
+Мои аккаунты	My accounts
+Для игры с друзьями	Play with friends
+Переименовать папку	Rename folder
+Переименовать папку…	Rename folder…
+Новое название папки	New folder name
+Удалить папку	Delete folder
+Удалить папку…	Delete folder…
+Удалить папку «	Delete folder “
+»? Аккаунты будут перенесены в «Без папки».	”? Accounts will be moved to Unfiled.
+Переместить выбранные	Move selected
+Переместить в папку	Move to folder
+Переместить в группу	Move to group
+Переместить выбранные аккаунты, переименовать или удалить папку.	Move selected accounts, rename a folder or delete it.
+Выбери папку, чтобы показать только её аккаунты. Пустые папки тоже сохраняются.	Choose a folder to filter accounts. Empty folders are saved too.
+Папка с таким названием уже есть.	A folder with this name already exists.
+Служебную папку удалить нельзя.	This system folder cannot be deleted.
+Введи название от 1 до 40 символов. «Без папки» и «Все аккаунты» — служебные названия.	Enter 1–40 characters. Unfiled and All accounts are reserved names.
+Не удалось прочитать AccountFolders.json. Файл не будет перезаписан.	Could not read AccountFolders.json. The file will not be overwritten.
+В этой папке пока нет аккаунтов.	This folder has no accounts yet.
+Псевдоним	Alias
+Псевдоним аккаунта	Account alias
+Заметки	Notes
+Заметки об аккаунте	Account notes
+Последний вход	Last used
+Ник	Username
+Пароль	Password
+ID аккаунта	Account ID
+Действия с аккаунтом	Account actions
+Контроль аккаунтов	Account control
+Дополнительные действия	More actions
+Инструменты	Tools
+Информация	Information
+Сохранить	Save
+Сохранить заметки	Save notes
+Сохранить игру	Save game
+Сохранение префикса	Save prefix
+Свой псевдоним для аккаунта. Сохраняется кнопкой справа.	Your custom account alias. Click the button on the right to save.
+Заметки для выбранного аккаунта. Для сохранения нажми кнопку под полем.	Notes for the selected account. Click the button below to save.
+Сохранить заметки выбранного аккаунта.	Save notes for the selected account.
+Сохранить псевдоним выбранного аккаунта.	Save the selected account's alias.
+ID игры (Place ID)	Game ID (Place ID)
+Сервер или приватная ссылка	Server or private link
+Ник игрока для подключения	Player username to join
+Подключиться	Join
+Подключение	Connection
+Игры и серверы	Games and servers
+К игроку	Join player
+Выбери игру	Choose a game
+Выбери игру — ID подставится автоматически	Choose a game — the ID fills automatically
+Числовой ID места Roblox. Можно вставить ссылку на игру.	Numeric Roblox Place ID. You can also paste a game URL.
+Job ID конкретного сервера или ссылка на приватный сервер. Оставь пустым для обычного входа.	Server Job ID or private server link. Leave empty for a normal join.
+Place ID — идентификатор места в Roblox.	Place ID identifies a Roblox place.
+Job ID — уникальный идентификатор экземпляра сервера Roblox.	Job ID identifies a specific running Roblox server.
+Запустить выбранные аккаунты в указанной игре или на сервере.	Launch selected accounts in the chosen game or server.
+Поиск игр, список серверов и избранные игры.	Search games, browse servers and open favorites.
+Подключение по нику, сохранение игры, псевдоним, заметки и инструменты аккаунтов.	Join a player, save games, edit aliases and notes, and open account tools.
+Введи ник игрока, к которому хочешь присоединиться.	Enter the username of the player you want to join.
+Подключиться к игре указанного игрока, если его настройки приватности разрешают это.	Join this player's game if their privacy settings allow it.
+Сохранить ID игры и сервер для выбранного аккаунта. Очисти поля и нажми снова, чтобы удалить привязку.	Save the game and server for the selected account. Clear both fields and save again to remove the link.
+Случайный сервер	Random server
+Включить или выключить случайный выбор сервера при каждом подключении.	Toggle random server selection for each join.
+Показать недавно открытые игры.	Show recently opened games.
+Игры и избранное	Games and favorites
+Избранные игры	Favorite games
+Любимые игры	Favorite games
+Только избранное	Favorites only
+Избранное и недавние • ☆ сохраняет игру	Favorites and recents • ☆ saves a game
+Найди игру по названию, ссылке или ID	Find a game by name, URL or ID
+Введи название игры. ☆ добавляет в избранное	Enter a game name. ☆ adds it to favorites
+Нажми на строку, чтобы подставить ID	Click a row to use its Place ID
+Поиск в Roblox…	Searching Roblox…
+Поиск недоступен. Можно вставить ссылку или ID вручную.	Search unavailable. You can paste a link or ID manually.
+Ничего не найдено. Уточни название.	No results. Try a more specific name.
+Пока пусто. Нажми ☆ у игры в поиске.	No favorites yet. Click ☆ beside a search result.
+Добавлено в избранное	Added to favorites
+Удалено из избранного	Removed from favorites
+Ещё	More
+Выбрать ID 	Use ID\s
+Выбрать 	Choose\s
+ROBLOX  /  ЛИЧНЫЙ ЦЕНТР УПРАВЛЕНИЯ    ·    Ctrl+K — команды	ROBLOX  /  YOUR CONTROL CENTER    ·    Ctrl+K — commands
+Поиск аккаунтов	Search accounts
+Поиск аккаунтов…  Ctrl+F	Search accounts…  Ctrl+F
+Поиск аккаунтов  ·  Ctrl+F	Search accounts  ·  Ctrl+F
+Поиск по нику, псевдониму, заметкам и папке. Ctrl+F — поиск, Esc — очистить.	Search usernames, aliases, notes and folders. Ctrl+F focuses search; Esc clears it.
+НАЙДЕНО: 	FOUND:\s
+Ничего не найдено. Измени запрос или папку.	No results. Change the search or folder.
+Быстрые команды • Ctrl+K	Quick commands • Ctrl+K
+Найти команду	Find a command
+↑ ↓ — выбрать    Enter — выполнить    Esc — закрыть	↑ ↓ select    Enter run    Esc close
+Выбрать видимые  ·  Ctrl+Shift+A	Select visible  ·  Ctrl+Shift+A
+Выбрать все видимые аккаунты  ·  Ctrl+Shift+A	Select visible accounts  ·  Ctrl+Shift+A
+Снять выделение	Clear selection
+Снять выделение аккаунтов	Clear account selection
+Сортировать по алфавиту	Sort alphabetically
+Свернуть / развернуть	Collapse / expand
+Вернуть аккаунты	Restore accounts
+Вернуть удалённые аккаунты	Restore deleted accounts
+Двойной щелчок по аккаунту — открыть его в браузере через расширение. F2 — редактировать поле.	Double-click an account to open it through the browser extension. F2 edits a field.
+Один аккаунт — браузер Windows через расширение. Несколько — отдельные окна Chromium с независимыми сессиями. Через меню можно открыть в Chromium и один аккаунт.	One account uses your default browser and extension. Multiple accounts open separate Chromium windows with isolated sessions. The menu can also open one account in Chromium.
+Открыть выбранный аккаунт	Open selected account
+Открыть выбранные в Chromium	Open selected in Chromium
+Открыть Roblox с текущим входом браузера	Open Roblox with the current browser session
+Регистрация в браузере	Register in browser
+Войти через браузер	Sign in through browser
+Быстрый вход	Quick login
+Открыть	Open
+Открыть адрес	Open URL
+Адрес и JavaScript	URL and JavaScript
+Свой вход (URL + JS)	Custom login (URL + JS)
+Вступить в группу	Join group
+Группы	Groups
+О группах	About folders
+Копировать	Copy
+Копировать группу	Copy group
+Копировать ссылку запуска	Copy launch link
+Копировать ссылку приложения	Copy app link
+Копировать cookie	Copy cookie
+Ссылку на профиль	Profile URL
+Получить билет авторизации	Get authentication ticket
+Поля аккаунта	Account fields
+Помощь	Help
+Подробности	Details
+Параметры запуска Roblox: режим телепортации, старый способ запуска и версия клиента.	Roblox launch options: teleport mode, legacy launch method and client version.
+Открыть дополнительные действия и инструменты аккаунта.	Open more account actions and tools.
+Открыть контроль запущенных аккаунтов и настройки автоперезапуска.	Manage running accounts and auto-restart settings.
+Настроить цвета интерфейса.	Customize interface colors.
+Настройки менеджера: запуск, браузер, отображение и дополнительные функции.	Manager settings: launching, browsers, appearance and advanced features.
+Открыть вход Roblox в основном браузере Windows. После входа нажми «Добавить в менеджер» в расширении.	Open Roblox in your default browser. After signing in, click Add to manager in the extension.
+Удалить выбранные записи из менеджера после подтверждения.	Remove selected accounts after confirmation.
+Скрыть имена аккаунтов в списке.	Hide usernames in the account list.
+бог этого мира surgee	god of this world surgee
+Открыть Discord сообщества исходного проекта.	Open the original project's Discord community.
+Отмена	Cancel
+Восстановление	Restore
+Восстановлено. Добавлено аккаунтов: 	Restored. Accounts added:\s
+Импорт завершён. Добавлено: 	Import complete. Added:\s
+Импорт не выполнен	Import failed
+Найдено аккаунтов: 	Accounts found:\s
+ аккаунтов	 accounts
+ аккаунтов. 	 accounts.\s
+. Всего аккаунтов: 	. Total accounts:\s
+. Всего: 	. Total:\s
+. Исходный файл не изменён.	. The source file was not changed.
+. Совпадений объединено: 	. Existing accounts merged:\s
+ • Предпросмотр	 • Preview
+ • Совпадений: 	 • Matches:\s
+\n… ещё 	\n… and\s
+\n\nОбъединить с текущей базой?	\n\nMerge with the current database?
+\nАккаунтов: 	\nAccounts:\s
+\nНовых: 	\nNew:\s
+.\nВсего аккаунтов: 	.\nTotal accounts:\s
+\nПапки, псевдонимы и заметки будут перенесены. Перед импортом создадим резервную копию.	\nFolders, aliases and notes will be imported. A backup will be created first.
+Заменить сессии совпадающих аккаунтов данными из файла	Replace matching accounts' sessions with the imported sessions
+По умолчанию текущие сессии сохраняются. Включи замену, если вход работает только в исходном менеджере.	Keeps current sessions by default. Enable replacement if login works only in the source manager.
+Перенести аккаунты из AccountData.json другого Roblox Account Manager или из переносимой копии. Без дублей; с папками и заметками.	Import AccountData.json or a portable backup, including folders and notes, without duplicates.
+Выбери AccountData.json исходного менеджера	Choose the source manager's AccountData.json
+Мастер-пароль исходного менеджера	Source database master password
+Введите мастер-пароль этого файла (не пароль Roblox).	Enter this file's master password, not your Roblox password.
+Файлы аккаунтов (*.json;*.backup;*.bak)|*.json;*.backup;*.bak|Все файлы (*.*)|*.*	Account files (*.json;*.backup;*.bak)|*.json;*.backup;*.bak|All files (*.*)|*.*
+Выбери переносимую копию Spectrum Manager	Choose a portable Spectrum Manager backup
+Выбрать папку	Choose folder
+Новая папка выбрана. Предыдущие копии остаются на месте.	New folder selected. Previous backups remain in place.
+Введи название от 1 до 60 символов и корректный Place ID. Проверь доступ к файлу.	Enter a name of 1–60 characters and a valid Place ID. Check file permissions.
+В этом запуске ещё нечего возвращать. Более старые записи можно восстановить из Backups в настройках.	No deleted accounts to restore in this session. Use Backups in settings for older records.
+Не удалось прочитать LaunchProfiles.json. Исходный файл сохранён без изменений.	Could not read LaunchProfiles.json. The original file is unchanged.
+Не удалось сохранить восстановленные записи.	Could not save restored accounts.
+Не удалось сохранить восстановленные записи. Проверь доступ к папке менеджера.	Could not save restored accounts. Check manager folder permissions.
+Не удалось сохранить копию. Проверь папку и свободное место.	Could not save backup. Check folder access and free space.
+Не удалось открыть или изменить папку копий. Проверь доступ.	Could not access or change the backup folder. Check permissions.
+Не удалось создать копию при закрытии. Проверь доступ к папке Backups.	Could not back up on exit. Check Backups folder permissions.
+Импорт не выполнен. Проверь файл и доступ к папке менеджера. Текущая база сохранена.	Import failed. Check the file and manager folder access. Your current database is preserved.
+Восстановление не выполнено. Проверь файл копии и доступ к папке менеджера. Текущая база сохранена.	Restore failed. Check the backup file and folder access. Your current database is preserved.
+Неверная запись аккаунта.	Invalid account record.
+Неполный или повреждённый файл аккаунтов.	Incomplete or damaged account file.
+Текущий файл аккаунтов не прочитан. Сначала восстанови переносимую копию.	The current account file could not be read. Restore a portable backup first.
+Разблокируй менеджер перед импортом.	Unlock the manager before importing.
+Сначала восстанови файл аккаунтов.	Restore the account file first.
+Сначала разблокируй базу аккаунтов.	Unlock the account database first.
+Сначала разблокируй базу в менеджере.	Unlock the manager database first.
+Сначала выбери игру или введи Place ID.	Choose a game or enter a Place ID first.
+Выбери аккаунт из списка менеджера.	Choose an account from the manager.
+Выбери аккаунт, который нужно открыть в браузере.	Select an account to open in the browser.
+Выбери аккаунты для открытия.	Select accounts to open.
+Аккаунт уже удалён из менеджера. Обнови список.	This account was removed. Refresh the list.
+У аккаунта нет пригодной сессии. Добавь его через расширение после входа Roblox.	This account has no usable session. Sign in to Roblox and import it through the extension again.
+Неизвестный префикс.	Unknown prefix.
+Не удалось автоматически сохранить игру: проверь доступ к папке менеджера.	Game autosave failed. Check manager folder permissions.
+Не удалось автоматически сохранить сервер: проверь доступ к папке менеджера.	Server autosave failed. Check manager folder permissions.
+Открытие 	Opening\s
+Открытие аккаунтов	Opening accounts
+Не удалось открыть отдельное окно Chromium.	Could not open a separate Chromium window.
+Подключение расширения	Extension pairing
+Подключение ещё не запущено	Connection not started
+Готово • 127.0.0.1:7964	Ready • 127.0.0.1:7964
+Порт 7964 занят. Закрой другую копию менеджера и перезапусти эту.	Port 7964 is in use. Close the other manager instance and restart this one.
+Открой менеджер.	Open the manager.
+Открой окно менеджера.	Open the manager window.
+В выбранной папке нет расширения Spectrum Manager.	This folder does not contain the Spectrum Manager extension.
+Неверные данные расширения.	Invalid extension data.
+В релизе не указана версия расширения.	The release does not specify an extension version.
+Один раз выбери установленную папку расширения Spectrum Manager (с manifest.json). Браузер показывает её в режиме разработчика.	Choose the installed Spectrum extension folder containing manifest.json. You can find it in browser developer mode.
+В менеджере открыто окно выбора папки расширения. Выбери установленную папку, затем нажми «Обновить расширение» ещё раз.	Choose the installed extension folder in the manager, then click Update extension again.
+Разблокируй менеджер перед обновлением расширения.	Unlock the manager before updating the extension.
+Обновление расширения уже выполняется.	An extension update is already in progress.
+Обновление отменено: папка расширения не выбрана.	Update cancelled: no extension folder selected.
+Расширение не обновлено. Проверь соединение с GitHub и доступ к папке расширения. Прежние файлы сохранены.	Extension update failed. Check GitHub access and folder permissions. Previous files are preserved.
+Roblox долго отвечает. Повтори поиск.	Roblox is taking too long to respond. Try again.
+Roblox не вернул данные аккаунта.	Roblox did not return account details.
+Roblox ограничил частоту запросов. Повтори чуть позже.	Roblox rate-limited the request. Try again later.
+Сессия Roblox завершилась. Войди в аккаунт в браузере и повтори.	The Roblox session expired. Sign in through your browser and try again.
+Параметры запуска Roblox	Roblox launch options
+Запуск как телепортация	Launch as teleport
+Старый способ запуска	Legacy launch method
+Задать версию	Set version
+Скачивание Legit · 	Downloading Legit ·\s
+Распаковка · 	Extracting ·\s
+Legit готов · 	Legit ready ·\s
+Новая версия	New version
+Обновить расширение	Update extension
+Код подключения	Pairing code
+Код подключения к этому менеджеру	Pairing code for this manager
+Код скопирован	Code copied
+Opera GX / браузер по умолчанию\n\n1. Установи расширение из папки Browser Extension (версия 0.4.0+).\n2. Вставь код ниже в расширение.\n3. Для добавления открой Roblox и нажми «Добавить в менеджер».\n4. Для входа выбери аккаунт в расширении или выдели его в менеджере и нажми «Браузер». После обновления файлов перезагрузи расширение в opera://extensions.\n\nПереключение меняет аккаунт во всех вкладках Roblox текущего профиля браузера.	Opera GX / default browser\n\n1. Install the extension from Browser Extension (version 0.4.0+).\n2. Paste the pairing code below into the extension.\n3. To add an account, open Roblox and click Add to manager.\n4. To sign in, select the account in the extension, or select it in the manager and click Browser. Reload the extension in opera://extensions after updating its files.\n\nSwitching changes the account in every Roblox tab in the current browser profile.
+Скопировать код	Copy code

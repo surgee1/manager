@@ -23,7 +23,7 @@ namespace RBX_Alt_Manager
         {
             public string Name;
             public int Count;
-            public override string ToString() => (Name ?? "Все аккаунты") + "  (" + Count + ")";
+            public override string ToString() => (Name == null ? UiText.Translate("Все аккаунты") : Name == "Без папки" ? UiText.Translate(Name) : Name) + "  (" + Count + ")";
         }
         private static string FolderName(string group) => string.IsNullOrWhiteSpace(group) || group == "Default" ? "Без папки" : group;
         private string ActiveFolder => (folderSelector?.SelectedItem as FolderItem)?.Name;
@@ -130,7 +130,7 @@ namespace RBX_Alt_Manager
                 CreateFolderCore(name);
                 if (move) { foreach (var account in selected) account.Group = name.Trim(); SaveAccounts(true); RefreshView(); }
             }
-            catch (Exception e) { MessageBox.Show(e.Message, "Папки аккаунтов"); }
+            catch (Exception e) { UiMessageBox.Show(e.Message, "Папки аккаунтов"); }
         }
         private void FillMoveMenu(ToolStripItemCollection items)
         {
@@ -138,7 +138,7 @@ namespace RBX_Alt_Manager
             foreach (string name in AllFolderNames())
             {
                 string target = name;
-                items.Add(name, null, (sender, e) => { try { MoveSelectedToFolder(target); } catch (Exception error) { MessageBox.Show(error.Message, "Папки аккаунтов"); } });
+                items.Add(name, null, (sender, e) => { try { MoveSelectedToFolder(target); } catch (Exception error) { UiMessageBox.Show(error.Message, "Папки аккаунтов"); } });
             }
             items.Add(new ToolStripSeparator()); items.Add("+ Новая папка и перенести…", null, (sender, e) => PromptNewFolder(true));
         }
@@ -148,16 +148,16 @@ namespace RBX_Alt_Manager
             menu.Items.Add("Выбрать видимые  ·  Ctrl+Shift+A", null, (sender, e) => SelectVisibleAccounts());
             menu.Items.Add("Снять выделение", null, (sender, e) => AccountsView.SelectedObjects = new List<Account>());
             menu.Items.Add("Вернуть удалённые аккаунты", null, (sender, e) =>
-            { try { UndoLastRemoval(); } catch { MessageBox.Show(this, "Не удалось сохранить восстановленные записи."); } });
+            { try { UndoLastRemoval(); } catch { UiMessageBox.Show(this, "Не удалось сохранить восстановленные записи."); } });
             menu.Items.Add(new ToolStripSeparator());
             var move = new ToolStripMenuItem("Переместить выбранные") { Enabled = AccountsView.SelectedObjects.Count > 0 };
             FillMoveMenu(move.DropDownItems); menu.Items.Add(move);
             string name = ActiveFolder;
             var rename = new ToolStripMenuItem("Переименовать папку…") { Enabled = name != null && name != "Без папки" };
-            rename.Click += (sender, e) => { string next = ShowDialog("Новое название папки", "Переименовать папку", name); if (next == "/UC" || next == name) return; try { RenameFolderCore(name, next); } catch (Exception error) { MessageBox.Show(error.Message, "Папки аккаунтов"); } };
+            rename.Click += (sender, e) => { string next = ShowDialog("Новое название папки", "Переименовать папку", name); if (next == "/UC" || next == name) return; try { RenameFolderCore(name, next); } catch (Exception error) { UiMessageBox.Show(error.Message, "Папки аккаунтов"); } };
             menu.Items.Add(rename);
             var remove = new ToolStripMenuItem("Удалить папку…") { Enabled = name != null && name != "Без папки" };
-            remove.Click += (sender, e) => { if (MessageBox.Show("Удалить папку «" + name + "»? Аккаунты будут перенесены в «Без папки».", "Удалить папку", MessageBoxButtons.YesNo) == DialogResult.Yes) try { DeleteFolderCore(name); } catch (Exception error) { MessageBox.Show(error.Message, "Папки аккаунтов"); } };
+            remove.Click += (sender, e) => { if (UiMessageBox.Show("Удалить папку «" + name + "»? Аккаунты будут перенесены в «Без папки».", "Удалить папку", MessageBoxButtons.YesNo) == DialogResult.Yes) try { DeleteFolderCore(name); } catch (Exception error) { UiMessageBox.Show(error.Message, "Папки аккаунтов"); } };
             menu.Items.Add(remove); menu.Closed += (sender, e) => menu.Dispose(); menu.Show(folderMenu, new Point(0, folderMenu.Height));
         }
     }

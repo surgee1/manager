@@ -1,4 +1,4 @@
-param([string]$Destination = '', [string]$Version = '6.2.7', [switch]$IncludeSource)
+param([string]$Destination = '', [string]$Version = '6.2.8', [switch]$IncludeSource)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repoRoot = Split-Path $PSScriptRoot -Parent
@@ -9,15 +9,18 @@ $stage = Join-Path $repoRoot ('build\package-' + [guid]::NewGuid().ToString('N')
 $app = Join-Path $stage 'Spectrum-Manager'
 $null = New-Item -ItemType Directory -Path $app -Force
 $binary = Join-Path $repoRoot 'build\Debug'
-$rootFiles = @(Get-ChildItem $binary -File | Where-Object { $_.Extension -eq '.dll' -or $_.Name -in @('Roblox Account Manager.exe', 'Roblox Account Manager.exe.config', 'SurgeeUpdater.exe', 'log4.config') })
+$rootFiles = @(Get-ChildItem $binary -File | Where-Object { $_.Extension -eq '.dll' -or $_.Name -in @('Roblox Account Manager.exe', 'Roblox Account Manager.exe.config', 'SpectrumUpdater.exe', 'log4.config') })
 foreach ($file in $rootFiles) { Copy-Item -LiteralPath $file.FullName -Destination $app }
-if (!(Test-Path (Join-Path $app 'SurgeeUpdater.exe'))) { throw 'Updater has not been built.' }
+if (!(Test-Path (Join-Path $app 'SpectrumUpdater.exe'))) { throw 'Updater has not been built.' }
+# Old managers only accept the legacy helper name in the update plan. On first
+# startup the updated app atomically promotes it to SpectrumUpdater.exe and removes it.
+Copy-Item -LiteralPath (Join-Path $app 'SpectrumUpdater.exe') -Destination (Join-Path $app 'SurgeeUpdater.exe')
 Copy-Item -LiteralPath (Join-Path $repoRoot 'Themes') -Destination (Join-Path $app 'Themes') -Recurse
 Copy-Item -LiteralPath (Join-Path $repoRoot 'Browser Extension') -Destination (Join-Path $app 'Browser Extension') -Recurse
 Copy-Item -LiteralPath (Join-Path $repoRoot 'LICENSE') -Destination $app
 Copy-Item -LiteralPath (Join-Path $repoRoot 'README.md') -Destination $app
 $manifestFiles = [ordered]@{}
-Get-ChildItem $app -File -Recurse | Where-Object { $_.Name -notin @('LICENSE', 'README.md') } | Sort-Object FullName | ForEach-Object {
+Get-ChildItem $app -File -Recurse | Where-Object { $_.Name -notin @('LICENSE', 'README.md', 'SpectrumUpdater.exe') } | Sort-Object FullName | ForEach-Object {
   $relative = $_.FullName.Substring($app.Length + 1).Replace('\', '/')
   $manifestFiles[$relative] = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
 }

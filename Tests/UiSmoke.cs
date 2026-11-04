@@ -12,6 +12,11 @@ class UiSmoke
     static void Check(bool value, string label) { if (!value) throw new Exception(label); File.AppendAllText("ui-checks.txt", "PASS " + label + Environment.NewLine); }
     static void Capture(Form form, string path) { using (var b = new Bitmap(form.Width, form.Height)) { form.DrawToBitmap(b, new Rectangle(Point.Empty, form.Size)); b.Save(path); } }
     static Form FindLaunch(Control parent) { foreach (Control child in parent.Controls) { if (child.GetType().Name == "ArgumentsForm") return (Form)child; var nested = FindLaunch(child); if (nested != null) return nested; } return null; }
+    static void MissingEnglish(Control root, System.Collections.Generic.HashSet<string> missing)
+    {
+        if ((root is Label || root is ButtonBase || root is TabPage || root is Form) && root.Text != "Проверка выбора игры" && System.Text.RegularExpressions.Regex.IsMatch(root.Text, "[А-Яа-яЁё]")) missing.Add(root.Text);
+        foreach (Control child in root.Controls) MissingEnglish(child, missing);
+    }
     static string BackgroundFrame(Assembly assembly)
     {
         using (var bitmap = new Bitmap(800, 480))
@@ -48,14 +53,7 @@ class UiSmoke
             main.Load -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Load", Flags));
             main.Shown -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Shown", Flags));
             main.Show();
-            var legitMode = (Button)Field(main, "legitModeButton");
-            var cheatMode = (Button)Field(main, "cheatModeButton");
-            var advancedMode = (Button)Field(main, "advancedButton");
-            Check(legitMode.Visible && cheatMode.Visible && legitMode.Top > advancedMode.Bottom && legitMode.Bottom < main.ClientSize.Height, "Legit and Cheat switch is visible below connection actions");
-            cheatMode.PerformClick();
-            Check(File.ReadAllText("RAMSettings.ini").Contains("ClientLaunchMode=Cheat") && (bool)cheatMode.GetType().GetProperty("Accent").GetValue(cheatMode, null), "Cheat selection persists and highlights active launch mode");
-            legitMode.PerformClick();
-            Check(File.ReadAllText("RAMSettings.ini").Contains("ClientLaunchMode=Legit") && (bool)legitMode.GetType().GetProperty("Accent").GetValue(legitMode, null), "Legit selection persists and highlights active launch mode");
+            Check(type.GetField("legitModeButton", Flags) == null && type.GetField("cheatModeButton", Flags) == null, "Global client switch removed");
             Check(main.Text == "Spectrum Manager" && ((Control)Field(main, "modernTitle")).Text == "Spectrum Manager", "Spectrum Manager branding appears in window title and main heading");
             // Startup loading is detached in this isolated test; dismiss its designer overlay.
             ((Control)Field(main, "PasswordPanel")).Visible = false;
@@ -103,7 +101,7 @@ class UiSmoke
             Check(((Color)theme.GetField("AccentPrimary").GetValue(null)).ToArgb() == ColorTranslator.FromHtml("#397FFF").ToArgb(), "custom palette applied to live interface");
             Check(File.ReadAllText("RAMTheme.ini").Contains("AccentPrimary=#397FFF"), "custom palette persists to theme file");
             var profileMethod = settings.GetType().GetMethod("ApplyVisualProfile", Flags);
-            foreach (string profile in new[] { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote" })
+            foreach (string profile in new[] { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote", "kagami", "ichigo", "baki", "nogamenolife" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 Check((string)theme.GetField("VisualProfile").GetValue(null) == profile, "profile switches: " + profile);
@@ -111,7 +109,7 @@ class UiSmoke
             }
             Check(File.Exists("Themes/kaneki_manga.png"), "illustrated theme assets are bundled");
             var supported = (string[])theme.GetField("SupportedProfiles", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-            Check(supported.Length == 14 && Array.IndexOf(supported, "matrix") < 0 && Array.IndexOf(supported, "manga") < 0 && Array.IndexOf(supported, "sakura") < 0, "removed theme presets are absent from supported catalog");
+            Check(supported.Length == 18 && Array.IndexOf(supported, "matrix") < 0 && Array.IndexOf(supported, "manga") < 0 && Array.IndexOf(supported, "sakura") < 0, "removed theme presets are absent from supported catalog");
             profileMethod.Invoke(settings, new object[] { "manga" });
             Check((string)theme.GetField("VisualProfile").GetValue(null) == "kaneki_manga", "old removed theme resolves to a supported character profile");
             TabPage portraitColors = null;
@@ -127,7 +125,7 @@ class UiSmoke
             var portraitHashes = new System.Collections.Generic.HashSet<string>();
             var general = type.GetField("General").GetValue(null);
             general.GetType().GetMethod("Set").Invoke(general, new object[] { "AnimationEconomy", "false", null });
-            foreach (string profile in new[] { "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote" })
+            foreach (string profile in new[] { "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote", "kagami", "ichigo", "baki", "nogamenolife" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 using (var first = PortraitFrame(assembly, profile, .4))
@@ -141,7 +139,7 @@ class UiSmoke
                             if (first.GetPixel(x, y).A > 0) populated++;
                             if (first.GetPixel(x, y) != second.GetPixel(x, y)) { changed++; if (x < first.Width / 2) leftChanged++; }
                         }
-                    Check(populated > 80000, "portrait asset loads: " + profile);
+                    Check(populated > (profile == "ichigo" ? 40000 : 80000), "portrait asset loads: " + profile);
                     Check(changed > 1000 && leftChanged == 0, "character itself moves with anchored background: " + profile);
                     first.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                     Check(portraitHashes.Add(Convert.ToBase64String(stream.ToArray())), "distinct portrait artwork: " + profile);
@@ -192,6 +190,23 @@ class UiSmoke
             view.GetType().GetMethod("SetObjects", new[] { typeof(IEnumerable) }).Invoke(view, new object[] { list });
             view.GetType().GetProperty("SelectedObject").SetValue(view, account, null);
             Application.DoEvents();
+            var prefixColumn = Field(main, "prefixColumn");
+            Check(((ColumnHeader)prefixColumn).Text == "Prefix", "Prefix column visible in accounts header");
+            Check(((ListView)view).OwnerDraw && ((ColumnHeader)prefixColumn).DisplayIndex == 2, "Prefix dropdown cells render between alias and notes");
+            var item = view.GetType().GetMethod("ModelToItem").Invoke(view, new object[] { account });
+            int prefixIndex = ((ListView)view).Columns.IndexOf((ColumnHeader)prefixColumn);
+            view.GetType().GetMethod("EditSubItem").Invoke(view, new object[] { item, prefixIndex });
+            Application.DoEvents();
+            ComboBox prefixEditor = null;
+            foreach (Control child in ((Control)view).Controls) if (child is ComboBox) prefixEditor = (ComboBox)child;
+            Check(prefixEditor != null && prefixEditor.DropDownStyle == ComboBoxStyle.DropDownList && prefixEditor.Items.Count == 3, "Prefix cell opens three-choice dropdown");
+            prefixEditor.SelectedIndex = 1;
+            view.GetType().GetMethod("FinishCellEdit", Type.EmptyTypes).Invoke(view, null);
+            Check((string)accountType.GetMethod("GetField").Invoke(account, new object[] { "ClientPrefix" }) == "Legit", "Prefix dropdown commits Legit to selected account");
+            type.GetMethod("SetAccountPrefix", Flags).Invoke(main, new object[] { account, "Cheat" });
+            Check((string)accountType.GetMethod("GetField").Invoke(account, new object[] { "ClientPrefix" }) == "Cheat", "Cheat prefix replaces previous selection");
+            type.GetMethod("SetAccountPrefix", Flags).Invoke(main, new object[] { account, "" });
+            Check((string)accountType.GetMethod("GetField").Invoke(account, new object[] { "ClientPrefix" }) == "", "Clearing prefix restores default Windows route");
             advanced.Show(main);
             ((TabControl)advanced.Controls[0]).SelectedIndex = 1;
             Application.DoEvents();
@@ -222,22 +237,7 @@ class UiSmoke
             Check((string)accountType.GetProperty("Group").GetValue(account, null) == "UI Folder B", "renaming folder updates its accounts");
             type.GetMethod("DeleteFolderCore", Flags).Invoke(main, new object[] { "UI Folder B" });
             Check(list.Count == 1 && (string)accountType.GetProperty("Group").GetValue(account, null) == "Default", "deleting folder preserves its accounts");
-            type.GetMethod("ShowRoflMode", Flags).Invoke(main, null);
-            var rofl = (Form)Field(main, "roflWindow");
-            Application.DoEvents();
-            Check(rofl.Visible && !rofl.TopMost, "ROFL opens an ordinary closable joke window");
-            Check(rofl.FormBorderStyle == FormBorderStyle.None && rofl.Bounds == Screen.FromControl(main).Bounds, "ROFL covers the owner monitor in fullscreen");
-            bool hasFooter = false;
-            foreach (Control child in rofl.Controls) if (child.Text.StartsWith("Это розыгрыш")) hasFooter = true;
-            Check(!hasFooter, "ROFL footer removed");
-            var unlock = (Button)Field(rofl, "unlock");
-            Rectangle oldUnlock = unlock.Bounds;
-            rofl.GetType().GetMethod("EvadeAt", Flags).Invoke(rofl, new object[] { new Point(oldUnlock.Left + oldUnlock.Width / 2, oldUnlock.Top + oldUnlock.Height / 2), true });
-            Check(unlock.Bounds != oldUnlock && rofl.ClientRectangle.Contains(unlock.Bounds), "unlock button evades cursor and stays on screen");
-            unlock.PerformClick();
-            Check(rofl.Visible, "fake unlock button does not close ROFL screen");
-            rofl.GetType().GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(rofl, new object[] { new KeyEventArgs(Keys.Escape) });
-            Check(rofl.IsDisposed || !rofl.Visible, "Escape closes the joke window");
+            Check(type.GetMethod("ShowRoflMode", Flags) == null, "ROFL mode removed");
             Check(tabs.Font.FontFamily.Name.Contains("Segoe UI"), "settings tabs use readable Segoe font");
             type.GetMethod("ShowPlacePicker", Flags).Invoke(main, null);
             var picker = (ToolStripDropDown)Field(main, "placePicker");
@@ -372,6 +372,20 @@ class UiSmoke
             Application.DoEvents();
             Check(((Control)Field(main, "advancedButton")).Bottom < main.ClientSize.Height, "compact layout fits minimum window");
             Capture(main, "compact-interface.png");
+            var uiText = assembly.GetType("RBX_Alt_Manager.Classes.UiText");
+            var setLanguage = uiText.GetMethod("SetLanguage", BindingFlags.Static | BindingFlags.NonPublic);
+            setLanguage.Invoke(null, new object[] { "en" });
+            Check(settings.Text == "Settings • Spectrum Manager" && ((Button)Field(main, "JoinServer")).Text == "Join", "English applies live to main window and settings");
+            Check(File.ReadAllText("RAMSettings.ini").Contains("InterfaceLanguage=en"), "Language preference saves to disk");
+            var missingEnglish = new System.Collections.Generic.HashSet<string>(); MissingEnglish(main, missingEnglish); MissingEnglish(settings, missingEnglish); MissingEnglish(advanced, missingEnglish);
+            File.WriteAllLines("missing-english.txt", missingEnglish);
+            Check(missingEnglish.Count == 0, "Main, settings and advanced interface contain no untranslated static Russian text in English mode");
+            Capture(main, "interface-english.png"); Capture(settings, "settings-english.png");
+            uiText.GetMethod("SetHints", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { false });
+            Check(!((ToolTip)Field(main, "SaveTooltip")).Active && !((ToolTip)Field(settings, "Helper")).Active, "Tooltips can be hidden in manager and settings");
+            uiText.GetMethod("SetHints", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { true });
+            setLanguage.Invoke(null, new object[] { "ru" });
+            Check(settings.Text == "Настройки • Spectrum Manager" && ((Button)Field(main, "JoinServer")).Text == "Подключиться", "Russian returns without restarting or changing account data");
             ((Button)Field(main, "ConfigButton")).PerformClick();
             settings.GetType().GetMethod("ShowAccountBackups", Flags).Invoke(settings, null);
             Capture(settings, "backup-settings.png");

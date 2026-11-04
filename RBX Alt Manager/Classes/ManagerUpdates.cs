@@ -20,7 +20,7 @@ namespace RBX_Alt_Manager.Classes
     }
     internal static class ManagerUpdates
     {
-        internal const string Version = "6.2.7";
+        internal const string Version = "6.2.8";
         internal const string ExtensionVersion = "0.4.0";
         internal const string Repository = "https://github.com/surgee1/manager";
         private static readonly SemaphoreSlim Gate = new SemaphoreSlim(1);
@@ -137,7 +137,7 @@ namespace RBX_Alt_Manager.Classes
             System.Version version;
             if ((string)manifest["kind"] != "surgee-manager" || !System.Version.TryParse((string)manifest["version"], out version)) throw new InvalidDataException("Неверный манифест обновления.");
             var files = manifest["files"] as JObject;
-            if (files == null || files.Count > 256 || files["Roblox Account Manager.exe"] == null || files["SurgeeUpdater.exe"] == null) throw new InvalidDataException("Неполный пакет обновления.");
+            if (files == null || files.Count > 256 || files["Roblox Account Manager.exe"] == null || (files["SpectrumUpdater.exe"] == null && files["SurgeeUpdater.exe"] == null)) throw new InvalidDataException("Неполный пакет обновления.");
             string root = manifestEntry.FullName.Substring(0, manifestEntry.FullName.Length - manifestEntry.Name.Length);
             string stage = NewStage();
             var plan = new StringBuilder();
@@ -162,7 +162,7 @@ namespace RBX_Alt_Manager.Classes
         {
             // Run the currently shipped helper, not an unchecked executable from an arbitrary ZIP.
             string helper = Path.Combine(stage, "UpdateRunner.exe");
-            File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SurgeeUpdater.exe"), helper, true);
+            File.Copy(UpdaterNaming.Resolve(AppDomain.CurrentDomain.BaseDirectory), helper, true);
             string destination = AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
             var start = new ProcessStartInfo(helper, Process.GetCurrentProcess().Id + " \"" + destination + "\" \"" + stage + "\"")
                 { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, WorkingDirectory = stage };

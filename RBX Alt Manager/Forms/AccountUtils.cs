@@ -1,4 +1,4 @@
-﻿using RBX_Alt_Manager.Forms;
+using RBX_Alt_Manager.Forms;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -83,7 +83,7 @@ namespace RBX_Alt_Manager
         {
             if (AccountManager.SelectedAccount == null) return;
 
-            DialogResult result = MessageBox.Show($"Are you sure you want sign out of all other sessions?", "Account Utilities", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            DialogResult result = UiMessageBox.Show($"Are you sure you want sign out of all other sessions?", "Account Utilities", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (result == DialogResult.Yes)
                 AccountManager.SelectedAccount.LogOutOfOtherSessions();
@@ -139,11 +139,11 @@ namespace RBX_Alt_Manager
             try
             {
                 if (AccountManager.SelectedAccount.TogglePlayerBlocked(Username.Text, ref WasUnblocked))
-                    MessageBox.Show($"{(WasUnblocked ? "Unb" : "B")}locked {Username.Text}");
+                    UiMessageBox.Show($"{(WasUnblocked ? "Unb" : "B")}locked {Username.Text}");
                 else
-                    MessageBox.Show($"Failed to {(WasUnblocked ? "Unb" : "B")}lock {Username.Text}");
+                    UiMessageBox.Show($"Failed to {(WasUnblocked ? "Unb" : "B")}lock {Username.Text}");
             }
-            catch (Exception x) { MessageBox.Show($"Failed to {(WasUnblocked ? "Unb" : "B")}lock {Username.Text}\n\n{x.Message}"); }
+            catch (Exception x) { UiMessageBox.Show($"Failed to {(WasUnblocked ? "Unb" : "B")}lock {Username.Text}\n\n{x.Message}"); }
         }
 
         private void SetDisplayName_Click(object sender, EventArgs e)
@@ -153,9 +153,9 @@ namespace RBX_Alt_Manager
             try
             {
                 AccountManager.SelectedAccount.SetDisplayName(DisplayName.Text);
-                MessageBox.Show($"Successfully set {AccountManager.SelectedAccount.Username}'s Display Name to {DisplayName.Text}", "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UiMessageBox.Show($"Successfully set {AccountManager.SelectedAccount.Username}'s Display Name to {DisplayName.Text}", "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            catch (Exception x) { MessageBox.Show(x.Message, "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (Exception x) { UiMessageBox.Show(x.Message, "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
 
         private void AddFriend_Click(object sender, EventArgs e)

@@ -170,7 +170,7 @@ namespace Auto_Update
                 SetStatus("Error");
                 Invoke(new Action(() =>
                 {
-                    var Result = MessageBox.Show(this, $"Something went wrong! \n{x.Message}\n{x.StackTrace}", "Auto Updater", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                    var Result = UiMessageBox.Show(this, $"Something went wrong! \n{x.Message}\n{x.StackTrace}", "Auto Updater", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
 
                     if (Result == DialogResult.Retry)
                     {

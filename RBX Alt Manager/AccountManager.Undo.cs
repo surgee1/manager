@@ -32,7 +32,7 @@ namespace RBX_Alt_Manager
         }
         private void UndoLastRemoval()
         {
-            if (removedAccounts == null) { MessageBox.Show(this, "В этом запуске ещё нечего возвращать. Более старые записи можно восстановить из Backups в настройках.", "Вернуть аккаунты"); return; }
+            if (removedAccounts == null) { UiMessageBox.Show(this, "В этом запуске ещё нечего возвращать. Более старые записи можно восстановить из Backups в настройках.", "Вернуть аккаунты"); return; }
             var prior = AccountsList;
             var next = PortableBackups.Merge(prior, removedAccounts, out int added);
             try { AccountsList = next; SaveAccounts(true, true); }

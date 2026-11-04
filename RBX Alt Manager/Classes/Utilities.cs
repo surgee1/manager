@@ -1,4 +1,4 @@
-﻿using BrightIdeasSoftware;
+using BrightIdeasSoftware;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -239,7 +239,7 @@ public static Color Lerp(this Color s, Color t, float k)
             }
         }
 
-        return DR != null ? DR == TaskDialogResult.Yes : MessageBox.Show($"{Instruction}\n{Text}", Caption, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+        return DR != null ? DR == TaskDialogResult.Yes : UiMessageBox.Show($"{Instruction}\n{Text}", Caption, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
     }
 
     public static void ApplyTheme(this Control.ControlCollection Controls)
@@ -392,7 +392,7 @@ public static class HttpExtensions
         var contentLength = response.Content.Headers.ContentLength;
 
         using var download = await response.Content.ReadAsStreamAsync();
-        // Ignore progress reporting when no progress reporter was 
+        // Ignore progress reporting when no progress reporter was
         // passed or when the content length is unknown
         if (progress == null || !contentLength.HasValue)
         {

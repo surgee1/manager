@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using RBX_Alt_Manager.Classes;
 
 namespace RBX_Alt_Manager.Forms
 {
@@ -26,7 +27,7 @@ namespace RBX_Alt_Manager.Forms
             list.DrawItem += (sender, e) =>
             {
                 e.DrawBackground();
-                if (e.Index >= 0) TextRenderer.DrawText(e.Graphics, ((Tuple<string, Action>)list.Items[e.Index]).Item1, Font,
+                if (e.Index >= 0) TextRenderer.DrawText(e.Graphics, UiText.Translate(((Tuple<string, Action>)list.Items[e.Index]).Item1), Font,
                     new Rectangle(e.Bounds.X + 10, e.Bounds.Y, e.Bounds.Width - 18, e.Bounds.Height), e.ForeColor,
                     TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             };
@@ -36,7 +37,7 @@ namespace RBX_Alt_Manager.Forms
         private void Filter()
         {
             list.BeginUpdate(); list.Items.Clear();
-            list.Items.AddRange(commands.Where(item => item.Item1.IndexOf(search.Text.Trim(), StringComparison.OrdinalIgnoreCase) >= 0).Cast<object>().ToArray());
+            list.Items.AddRange(commands.Where(item => UiText.Translate(item.Item1).IndexOf(search.Text.Trim(), StringComparison.OrdinalIgnoreCase) >= 0).Cast<object>().ToArray());
             if (list.Items.Count > 0) list.SelectedIndex = 0;
             list.EndUpdate();
         }

@@ -1,4 +1,4 @@
-﻿using RBX_Alt_Manager.Classes;
+using RBX_Alt_Manager.Classes;
 using RBX_Alt_Manager.Forms;
 using System;
 using System.Collections.Generic;
@@ -106,7 +106,7 @@ namespace RBX_Alt_Manager
         {
             e.Cancel = true;
 
-            MessageBox.Show("To edit a field, press enter on the value (right) side", "Account Fields", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            UiMessageBox.Show("To edit a field, press enter on the value (right) side", "Account Fields", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Add_Click(object sender, EventArgs e)

@@ -74,7 +74,7 @@ namespace RBX_Alt_Manager.Forms
                 try
                 {
                     var backup = await Task.Run(() => PortableBackups.Read(dialog.FileName));
-                    if (MessageBox.Show(this, "Копия от " + backup.CreatedUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm") + "\nАккаунтов: " + backup.Accounts.Count + "\n\nОбъединить с текущей базой?", "Восстановление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                    if (UiMessageBox.Show(this, "Копия от " + backup.CreatedUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm") + "\nАккаунтов: " + backup.Accounts.Count + "\n\nОбъединить с текущей базой?", "Восстановление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
                     int added = AccountManager.Instance.RestorePortableBackup(backup);
                     backupStatusLabel.Text = "Восстановлено. Добавлено аккаунтов: " + added + ". Всего: " + AccountManager.AccountsList.Count;
                 }

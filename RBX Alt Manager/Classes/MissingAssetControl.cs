@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using RBX_Alt_Manager.Forms;
 using RestSharp;
 using System;
@@ -21,7 +21,7 @@ namespace RBX_Alt_Manager.Classes
             this.AssetId = AssetId;
 
             AssetImage.SizeMode = PictureBoxSizeMode.Zoom;
-            
+
             ParentChanged += MissingAssetControl_ParentChanged;
         }
 
@@ -47,7 +47,7 @@ namespace RBX_Alt_Manager.Classes
             AssetNameLabel.VisitedLinkColor = ThemeEditor.LabelForeground;
             AssetNameLabel.Links.Add(0, AssetName.Length, $"https://www.roblox.com/catalog/{AssetId}/-");
             AssetNameLabel.LinkClicked += (s, e) => Process.Start(e.Link.LinkData as string);
-            
+
             PriceLabel.Text = Cost == 0 ? "Price: Free" : (Cost > 0 ? $"Price: {Cost}" : "Price: N/A");
 
             if (Cost < 0)
@@ -114,12 +114,12 @@ namespace RBX_Alt_Manager.Classes
                 if (Response.IsSuccessful && Response.Content.TryParseJson(out JObject Rsp))
                 {
                     if (Rsp["purchased"].Value<bool>())
-                        MessageBox.Show($"Successfully purchased {AssetName} for {PriceLabel.Text}", "Purchase Asset", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        UiMessageBox.Show($"Successfully purchased {AssetName} for {PriceLabel.Text}", "Purchase Asset", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     else
-                        MessageBox.Show($"Failed to purchase {AssetName}: {Rsp["errorMsg"].Value<string>()}", Rsp["title"].Value<string>(), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        UiMessageBox.Show($"Failed to purchase {AssetName}: {Rsp["errorMsg"].Value<string>()}", Rsp["title"].Value<string>(), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
-                    MessageBox.Show($"Failed to purchase {AssetName} [{Response.StatusCode}]\n\n{Response.Content}", "Purchase Asset", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    UiMessageBox.Show($"Failed to purchase {AssetName} [{Response.StatusCode}]\n\n{Response.Content}", "Purchase Asset", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

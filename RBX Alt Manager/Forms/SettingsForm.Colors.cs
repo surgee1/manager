@@ -35,6 +35,10 @@ namespace RBX_Alt_Manager.Forms
             Preset("Darling in the Franxx", "zerotwo");
             Preset("Akame ga Kill!", "akame");
             Preset("Death Note", "deathnote");
+            Preset("Kuroko's Basketball", "kagami");
+            Preset("Bleach", "ichigo");
+            Preset("Baki", "baki");
+            Preset("No Game No Life", "nogamenolife");
             var motion = new CheckBox { Text = "Анимация фона и переливов", AutoSize = true,
                 Checked = ThemeEditor.AnimationsEnabled, Margin = new Padding(0, 12, 0, 12) };
             motion.CheckedChanged += (sender, e) => { ThemeEditor.AnimationsEnabled = motion.Checked; SaveAppearance(); };
@@ -122,6 +126,10 @@ namespace RBX_Alt_Manager.Forms
                 case "zerotwo": ApplyColorPreset("#ED8DB8", "#62CCD5", "#101220", "#24243B"); break;
                 case "akame": ApplyColorPreset("#D3475E", "#B8C1D0", "#100D14", "#251B28"); break;
                 case "deathnote": ApplyColorPreset("#B8C6DC", "#738CB6", "#0D1119", "#1C2430"); break;
+                case "kagami": ApplyColorPreset("#F04B54", "#A72C40", "#100B10", "#251820"); break;
+                case "ichigo": ApplyColorPreset("#E3AC54", "#BEB6AE", "#0C0E12", "#211D23"); break;
+                case "baki": ApplyColorPreset("#DB9864", "#C54C49", "#110E10", "#282024"); break;
+                case "nogamenolife": ApplyColorPreset("#C975ED", "#52CBE5", "#100D25", "#27203E"); break;
                 default: ApplyColorPreset("#AE36DB", "#20A5CF", "#111521", "#191D2A"); break;
             }
         }

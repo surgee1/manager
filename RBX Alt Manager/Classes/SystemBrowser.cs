@@ -15,7 +15,7 @@ namespace RBX_Alt_Manager.Classes
         public static void Open(string url)
         {
             try { Process.Start(CreateStartInfo(url)); }
-            catch { MessageBox.Show("Не удалось открыть основной браузер Windows. Проверь браузер по умолчанию.", "Браузер"); }
+            catch { UiMessageBox.Show("Не удалось открыть основной браузер Windows. Проверь браузер по умолчанию.", "Браузер"); }
         }
     }
 }

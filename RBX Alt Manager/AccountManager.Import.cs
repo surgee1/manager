@@ -46,10 +46,10 @@ namespace RBX_Alt_Manager
                 preview.Controls.AddRange(new Control[] { summary, replace, explanation, accept, cancel }); preview.Controls.ApplyTheme(); preview.AcceptButton = accept; preview.CancelButton = cancel;
                 if (preview.ShowDialog(this) != DialogResult.OK) return;
                 ImportAccountsCore(source, replace.Checked, out added, out duplicates);
-                MessageBox.Show(this, "Импорт завершён. Добавлено: " + added + ". Совпадений объединено: " + duplicates + ".\nВсего аккаунтов: " + AccountsList.Count + ". Исходный файл не изменён.", "Импорт аккаунтов");
+                UiMessageBox.Show(this, "Импорт завершён. Добавлено: " + added + ". Совпадений объединено: " + duplicates + ".\nВсего аккаунтов: " + AccountsList.Count + ". Исходный файл не изменён.", "Импорт аккаунтов");
             }
-            catch (InvalidDataException error) { MessageBox.Show(this, error.Message, "Импорт не выполнен", MessageBoxButtons.OK, MessageBoxIcon.Information); }
-            catch { MessageBox.Show(this, "Импорт не выполнен. Проверь файл и доступ к папке менеджера. Текущая база сохранена.", "Импорт аккаунтов"); }
+            catch (InvalidDataException error) { UiMessageBox.Show(this, error.Message, "Импорт не выполнен", MessageBoxButtons.OK, MessageBoxIcon.Information); }
+            catch { UiMessageBox.Show(this, "Импорт не выполнен. Проверь файл и доступ к папке менеджера. Текущая база сохранена.", "Импорт аккаунтов"); }
             finally { importAccountsButton.Enabled = true; }
         }
         private string PromptImportPassword()

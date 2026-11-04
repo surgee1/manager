@@ -14,16 +14,7 @@ namespace RBX_Alt_Manager
         private float modernScale = 1f;
         private Form advancedWindow;
         private NeonButton advancedButton;
-        private NeonButton roflButton;
         private NeonButton modernUpdateButton;
-        private RoflForm roflWindow;
-
-        private void ShowRoflMode()
-        {
-            if (roflWindow != null && !roflWindow.IsDisposed) { roflWindow.Activate(); return; }
-            roflWindow = new RoflForm();
-            roflWindow.Show(this);
-        }
         private PlacePicker placePicker;
         private Bitmap modernScene;
         private bool modernSceneDirty = true, modernInteractiveMove;
@@ -221,10 +212,6 @@ namespace RBX_Alt_Manager
             InitializeAccountImport();
             InitializeLaunchInputSaving();
             InitializePortableBackups();
-            roflButton = new NeonButton { Text = "ROFL MODE", Font = Font, Cursor = Cursors.Hand, AccessibleName = "Шуточный экран" };
-            roflButton.Click += (sender, e) => ShowRoflMode();
-            Controls.Add(roflButton);
-            Hint(roflButton, "Полноэкранный ROFL MODE с убегающей кнопкой. Esc или Alt+F4 закрывают экран.");
             var glowTimer = new Timer(components) { Interval = 33 };
             glowTimer.Tick += (sender, args) =>
             {
@@ -232,17 +219,27 @@ namespace RBX_Alt_Manager
                 if (AnimationCadence.Interacting) return;
                 if (WindowState == FormWindowState.Minimized || !Visible || !ThemeEditor.AnimationsEnabled) return;
                 // Settings can sit beside the manager: both visible backgrounds must keep moving.
-                if (placePicker?.Visible == true || roflWindow?.Visible == true) return;
+                if (placePicker?.Visible == true) return;
                 InvalidateModernFrame();
                 foreach (var button in Controls.OfType<NeonButton>())
                     if (button.Visible) button.Invalidate();
                 if (advancedWindow != null && advancedWindow.Visible) advancedWindow.Invalidate(true);
             };
             glowTimer.Start();
-            InitializeClientModes();
+            InitializeAccountPrefixes();
             ApplyModernPalette();
             LayoutModernInterface();
             ResumeLayout(false);
+            UiText.Attach(this);
+            EventHandler languageChanged = (sender, e) =>
+            {
+                if (IsDisposed) return;
+                SearchCue(accountSearch.Handle, 0x1501, new IntPtr(1), UiText.Translate("Поиск аккаунтов…  Ctrl+F"));
+                folderSelector?.Refresh(); AccountsView.BuildList(); UpdateAccountSearchCaption();
+                prefixColumn.ToolTipText = UiText.ShowHints ? UiText.Translate("Legit, Cheat или обычный запуск Windows без префикса.") : "";
+            };
+            UiText.Changed += languageChanged;
+            FormClosed += (sender, e) => UiText.Changed -= languageChanged;
         }
 
         private int Ui(float value) => (int)Math.Round(value * modernScale);
@@ -257,7 +254,7 @@ namespace RBX_Alt_Manager
 
         private void Hint(Control control, string text)
         {
-            SaveTooltip.SetToolTip(control, text);
+            UiText.SetToolTip(SaveTooltip, control, text);
             control.AccessibleDescription = text;
         }
 
@@ -281,9 +278,12 @@ namespace RBX_Alt_Manager
             Put(folderSelector, 40, 154, leftWidth - 32, 32);
             Put(accountSearch, 45, 203, leftWidth - 42, 26);
             Put(AccountsView, 40, 244, leftWidth - 32, h - 394);
-            Username.Width = Ui((leftWidth - 36) * .34f);
-            AccountAlias.Width = Ui((leftWidth - 36) * .28f);
-            Description.Width = Math.Max(Ui(100), AccountsView.Width - Username.Width - AccountAlias.Width - SystemInformation.VerticalScrollBarWidth - Ui(4));
+            int available = AccountsView.Width - SystemInformation.VerticalScrollBarWidth - Ui(4);
+            int prefixWidth = prefixColumn == null ? 0 : Ui(116);
+            if (prefixColumn != null) prefixColumn.Width = prefixWidth;
+            Username.Width = HideUsernamesCheckbox.Checked ? 0 : Math.Max(Ui(115), (int)((available - prefixWidth) * .40f));
+            AccountAlias.Width = Math.Max(Ui(85), (int)((available - prefixWidth) * .27f));
+            Description.Width = Math.Max(Ui(85), available - Username.Width - AccountAlias.Width - prefixWidth);
             Put(Add, 40, h - 126, 128, 38);
             Put(importAccountsButton, 176, h - 126, 104, 38);
             Put(Remove, 288, h - 126, 100, 38);
@@ -291,7 +291,6 @@ namespace RBX_Alt_Manager
             Put(HideUsernamesCheckbox, 40, h - 76, 180, 30);
             Put(JoinDiscord, 244, h - 76, 88, 30);
             Put(DonateButton, 244, h - 76, 96, 30);
-            Put(roflButton, 350, h - 76, 136, 30);
             Put(launchHeading, right, 112, 275, 26);
             Put(profilesButton, right + 290, 108, 150, 34);
             Put(CurrentPlace, right, 145, 390, 27);
@@ -303,8 +302,6 @@ namespace RBX_Alt_Manager
             Put(JoinServer, right - 4, 383, 450, 48);
             Put(ServerList, right - 4, 445, 220, 42);
             Put(advancedButton, right + 224, 445, 222, 42);
-            Put(legitModeButton, right - 4, 503, 220, 38);
-            Put(cheatModeButton, right + 224, 503, 222, 38);
             Put(DownloadProgressBar, 24, h - 15, leftWidth, 8);
             Put(DLChromiumLabel, 40, h - 173, leftWidth - 32, 24);
             PasswordPanel.Bounds = ClientRectangle;

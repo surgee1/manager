@@ -17,7 +17,7 @@ namespace SurgeeUpdating
             if (relative.StartsWith("Browser Extension/", StringComparison.Ordinal))
                 return relative.Split('/').Length == 2 && (relative.EndsWith(".js") || relative.EndsWith(".html") || relative.EndsWith(".css") || relative == "Browser Extension/manifest.json");
             return !relative.Contains("/") && (relative.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || relative == "Roblox Account Manager.exe" ||
-                relative == "SurgeeUpdater.exe" || relative == "Roblox Account Manager.exe.config" || relative == "log4.config");
+                relative == "SpectrumUpdater.exe" || relative == "SurgeeUpdater.exe" || relative == "Roblox Account Manager.exe.config" || relative == "log4.config");
         }
 
         internal static string SafePath(string root, string relative)

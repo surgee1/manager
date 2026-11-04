@@ -13,7 +13,7 @@ namespace RBX_Alt_Manager.Forms
         public static Color AccentPrimary = Color.FromArgb(174, 54, 219);
         public static Color AccentSecondary = Color.FromArgb(32, 165, 207);
         public static string VisualProfile = "kaneki_manga";
-        internal static readonly string[] SupportedProfiles = { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote" };
+        internal static readonly string[] SupportedProfiles = { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote", "kagami", "ichigo", "baki", "nogamenolife" };
         public static bool AnimationsEnabled = true;
         public static int CharacterMotion = 75;
         public static Color AccountForeground = SystemColors.ControlText;
@@ -339,7 +339,7 @@ namespace RBX_Alt_Manager.Forms
         {
             UseDarkTopBar = !UseDarkTopBar;
             SaveTheme();
-            MessageBox.Show("This option requires RAM to be restarted.\nThis may not work on older versions of windows.\nEnabled: " + (UseDarkTopBar ? "True" : "false"), "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            UiMessageBox.Show("This option requires RAM to be restarted.\nThis may not work on older versions of windows.\nEnabled: " + (UseDarkTopBar ? "True" : "false"), "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using log4net;
+using log4net;
 using Microsoft.Win32;
 using RBX_Alt_Manager.Properties;
 using System;
@@ -78,13 +78,15 @@ namespace RBX_Alt_Manager
                 return;
             }
             Classes.StartupDirectory.Initialize(AppDomain.CurrentDomain.BaseDirectory);
+            try { Classes.UpdaterNaming.PromoteLegacy(AppDomain.CurrentDomain.BaseDirectory); }
+            catch { Logger.Warn("Updater name migration deferred; legacy helper remains available."); }
             int Stupid = 1337;
 
             try
             {
                 if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName.Contains(Path.GetTempPath().Remove(Path.GetTempPath().Length - 1)))
                 {
-                    MessageBox.Show("Roblox Account Manager must be extracted in order to function correctly!", "Roblox Account Manager", MessageBoxButtons.OK);
+                    UiMessageBox.Show("Roblox Account Manager must be extracted in order to function correctly!", "Roblox Account Manager", MessageBoxButtons.OK);
                     Environment.Exit(Stupid);
                 }
             }
@@ -95,7 +97,7 @@ namespace RBX_Alt_Manager
                 if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
                     Elevated = true;
 
-                // MessageBox.Show("Some features may not work properly if you ran the account manager as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); // I don't think this is an issue anymore
+                // UiMessageBox.Show("Some features may not work properly if you ran the account manager as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); // I don't think this is an issue anymore
             }
             catch { }
 
@@ -185,7 +187,7 @@ namespace RBX_Alt_Manager
             {
                 if (ndpKey == null || ndpKey.GetValue("Release") == null || (int)ndpKey.GetValue("Release") < 461808)
                 {
-                    if (MessageBox.Show("Failed to detect .NET Framework 4.7.2, would you like to install it now?\n(Required in order to use the account manager)\nIn case this error persists, fully re-install the account manager.", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                    if (UiMessageBox.Show("Failed to detect .NET Framework 4.7.2, would you like to install it now?\n(Required in order to use the account manager)\nIn case this error persists, fully re-install the account manager.", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                         Process.Start("https://dotnet.microsoft.com/en-us/download/dotnet-framework");
                 }
             }
@@ -219,7 +221,7 @@ namespace RBX_Alt_Manager
                 }
             }
             else
-                MessageBox.Show("Roblox Account Manager is already running!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UiMessageBox.Show("Roblox Account Manager is already running!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 #endif
         }
     }

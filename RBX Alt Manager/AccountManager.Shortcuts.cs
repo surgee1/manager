@@ -51,7 +51,7 @@ namespace RBX_Alt_Manager
             int visible = (AccountsList ?? new List<Account>()).Count(account =>
                 (ActiveFolder == null || string.Equals(FolderName(account.Group), ActiveFolder, StringComparison.OrdinalIgnoreCase)) && AccountMatchesSearch(account));
             accountsHeading.Text = string.IsNullOrWhiteSpace(accountSearch.Text) ? "АККАУНТЫ  ·  " + visible : "НАЙДЕНО: " + visible;
-            AccountsView.EmptyListMsg = !string.IsNullOrWhiteSpace(accountSearch.Text) ? "Ничего не найдено. Измени запрос или папку." : "В этой папке пока нет аккаунтов.";
+            AccountsView.EmptyListMsg = UiText.Translate(!string.IsNullOrWhiteSpace(accountSearch.Text) ? "Ничего не найдено. Измени запрос или папку." : "В этой папке пока нет аккаунтов.");
         }
         private void SelectVisibleAccounts()
         {
@@ -86,9 +86,9 @@ namespace RBX_Alt_Manager
             foreach (var profile in launchProfiles)
                 remove.DropDownItems.Add(profile.Name, null, (sender, e) =>
                 {
-                    if (MessageBox.Show(this, "Удалить профиль «" + profile.Name + "»? Аккаунты останутся.", "Профили", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+                    if (UiMessageBox.Show(this, "Удалить профиль «" + profile.Name + "»? Аккаунты останутся.", "Профили", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
                     try { var next = launchProfiles.Where(item => item != profile).ToList(); LaunchProfiles.Save(ProfilesPath, next); launchProfiles = next; }
-                    catch { MessageBox.Show(this, "Не удалось сохранить файл профилей."); }
+                    catch { UiMessageBox.Show(this, "Не удалось сохранить файл профилей."); }
                 });
             remove.Enabled = launchProfiles.Count > 0 && profilesError == null; menu.Items.Add(remove);
             menu.Closed += (sender, e) => BeginInvoke(new Action(menu.Dispose));
@@ -104,7 +104,7 @@ namespace RBX_Alt_Manager
         }
         private void PromptSaveLaunchProfile()
         {
-            if (!long.TryParse(PlaceID.Text.Trim(), out long place) || place <= 0) { MessageBox.Show(this, "Сначала выбери игру или введи Place ID."); return; }
+            if (!long.TryParse(PlaceID.Text.Trim(), out long place) || place <= 0) { UiMessageBox.Show(this, "Сначала выбери игру или введи Place ID."); return; }
             using var dialog = new Form { Text = "Новый профиль запуска", StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(470, 185),
                 FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false, MinimizeBox = false, Font = Font,
                 BackColor = ThemeEditor.FormsBackground, ForeColor = ThemeEditor.FormsForeground };
@@ -116,16 +116,16 @@ namespace RBX_Alt_Manager
             save.Click += (sender, e) =>
             {
                 if (launchProfiles.Any(item => item.Name.Equals(input.Text.Trim(), StringComparison.OrdinalIgnoreCase)) &&
-                    MessageBox.Show(dialog, "Заменить существующий профиль?", "Профили", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+                    UiMessageBox.Show(dialog, "Заменить существующий профиль?", "Профили", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
                 try { SaveLaunchProfileCore(input.Text); dialog.DialogResult = DialogResult.OK; }
-                catch { MessageBox.Show(dialog, "Введи название от 1 до 60 символов и корректный Place ID. Проверь доступ к файлу."); }
+                catch { UiMessageBox.Show(dialog, "Введи название от 1 до 60 символов и корректный Place ID. Проверь доступ к файлу."); }
             };
             dialog.ShowDialog(this);
         }
         private void ApplyLaunchProfile(LaunchProfile profile)
         {
             if (profile.Folder != null && !AllFolderNames().Contains(profile.Folder, StringComparer.OrdinalIgnoreCase))
-            { MessageBox.Show(this, "Папка профиля была удалена. Выбери папку и сохрани профиль заново."); return; }
+            { UiMessageBox.Show(this, "Папка профиля была удалена. Выбери папку и сохрани профиль заново."); return; }
             accountSearch.Clear();
             UpdateFolderSelector(profile.Folder);
             folderSelector.SelectedItem = folderSelector.Items.Cast<FolderItem>().First(item => string.Equals(item.Name, profile.Folder, StringComparison.OrdinalIgnoreCase));
@@ -148,7 +148,7 @@ namespace RBX_Alt_Manager
             };
             commands.AddRange(launchProfiles.Select(profile => Tuple.Create("Профиль: " + profile.Name, new Action(() => ApplyLaunchProfile(profile)))));
             commands.Add(Tuple.Create("Вернуть удалённые аккаунты", new Action(() =>
-            { try { UndoLastRemoval(); } catch { MessageBox.Show(this, "Не удалось сохранить восстановленные записи. Проверь доступ к папке менеджера."); } })));
+            { try { UndoLastRemoval(); } catch { UiMessageBox.Show(this, "Не удалось сохранить восстановленные записи. Проверь доступ к папке менеджера."); } })));
             using var dialog = new QuickCommands(commands);
             dialog.ShowDialog(this);
         }

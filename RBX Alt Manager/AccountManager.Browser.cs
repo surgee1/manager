@@ -19,7 +19,7 @@ namespace RBX_Alt_Manager
         {
             if (openingBrowserWindows) return;
             var accounts = AccountsView.SelectedObjects.Cast<Account>().Select(account => new { account.UserID, account.Username, Cookie = account.SecurityToken }).ToArray();
-            if (accounts.Length == 0) { MessageBox.Show(this, "Выбери аккаунты для открытия.", "Браузер"); return; }
+            if (accounts.Length == 0) { UiMessageBox.Show(this, "Выбери аккаунты для открытия.", "Браузер"); return; }
             openingBrowserWindows = true; string caption = OpenBrowser.Text;
             var failures = new System.Collections.Generic.List<string>();
             try
@@ -33,7 +33,7 @@ namespace RBX_Alt_Manager
                 }
             }
             finally { openingBrowserWindows = false; if (!IsDisposed) OpenBrowser.Text = caption; }
-            if (failures.Count > 0 && !IsDisposed) MessageBox.Show(this, string.Join("\n\n", failures.Take(8)) + (failures.Count > 8 ? "\n… ещё " + (failures.Count - 8) : ""), "Открытие аккаунтов", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (failures.Count > 0 && !IsDisposed) UiMessageBox.Show(this, string.Join("\n\n", failures.Take(8)) + (failures.Count > 8 ? "\n… ещё " + (failures.Count - 8) : ""), "Открытие аккаунтов", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         private BrowserBridge browserBridge;
         private readonly BrowserIntents browserIntents = new BrowserIntents();
@@ -99,6 +99,7 @@ namespace RBX_Alt_Manager
         }
         private void AccountsView_ItemActivate(object sender, EventArgs e)
         {
+            if (DateTime.UtcNow < prefixEditingUntil) return;
             if (!(AccountsView.FocusedObject is Account account)) return;
             AccountsView.SelectedObject = account;
             OpenSelectedAccountBrowser();
@@ -108,14 +109,14 @@ namespace RBX_Alt_Manager
         {
             var selection = AccountsView.SelectedObjects.Cast<Account>().ToList();
             if (selection.Count > 1) { OpenSelectedInChromium(); return; }
-            if (selection.Count == 0) { MessageBox.Show(this, "Выбери аккаунт, который нужно открыть в браузере.", "Браузер"); return; }
-            if (browserBridge == null) { MessageBox.Show(this, BrowserBridgeStatus, "Подключение расширения"); return; }
+            if (selection.Count == 0) { UiMessageBox.Show(this, "Выбери аккаунт, который нужно открыть в браузере.", "Браузер"); return; }
+            if (browserBridge == null) { UiMessageBox.Show(this, BrowserBridgeStatus, "Подключение расширения"); return; }
             try
             {
                 string nonce = browserIntents.Create(selection[0].UserID);
                 SystemBrowser.Open("http://127.0.0.1:7964/browser/open/" + nonce);
             }
-            catch (InvalidOperationException error) { MessageBox.Show(this, error.Message, "Браузер"); }
+            catch (InvalidOperationException error) { UiMessageBox.Show(this, error.Message, "Браузер"); }
         }
         private async Task<object> CheckBrowserUpdatesAsync()
         {

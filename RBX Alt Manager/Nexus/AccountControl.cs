@@ -1,4 +1,4 @@
-﻿using BrightIdeasSoftware;
+using BrightIdeasSoftware;
 using Newtonsoft.Json;
 using RBX_Alt_Manager.Classes;
 using RBX_Alt_Manager.Nexus;
@@ -306,7 +306,7 @@ namespace RBX_Alt_Manager.Forms
             try { Listener.Wait(50); }
             catch (InvalidOperationException x)
             {
-                MessageBox.Show($"{x.Message} {x.StackTrace}", "Account Control", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UiMessageBox.Show($"{x.Message} {x.StackTrace}", "Account Control", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Hide();
             }
 
@@ -429,7 +429,7 @@ namespace RBX_Alt_Manager.Forms
         {
             if (AccountsView.SelectedObjects.Count == 0) return;
 
-            if (AccountsView.SelectedObjects.Count == 1 || (AccountsView.SelectedObjects.Count > 1 && MessageBox.Show($"Are you sure you want to apply these edits to {AccountsView.SelectedObjects.Count} accounts?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes))
+            if (AccountsView.SelectedObjects.Count == 1 || (AccountsView.SelectedObjects.Count > 1 && UiMessageBox.Show($"Are you sure you want to apply these edits to {AccountsView.SelectedObjects.Count} accounts?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes))
             {
                 foreach (ControlledAccount account in AccountsView.SelectedObjects)
                     account.AutoExecute = AutoExecuteScriptBox.Text;
@@ -467,7 +467,7 @@ namespace RBX_Alt_Manager.Forms
                 e.Handled = true;
         }
 
-        private void NexusDL_Click(object sender, EventArgs e)  
+        private void NexusDL_Click(object sender, EventArgs e)
         {
             string path = Path.Combine(Environment.CurrentDirectory, "Nexus.lua");
 
@@ -521,7 +521,7 @@ namespace RBX_Alt_Manager.Forms
 
         private void removeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Are you sure?", "Account Control", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (UiMessageBox.Show("Are you sure?", "Account Control", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 foreach (ControlledAccount acc in AccountsView.SelectedObjects)
                     Accounts.Remove(acc);
