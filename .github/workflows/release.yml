@@ -30,11 +30,11 @@ jobs:
           if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne ('v' + $version)) { throw 'Git tag and application version must match.' }
           ./scripts/package.ps1 -Version $version
           $extensionVersion = (Get-Content 'Browser Extension/manifest.json' -Raw | ConvertFrom-Json).version
-          "<!-- surgee-extension:$extensionVersion -->`n`nWindows: download Spectrum-Manager ZIP and extract the complete folder. Existing users can update inside the manager. Extension 0.4.0+ supports in-extension updates through the open manager. Source code is included under GPL-3.0. Surgee-named ZIPs remain for compatibility with older installations." | Set-Content build/release-notes.md -Encoding UTF8
+          "<!-- surgee-extension:$extensionVersion -->`n`nDownload Spectrum-Manager ZIP or Spectrum-Browser-Extension.zip. Existing users can update inside the manager. Extension 0.4.0+ supports in-extension updates through the open manager. Source code remains available in this repository under GPL-3.0." | Set-Content build/release-notes.md -Encoding UTF8
       - uses: actions/upload-artifact@v4
         with:
           name: Spectrum-release
-          path: build/artifacts/*
+          path: build/artifacts/*.zip
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         env:
@@ -46,5 +46,5 @@ jobs:
             Write-Host 'This release is already published; keeping its verified assets.'
             exit 0
           }
-          gh release create $env:GITHUB_REF_NAME build/artifacts/* --repo $env:GITHUB_REPOSITORY --title "Spectrum Manager $env:GITHUB_REF_NAME" --notes-file build/release-notes.md --verify-tag
+          gh release create $env:GITHUB_REF_NAME build/artifacts/*.zip --repo $env:GITHUB_REPOSITORY --title "Spectrum Manager $env:GITHUB_REF_NAME" --notes-file build/release-notes.md --verify-tag
           exit $LASTEXITCODE
