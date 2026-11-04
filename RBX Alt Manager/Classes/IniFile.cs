@@ -270,8 +270,16 @@ namespace RBX_Alt_Manager
 
             lock (SaveObject)
             {
-                using (var file = new StreamWriter(Path.Combine(Environment.CurrentDirectory, path)))
-                    Save(file);
+                string target = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
+                string temporary = target + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                try
+                {
+                    using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write))
+                    using (var file = new StreamWriter(stream)) Save(file);
+                    if (File.Exists(target)) File.Replace(temporary, target, target + ".backup");
+                    else File.Move(temporary, target);
+                }
+                finally { if (File.Exists(temporary)) File.Delete(temporary); }
             }
         }
 

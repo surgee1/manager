@@ -20,19 +20,21 @@ namespace RBX_Alt_Manager.Classes
     }
     internal static class ManagerUpdates
     {
-        internal const string Version = "6.0.0";
+        internal const string Version = "6.0.1";
         internal const string ExtensionVersion = "0.3.0";
         internal const string Repository = "https://github.com/surgee1/manager";
         private static readonly SemaphoreSlim Gate = new SemaphoreSlim(1);
         private static ReleaseInfo cached;
         private static DateTime checkedAt;
 
-        internal static async Task<ReleaseInfo> CheckAsync()
+        internal static Task<ReleaseInfo> CheckAsync() => CheckCoreAsync(false);
+        internal static Task<ReleaseInfo> CheckFreshAsync() => CheckCoreAsync(true);
+        private static async Task<ReleaseInfo> CheckCoreAsync(bool fresh)
         {
             await Gate.WaitAsync().ConfigureAwait(false);
             try
             {
-                if (cached != null && DateTime.UtcNow - checkedAt < TimeSpan.FromMinutes(1)) return cached;
+                if (!fresh && cached != null && DateTime.UtcNow - checkedAt < TimeSpan.FromMinutes(1)) return cached;
                 using var client = new HttpClient(new HttpClientHandler { UseCookies = false }) { Timeout = TimeSpan.FromSeconds(20) };
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("Surgee-Manager/" + Version);
                 client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");

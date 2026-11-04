@@ -473,6 +473,7 @@
     <Compile Include="Forms\PlacePicker.cs" />
     <Compile Include="AccountManager.Modern.cs" />
     <Compile Include="AccountManager.Folders.cs" />
+    <Compile Include="AccountManager.LaunchPreferences.cs" />
     <Compile Include="Forms\RoflForm.cs" />
     <Compile Include="AccountManager.Browser.cs" />
     <Compile Include="Classes\BrowserBridge.cs" />

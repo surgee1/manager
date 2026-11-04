@@ -65,7 +65,7 @@ namespace RBX_Alt_Manager.Forms
             updateStatus.Text = "Проверяем GitHub Releases…";
             try
             {
-                var release = await ManagerUpdates.CheckAsync();
+                var release = await ManagerUpdates.CheckFreshAsync();
                 if (new Version(release.Version) > new Version(ManagerUpdates.Version))
                 { availableRelease = release; updateStatus.Text = "Доступна версия " + release.Version + ". Нажми «Обновить»."; }
                 else updateStatus.Text = "У тебя актуальная версия: " + ManagerUpdates.Version + ".";

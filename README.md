@@ -6,7 +6,7 @@
 
 ## Установка
 
-1. Скачай `Surgee-Manager-v6.0.0.zip` из Releases и распакуй всю папку.
+1. Скачай ZIP менеджера из Releases и распакуй всю папку.
 2. Запусти `Roblox Account Manager.exe`. Нужны Windows и .NET Framework 4.7.2 или новее.
 3. Установи расширение из папки `Browser Extension`: в Opera GX открой `opera://extensions`, включи режим разработчика, выбери «Загрузить распакованное расширение» и эту папку с `manifest.json`.
 4. В менеджере открой «Настройки → Расширение», скопируй код и вставь его в окне расширения.
@@ -22,6 +22,7 @@
 - Запуск обычных серверов, Job ID, старых приватных ссылок и приглашений `/share?code=…&type=Server`.
 - Кнопка «Обновить» в главном окне: проверка Releases, скачивание и установка без открытия GitHub в браузере.
 - Обновление из ZIP через «Настройки → Обновления».
+- Автосохранение Place ID и ссылки приватного сервера при вводе, восстановление после перезапуска.
 - Шуточный полноэкранный ROFL MODE, который закрывается Esc или Alt+F4.
 
 Обновление проверяет SHA-256 файлов, сохраняет личные данные и создаёт копии заменяемых файлов. При ошибке замены выполняется откат. Сборка проверена автоматическими тестами протокола авторизации и установщика; успешный запуск на каждом аккаунте и компьютере не гарантируется. Проверки входа Roblox нужно проходить на официальном сайте.
@@ -37,12 +38,12 @@ nuget restore 'RBX Alt Manager.sln'
 msbuild 'Tests/RegressionTests.csproj' /t:Build /p:Configuration=Debug /p:PostBuildEvent= /p:GenerateResourceUsePreserializedResources=true
 & 'build/Tests/SurgeeRegressionTests.exe'
 node --test Tests/extension.test.mjs
-./scripts/package.ps1 -Version '6.0.0'
+./scripts/package.ps1 -Version '6.0.1'
 ```
 
 Архивы появятся в `build/artifacts`. Скрипт использует только файлы приложения и исходников и не берёт аккаунты или пользовательские настройки из рабочей папки.
 
-Workflow `.github/workflows/release.yml` собирает и публикует релиз при отправке тега `v6.0.0`. Для следующего релиза обнови версии в `ManagerUpdates.cs`, `AssemblyInfo.cs`, `Browser Extension/manifest.json` при изменении расширения и скрипте упаковки, затем отправь новый тег. `GH_TOKEN` workflow получает из стандартного `github.token`; личный токен в исходники не добавляется.
+Workflow `.github/workflows/release.yml` собирает и публикует релиз при отправке тега `v6.0.1`. Для следующего релиза обнови версии в `ManagerUpdates.cs`, `AssemblyInfo.cs`, `Browser Extension/manifest.json` при изменении расширения и скрипте упаковки, затем отправь новый тег. `GH_TOKEN` workflow получает из стандартного `github.token`; личный токен в исходники не добавляется.
 
 ## Лицензия и авторство
 

@@ -50,7 +50,19 @@ class UiSmoke
             main.Show();
             // Startup loading is detached in this isolated test; dismiss its designer overlay.
             ((Control)Field(main, "PasswordPanel")).Visible = false;
+            type.GetMethod("RestoreLaunchInputs", Flags).Invoke(main, null);
             Application.DoEvents();
+            const string savedPrivate = "https://www.roblox.com/share?code=SYNTHETIC_PRIVATE_LINK&type=Server";
+            ((TextBox)Field(main, "PlaceID")).Text = "123456789";
+            ((TextBox)Field(main, "JobID")).Text = savedPrivate;
+            Pump(600);
+            string preferences = File.ReadAllText("RAMSettings.ini");
+            Check(preferences.Contains("SavedPlaceId=123456789") && preferences.Contains("SavedJobId=" + savedPrivate), "place and full private URL autosave without clicking Save");
+            ((TextBox)Field(main, "PlaceID")).Text = "";
+            ((TextBox)Field(main, "JobID")).Text = "";
+            Pump(600);
+            preferences = File.ReadAllText("RAMSettings.ini");
+            Check(!preferences.Contains("SavedPlaceId=") && !preferences.Contains("SavedJobId=") && preferences.Contains("SavedLaunchInputs=true"), "cleared launch fields are saved as empty");
             Check(!((Control)Field(main, "ArgumentsB")).Visible, "one settings button on main window");
             Check(!(bool)assembly.GetType("RBX_Alt_Manager.Program").GetField("PreviewMode", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null), "production button handlers enabled");
             ((Button)Field(main, "advancedButton")).PerformClick();
@@ -234,8 +246,18 @@ class UiSmoke
             Application.DoEvents();
             Check(((Control)Field(main, "advancedButton")).Bottom < main.ClientSize.Height, "compact layout fits minimum window");
             Capture(main, "compact-interface.png");
-            main.Hide();
-            main.Dispose();
+            ((TextBox)Field(main, "PlaceID")).Text = "987654321";
+            ((TextBox)Field(main, "JobID")).Text = savedPrivate;
+            main.Close();
+            Check(File.ReadAllText("RAMSettings.ini").Contains("SavedJobId=" + savedPrivate), "closing immediately flushes pending private URL");
+            var reopened = (Form)Activator.CreateInstance(type);
+            reopened.Load -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), reopened, type.GetMethod("AccountManager_Load", Flags));
+            reopened.Shown -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), reopened, type.GetMethod("AccountManager_Shown", Flags));
+            reopened.Show();
+            type.GetMethod("RestoreLaunchInputs", Flags).Invoke(reopened, null);
+            Check(((TextBox)Field(reopened, "PlaceID")).Text == "987654321", "fresh manager instance restores place from disk");
+            Check(((TextBox)Field(reopened, "JobID")).Text == savedPrivate, "fresh manager instance restores full private URL from disk");
+            reopened.Close();
         }
         catch (Exception e) { File.AppendAllText("ui-checks.txt", "FAIL " + e); Environment.ExitCode = 1; }
     }

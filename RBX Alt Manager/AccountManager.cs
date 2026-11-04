@@ -678,7 +678,7 @@ namespace RBX_Alt_Manager
 
             RGForm.RecentGameSelected += (sender, e) => { PlaceID.Text = e.Game.Details?.placeId.ToString(); };
 
-            PlaceID.Text = General.Exists("SavedPlaceId") ? General.Get("SavedPlaceId") : "5315046213";
+            RestoreLaunchInputs();
             UserID.Text = General.Exists("SavedFollowUser") ? General.Get("SavedFollowUser") : string.Empty;
 
             if (!Developer.Get<bool>("DevMode"))
@@ -1485,9 +1485,10 @@ namespace RBX_Alt_Manager
 
             AltManagerWS?.Stop();
 
-            if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
-
+            FlushLaunchInputs();
             General.Set("SavedPlaceId", PlaceID.Text);
+            General.Set("SavedJobId", JobID.Text);
+            General.Set("SavedLaunchInputs", "true");
             General.Set("SavedFollowUser", UserID.Text);
             IniSettings.Save("RAMSettings.ini");
         }

@@ -203,6 +203,7 @@ namespace RBX_Alt_Manager
             FormClosed += (sender, e) => placePicker?.Dispose();
             InitializeAdvancedWindow();
             InitializeAccountFolders();
+            InitializeLaunchInputSaving();
             roflButton = new NeonButton { Text = "ROFL MODE", Font = Font, Cursor = Cursors.Hand, AccessibleName = "Шуточный экран" };
             roflButton.Click += (sender, e) => ShowRoflMode();
             Controls.Add(roflButton);
