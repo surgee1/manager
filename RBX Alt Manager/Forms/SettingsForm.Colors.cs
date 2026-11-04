@@ -13,7 +13,7 @@ namespace RBX_Alt_Manager.Forms
             var flow = SettingsPage("Цвета");
             Section(flow, "ВИЗУАЛЬНЫЕ ПРОФИЛИ");
             Description(flow, "Выбери анимированный стиль или профиль с персонажем. Ниже можно менять цвета и отключать движение.");
-            var presets = new FlowLayoutPanel { Width = 650, Height = 195, WrapContents = true };
+            var presets = new FlowLayoutPanel { Width = 650, Height = ((ThemeEditor.SupportedProfiles.Length + 2) / 3) * 46 + 11, WrapContents = true };
             flow.Controls.Add(presets);
             void Preset(string name, string profile)
             {
@@ -32,6 +32,8 @@ namespace RBX_Alt_Manager.Forms
             Preset("Re:Zero — Субару", "subaru");
             Preset("Алекс Бенедетто", "alex");
             Preset("HxH — Курапика", "kurapika");
+            Preset("Милый во Франксе", "zerotwo");
+            Preset("Убийца Акаме", "akame");
             var motion = new CheckBox { Text = "Анимация фона и переливов", AutoSize = true,
                 Checked = ThemeEditor.AnimationsEnabled, Margin = new Padding(0, 12, 0, 12) };
             motion.CheckedChanged += (sender, e) => { ThemeEditor.AnimationsEnabled = motion.Checked; SaveAppearance(); };
@@ -116,6 +118,8 @@ namespace RBX_Alt_Manager.Forms
                 case "subaru": ApplyColorPreset("#ED913D", "#A277DA", "#100F19", "#201B2A"); break;
                 case "alex": ApplyColorPreset("#80B7CF", "#A6C2C1", "#0C131A", "#182631"); break;
                 case "kurapika": ApplyColorPreset("#D9B35E", "#CB3F58", "#0C111D", "#192337"); break;
+                case "zerotwo": ApplyColorPreset("#ED8DB8", "#62CCD5", "#101220", "#24243B"); break;
+                case "akame": ApplyColorPreset("#D3475E", "#B8C1D0", "#100D14", "#251B28"); break;
                 default: ApplyColorPreset("#AE36DB", "#20A5CF", "#111521", "#191D2A"); break;
             }
         }
