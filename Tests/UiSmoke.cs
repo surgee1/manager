@@ -1,0 +1,242 @@
+using System;
+using System.Collections;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
+using System.Windows.Forms;
+
+class UiSmoke
+{
+    const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+    static object Field(object value, string name) { return value.GetType().GetField(name, Flags).GetValue(value); }
+    static void Check(bool value, string label) { if (!value) throw new Exception(label); File.AppendAllText("ui-checks.txt", "PASS " + label + Environment.NewLine); }
+    static void Capture(Form form, string path) { using (var b = new Bitmap(form.Width, form.Height)) { form.DrawToBitmap(b, new Rectangle(Point.Empty, form.Size)); b.Save(path); } }
+    static Form FindLaunch(Control parent) { foreach (Control child in parent.Controls) { if (child.GetType().Name == "ArgumentsForm") return (Form)child; var nested = FindLaunch(child); if (nested != null) return nested; } return null; }
+    static string BackgroundFrame(Assembly assembly)
+    {
+        using (var bitmap = new Bitmap(800, 480))
+        using (var graphics = Graphics.FromImage(bitmap))
+        using (var stream = new MemoryStream())
+        {
+            assembly.GetType("RBX_Alt_Manager.Classes.VisualBackground").GetMethod("Draw", BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { graphics, bitmap.Size });
+            bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            return Convert.ToBase64String(stream.ToArray());
+        }
+    }
+    static void Pump(int milliseconds)
+    {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        while (clock.ElapsedMilliseconds < milliseconds) { Application.DoEvents(); System.Threading.Thread.Sleep(5); }
+    }
+    static Bitmap PortraitFrame(Assembly assembly, string profile, double time)
+    {
+        var bitmap = new Bitmap(800, 480);
+        using (var graphics = Graphics.FromImage(bitmap))
+            assembly.GetType("RBX_Alt_Manager.Classes.VisualBackground").GetMethod("Portrait", BindingFlags.NonPublic | BindingFlags.Static)
+                .Invoke(null, new object[] { graphics, bitmap.Size, time, profile });
+        return bitmap;
+    }
+    [STAThread]
+    static void Main()
+    {
+        try
+        {
+            Application.EnableVisualStyles();
+            var assembly = Assembly.LoadFrom("Roblox Account Manager.exe");
+            var type = assembly.GetType("RBX_Alt_Manager.AccountManager");
+            var main = (Form)Activator.CreateInstance(type);
+            main.Load -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Load", Flags));
+            main.Shown -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Shown", Flags));
+            main.Show();
+            // Startup loading is detached in this isolated test; dismiss its designer overlay.
+            ((Control)Field(main, "PasswordPanel")).Visible = false;
+            Application.DoEvents();
+            Check(!((Control)Field(main, "ArgumentsB")).Visible, "one settings button on main window");
+            Check(!(bool)assembly.GetType("RBX_Alt_Manager.Program").GetField("PreviewMode", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null), "production button handlers enabled");
+            ((Button)Field(main, "advancedButton")).PerformClick();
+            Application.DoEvents();
+            var advanced = (Form)Field(main, "advancedWindow");
+            Check(advanced.Visible, "advanced button opens window");
+            Check(((Control)Field(main, "UserID")).FindForm() == advanced, "follow by username moved to advanced window");
+            Capture(advanced, "advanced-panel.png");
+            advanced.Hide();
+            ((Button)Field(main, "ConfigButton")).PerformClick();
+            Application.DoEvents();
+            var settings = (Form)Field(main, "SettingsForm");
+            Check(settings.Visible, "settings button opens settings");
+            var tabs = (TabControl)Field(settings, "SettingsTC");
+            TabPage launchPage = null;
+            foreach (TabPage page in tabs.TabPages) if (page.Text == "Запуск") launchPage = page;
+            Check(launchPage != null, "launch options included in unified settings");
+            var launch = FindLaunch(launchPage);
+            var teleport = (CheckBox)Field(launch, "TeleportCB");
+            teleport.Checked = true;
+            Check((bool)type.GetField("IsTeleport").GetValue(null), "launch option updates live launcher state");
+            teleport.Checked = false;
+            Capture(settings, "settings-panel.png");
+            settings.GetType().GetMethod("ApplyColorPreset", Flags).Invoke(settings, new object[] { "#397FFF", "#23D6AF", "#0B1720", "#152936" });
+            var theme = assembly.GetType("RBX_Alt_Manager.Forms.ThemeEditor");
+            Check(((Color)theme.GetField("AccentPrimary").GetValue(null)).ToArgb() == ColorTranslator.FromHtml("#397FFF").ToArgb(), "custom palette applied to live interface");
+            Check(File.ReadAllText("RAMTheme.ini").Contains("AccentPrimary=#397FFF"), "custom palette persists to theme file");
+            var profileMethod = settings.GetType().GetMethod("ApplyVisualProfile", Flags);
+            foreach (string profile in new[] { "matrix", "nyan", "aurora", "sunset", "manga", "sakura", "anime-night", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "futuristic" })
+            {
+                profileMethod.Invoke(settings, new object[] { profile });
+                Check((string)theme.GetField("VisualProfile").GetValue(null) == profile, "profile switches: " + profile);
+                Capture(main, "profile-" + profile + ".png");
+            }
+            Check(File.Exists("Themes/kaneki_manga.png"), "illustrated theme assets are bundled");
+            TabPage portraitColors = null;
+            foreach (TabPage page in tabs.TabPages) if (page.Text == "Цвета") portraitColors = page;
+            tabs.SelectedTab = portraitColors;
+            main.Location = new Point(Screen.PrimaryScreen.WorkingArea.Left, Screen.PrimaryScreen.WorkingArea.Top);
+            settings.Location = new Point(Screen.PrimaryScreen.WorkingArea.Right - settings.Width, Screen.PrimaryScreen.WorkingArea.Top + 40);
+            main.BringToFront();
+            main.Activate();
+            settings.Activate();
+            theme.GetField("AnimationsEnabled").SetValue(null, true);
+            theme.GetField("CharacterMotion").SetValue(null, 75);
+            var portraitHashes = new System.Collections.Generic.HashSet<string>();
+            foreach (string profile in new[] { "manga", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend" })
+            {
+                profileMethod.Invoke(settings, new object[] { profile });
+                using (var first = PortraitFrame(assembly, profile, .4))
+                using (var second = PortraitFrame(assembly, profile, 2.6))
+                using (var stream = new MemoryStream())
+                {
+                    int populated = 0, changed = 0, leftChanged = 0;
+                    for (int y = 0; y < first.Height; y += 2)
+                        for (int x = 0; x < first.Width; x += 2)
+                        {
+                            if (first.GetPixel(x, y).A > 0) populated++;
+                            if (first.GetPixel(x, y) != second.GetPixel(x, y)) { changed++; if (x < first.Width / 2) leftChanged++; }
+                        }
+                    Check(populated > 80000, "portrait asset loads: " + profile);
+                    Check(changed > 1000 && leftChanged == 0, "character itself moves with anchored background: " + profile);
+                    first.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    Check(portraitHashes.Add(Convert.ToBase64String(stream.ToArray())), "distinct portrait artwork: " + profile);
+                    first.Save("portrait-" + profile + ".png");
+                }
+                int mainPaints = 0, settingsPaints = 0;
+                PaintEventHandler mainPaint = (sender, args) => mainPaints++;
+                PaintEventHandler panelPaint = (sender, args) => settingsPaints++;
+                main.Paint += mainPaint;
+                int invalidations = 0;
+                InvalidateEventHandler invalidation = (sender, args) => invalidations++;
+                main.Invalidated += invalidation;
+                var panel = portraitColors.Controls[0];
+                panel.Paint += panelPaint;
+                Pump(450);
+                main.Invalidated -= invalidation;
+                main.Paint -= mainPaint;
+                panel.Paint -= panelPaint;
+                Check(invalidations >= 3 && settingsPaints >= 3, "main redraw timer continues alongside settings animation: " + profile);
+                Capture(settings, "settings-profile-" + profile + ".png");
+            }
+            profileMethod.Invoke(settings, new object[] { "kaneki_manga" });
+            theme.GetField("AnimationsEnabled").SetValue(null, true);
+            string moving = BackgroundFrame(assembly);
+            System.Threading.Thread.Sleep(150);
+            Check(moving != BackgroundFrame(assembly), "portrait breathing and particles animate");
+            theme.GetField("AnimationsEnabled").SetValue(null, false);
+            string frozen = BackgroundFrame(assembly);
+            System.Threading.Thread.Sleep(150);
+            Check(frozen == BackgroundFrame(assembly), "animation switch freezes theme background");
+            theme.GetField("AnimationsEnabled").SetValue(null, true);
+            profileMethod.Invoke(settings, new object[] { "futuristic" });
+            Capture(settings, "settings-panel.png");
+            TabPage colors = null;
+            foreach (TabPage page in tabs.TabPages) if (page.Text == "Цвета") colors = page;
+            Check(colors != null, "color customization page exists");
+            tabs.SelectedTab = colors;
+            Application.DoEvents();
+            Capture(settings, "colors-panel.png");
+            settings.Hide();
+            var accountType = assembly.GetType("RBX_Alt_Manager.Account");
+            var account = Activator.CreateInstance(accountType);
+            accountType.GetField("Username").SetValue(account, "UiTestAccount");
+            accountType.GetField("UserID").SetValue(account, 123L);
+            var list = (IList)type.GetField("AccountsList").GetValue(null);
+            list.Add(account);
+            var view = Field(main, "AccountsView");
+            view.GetType().GetMethod("SetObjects", new[] { typeof(IEnumerable) }).Invoke(view, new object[] { list });
+            view.GetType().GetProperty("SelectedObject").SetValue(view, account, null);
+            Application.DoEvents();
+            advanced.Show(main);
+            ((TabControl)advanced.Controls[0]).SelectedIndex = 1;
+            Application.DoEvents();
+            ((TextBox)Field(main, "Alias")).Text = "Проверка кнопки";
+            ((Button)Field(main, "SetAlias")).PerformClick();
+            Check((string)accountType.GetProperty("Alias").GetValue(account, null) == "Проверка кнопки", "save alias button executes handler");
+            ((RichTextBox)Field(main, "DescriptionBox")).Text = "Тест заметки";
+            ((Button)Field(main, "SetDescription")).PerformClick();
+            Check((string)accountType.GetProperty("Description").GetValue(account, null) == "Тест заметки", "save notes button executes handler");
+            var stored = type.GetMethod("StoreBrowserSession", Flags).Invoke(main, new object[] { "SYNTHETIC_TEST_SESSION", 123L, "ValidatedNickname", "Display nickname" });
+            Check(list.Count == 1, "browser import updates existing user instead of duplicating");
+            Check((string)accountType.GetProperty("Alias").GetValue(account, null) == "Проверка кнопки", "browser import preserves alias");
+            Check((string)accountType.GetProperty("Description").GetValue(account, null) == "Тест заметки", "browser import preserves notes");
+            Check((string)stored.GetType().GetProperty("username").GetValue(stored, null) == "ValidatedNickname", "browser response contains verified nickname");
+            var info = (System.Diagnostics.ProcessStartInfo)assembly.GetType("RBX_Alt_Manager.Classes.SystemBrowser").GetMethod("CreateStartInfo").Invoke(null, new object[] { "https://www.roblox.com/login" });
+            Check(info.UseShellExecute && info.FileName == "https://www.roblox.com/login", "login opens Windows default browser");
+            Check(!((Control)Field(main, "JoinDiscord")).Visible, "Discord button removed");
+            var tooltip = (ToolTip)Field(main, "SaveTooltip");
+            Check(tooltip.GetToolTip((Control)Field(main, "DonateButton")) == "бог этого мира surgee", "author tooltip uses requested text");
+            type.GetMethod("CreateFolderCore", Flags).Invoke(main, new object[] { "UI Folder A" });
+            Check(File.ReadAllText("AccountFolders.json").Contains("UI Folder A"), "empty account folder persists");
+            var folders = (ComboBox)Field(main, "folderSelector");
+            folders.SelectedIndex = 0;
+            view.GetType().GetProperty("SelectedObject").SetValue(view, account, null);
+            type.GetMethod("MoveSelectedToFolder", Flags).Invoke(main, new object[] { "UI Folder A" });
+            Check((string)accountType.GetProperty("Group").GetValue(account, null) == "UI Folder A", "selected account moves to folder");
+            type.GetMethod("RenameFolderCore", Flags).Invoke(main, new object[] { "UI Folder A", "UI Folder B" });
+            Check((string)accountType.GetProperty("Group").GetValue(account, null) == "UI Folder B", "renaming folder updates its accounts");
+            type.GetMethod("DeleteFolderCore", Flags).Invoke(main, new object[] { "UI Folder B" });
+            Check(list.Count == 1 && (string)accountType.GetProperty("Group").GetValue(account, null) == "Default", "deleting folder preserves its accounts");
+            type.GetMethod("ShowRoflMode", Flags).Invoke(main, null);
+            var rofl = (Form)Field(main, "roflWindow");
+            Application.DoEvents();
+            Check(rofl.Visible && !rofl.TopMost, "ROFL opens an ordinary closable joke window");
+            Check(rofl.FormBorderStyle == FormBorderStyle.None && rofl.Bounds == Screen.FromControl(main).Bounds, "ROFL covers the owner monitor in fullscreen");
+            bool hasFooter = false;
+            foreach (Control child in rofl.Controls) if (child.Text.StartsWith("Это розыгрыш")) hasFooter = true;
+            Check(!hasFooter, "ROFL footer removed");
+            var unlock = (Button)Field(rofl, "unlock");
+            Rectangle oldUnlock = unlock.Bounds;
+            rofl.GetType().GetMethod("EvadeAt", Flags).Invoke(rofl, new object[] { new Point(oldUnlock.Left + oldUnlock.Width / 2, oldUnlock.Top + oldUnlock.Height / 2), true });
+            Check(unlock.Bounds != oldUnlock && rofl.ClientRectangle.Contains(unlock.Bounds), "unlock button evades cursor and stays on screen");
+            unlock.PerformClick();
+            Check(rofl.Visible, "fake unlock button does not close ROFL screen");
+            rofl.GetType().GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(rofl, new object[] { new KeyEventArgs(Keys.Escape) });
+            Check(rofl.IsDisposed || !rofl.Visible, "Escape closes the joke window");
+            Check(tabs.Font.FontFamily.Name.Contains("Segoe UI"), "settings tabs use readable Segoe font");
+            type.GetMethod("ShowPlacePicker", Flags).Invoke(main, null);
+            var picker = (ToolStripDropDown)Field(main, "placePicker");
+            Check(picker.Visible, "Place ID click opens game dropdown");
+            var resultType = assembly.GetType("RBX_Alt_Manager.Classes.PlaceResult");
+            var result = Activator.CreateInstance(resultType);
+            resultType.GetProperty("PlaceId").SetValue(result, 987654321L, null);
+            resultType.GetProperty("Name").SetValue(result, "Проверка выбора игры", null);
+            Check(!((Control)Field(main, "HistoryIcon")).Visible, "history clock removed from main window");
+            var bookmarks = assembly.GetType("RBX_Alt_Manager.Classes.PlaceBookmarks");
+            if ((bool)bookmarks.GetMethod("Contains").Invoke(null, new object[] { 987654321L })) bookmarks.GetMethod("Toggle").Invoke(null, new object[] { result, null });
+            Check((bool)bookmarks.GetMethod("Toggle").Invoke(null, new object[] { result, null }), "game can be added to favorites");
+            bookmarks.GetField("items", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, null);
+            Check((bool)bookmarks.GetMethod("Contains").Invoke(null, new object[] { 987654321L }), "favorite survives file reload");
+            Check((bool)bookmarks.GetMethod("Toggle").Invoke(null, new object[] { result, null }), "game can be removed from favorites");
+            var results = (ListBox)Field(picker, "list");
+            results.Items.Add(result);
+            results.SelectedItem = result;
+            picker.GetType().GetMethod("Choose", Flags).Invoke(picker, null);
+            Check(((TextBox)Field(main, "PlaceID")).Text == "987654321", "choosing game fills exact Place ID");
+            Check(((Label)Field(main, "CurrentPlace")).Text == "Проверка выбора игры", "choosing game updates its name");
+            ((System.Windows.Forms.Timer)Field(main, "PlaceTimer")).Stop();
+            main.ClientSize = new Size(1060, 600);
+            Application.DoEvents();
+            Check(((Control)Field(main, "advancedButton")).Bottom < main.ClientSize.Height, "compact layout fits minimum window");
+            Capture(main, "compact-interface.png");
+            main.Hide();
+            main.Dispose();
+        }
+        catch (Exception e) { File.AppendAllText("ui-checks.txt", "FAIL " + e); Environment.ExitCode = 1; }
+    }
+}

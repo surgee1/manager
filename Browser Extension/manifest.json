@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Surgee • Roblox Manager",
+  "version": "0.3.0",
+  "description": "Добавляет открытый аккаунт Roblox в твой локальный менеджер по нажатию кнопки.",
+  "permissions": ["cookies", "storage", "activeTab"],
+  "host_permissions": ["https://www.roblox.com/*", "https://roblox.com/*", "http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "Surgee Roblox Manager", "default_popup": "popup.html" }
+}

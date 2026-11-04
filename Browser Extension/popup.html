@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Surgee Manager</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <p class="eyebrow">SURGEE / ROBLOX</p>
+  <h1>Твой аккаунт.<br>В твоём менеджере.</h1>
+  <p class="intro">Открой свой аккаунт Roblox в активной вкладке и добавь его одним нажатием.</p>
+  <button id="import" class="primary">Добавить в менеджер</button>
+  <p id="status" role="status" aria-live="polite">Первый запуск? Подключи менеджер ниже.</p>
+  <details id="pairing"><summary>Подключение к менеджеру</summary>
+    <label for="code">Код из Настройки → Расширение</label>
+    <input id="code" type="password" autocomplete="off" spellcheck="false" placeholder="Вставь код подключения">
+    <button id="connect">Сохранить и проверить</button>
+  </details>
+  <details id="updates"><summary>Обновления · <span id="version"></span></summary>
+    <p class="intro">Проверка новых версий через подключённый менеджер.</p>
+    <button id="check-updates">Проверить обновления</button>
+    <p id="update-status" role="status" class="intro"></p>
+    <a id="extension-download" hidden target="_blank" rel="noreferrer">Скачать ZIP расширения</a>
+    <p class="intro">Распакуй новую версию поверх файлов установленного расширения, затем нажми кнопку ниже. Данные подключения сохранятся.</p>
+    <button id="reload-extension">Перезагрузить расширение</button>
+  </details>
+  <footer>Cookie передаётся только локальному менеджеру на этом компьютере по твоему нажатию.</footer>
+  <script src="popup.js" type="module"></script>
+</body></html>
