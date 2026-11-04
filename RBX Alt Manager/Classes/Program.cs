@@ -77,6 +77,7 @@ namespace RBX_Alt_Manager
                 Application.Run(preview);
                 return;
             }
+            Classes.StartupDirectory.Initialize(AppDomain.CurrentDomain.BaseDirectory);
             int Stupid = 1337;
 
             try

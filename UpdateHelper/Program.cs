@@ -18,15 +18,7 @@ internal static class UpdateProgram
             string destination = Path.GetFullPath(args[1]), stage = Path.GetFullPath(args[2]);
             string executable = Path.Combine(destination, "Roblox Account Manager.exe");
             if (!File.Exists(executable)) throw new FileNotFoundException("Папка менеджера не найдена.");
-            try
-            {
-                using (var parent = Process.GetProcessById(pid))
-                {
-                    if (!string.Equals(parent.MainModule.FileName, executable, StringComparison.OrdinalIgnoreCase)) throw new IOException("Путь менеджера не совпал.");
-                    if (!parent.WaitForExit(30000)) throw new IOException("Менеджер не закрылся. Обновление отменено.");
-                }
-            }
-            catch (ArgumentException) { /* The manager has already closed. */ }
+            UpdateParentProcess.WaitForExit(pid, executable);
             var files = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (string line in File.ReadAllLines(Path.Combine(stage, "update-plan.tsv")))
             {

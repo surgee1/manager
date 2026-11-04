@@ -22,18 +22,19 @@ namespace RBX_Alt_Manager.Forms
                 presets.Controls.Add(button);
             }
             Preset("Nyan Cat", "nyan");
-            Preset("Токийский гуль", "kaneki");
-            Preset("Наруто", "naruto");
-            Preset("Магическая битва", "gojo");
-            Preset("Канэки — манга", "kaneki_manga");
-            Preset("Распятие шести", "uruma");
-            Preset("Жестокий хэппи энд", "happyend");
-            Preset("Gangsta. — Николас", "gangsta");
-            Preset("Re:Zero — Субару", "subaru");
-            Preset("Алекс Бенедетто", "alex");
-            Preset("HxH — Курапика", "kurapika");
-            Preset("Милый во Франксе", "zerotwo");
-            Preset("Убийца Акаме", "akame");
+            Preset("Tokyo Ghoul", "kaneki");
+            Preset("Naruto", "naruto");
+            Preset("Jujutsu Kaisen", "gojo");
+            Preset("Tokyo Ghoul: Manga", "kaneki_manga");
+            Preset("Juujika no Rokunin", "uruma");
+            Preset("Massacre Happy End", "happyend");
+            Preset("Gangsta.", "gangsta");
+            Preset("Re:Zero", "subaru");
+            Preset("Gangsta. II", "alex");
+            Preset("Hunter x Hunter", "kurapika");
+            Preset("Darling in the Franxx", "zerotwo");
+            Preset("Akame ga Kill!", "akame");
+            Preset("Death Note", "deathnote");
             var motion = new CheckBox { Text = "Анимация фона и переливов", AutoSize = true,
                 Checked = ThemeEditor.AnimationsEnabled, Margin = new Padding(0, 12, 0, 12) };
             motion.CheckedChanged += (sender, e) => { ThemeEditor.AnimationsEnabled = motion.Checked; SaveAppearance(); };
@@ -120,6 +121,7 @@ namespace RBX_Alt_Manager.Forms
                 case "kurapika": ApplyColorPreset("#D9B35E", "#CB3F58", "#0C111D", "#192337"); break;
                 case "zerotwo": ApplyColorPreset("#ED8DB8", "#62CCD5", "#101220", "#24243B"); break;
                 case "akame": ApplyColorPreset("#D3475E", "#B8C1D0", "#100D14", "#251B28"); break;
+                case "deathnote": ApplyColorPreset("#B8C6DC", "#738CB6", "#0D1119", "#1C2430"); break;
                 default: ApplyColorPreset("#AE36DB", "#20A5CF", "#111521", "#191D2A"); break;
             }
         }

@@ -8,6 +8,7 @@
     <Compile Include="BrowserBridgeTests.cs"/>
     <Compile Include="ExtensionUpdateTests.cs"/>
     <Compile Include="AccountImportTests.cs"/>
+    <Compile Include="StartupUpdateTests.cs"/>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 </Project>

@@ -28,8 +28,9 @@ class RegressionTests
         if (name != null) reply.Headers.TryAddWithoutValidation(name, value);
         return reply;
     }
-    static int Main()
+    static int Main(string[] arguments)
     {
+        if (arguments.Length == 2 && arguments[0] == "--process-probe") { Thread.Sleep(int.Parse(arguments[1])); return 0; }
         try { Run().GetAwaiter().GetResult(); Console.WriteLine("Passed " + checks + " regression checks."); return 0; }
         catch (Exception ex) { Console.Error.WriteLine("FAIL " + ex); return 1; }
     }
@@ -39,6 +40,7 @@ class RegressionTests
         BrowserBridgeTests.Run(Check, Reject);
         ExtensionUpdateTests.Run(Check, Reject);
         AccountImportTests.Run(Check, Reject);
+        StartupUpdateTests.Run(Check, Reject);
         var fake = new Fake { Reply = (request, call) =>
         {
             Check(request.RequestUri.Host == "auth.roblox.com", "ticket sent only to Roblox auth");

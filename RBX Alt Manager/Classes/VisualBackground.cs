@@ -49,6 +49,7 @@ namespace RBX_Alt_Manager.Classes
                 case "kurapika":
                 case "zerotwo":
                 case "akame":
+                case "deathnote":
                     Portrait(g, size, time, ThemeEditor.VisualProfile);
                     Stars(g, size, time);
                     break;

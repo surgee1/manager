@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Windows.Forms"/>
     <Compile Include="Program.cs"/><Compile Include="..\RBX Alt Manager\Classes\FileUpdateTransaction.cs"><Link>FileUpdateTransaction.cs</Link></Compile>
+    <Compile Include="..\RBX Alt Manager\Classes\UpdateParentProcess.cs"><Link>UpdateParentProcess.cs</Link></Compile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 </Project>
