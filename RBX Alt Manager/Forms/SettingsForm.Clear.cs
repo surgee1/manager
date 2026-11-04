@@ -86,6 +86,7 @@ namespace RBX_Alt_Manager.Forms
             var animation = new Timer(components) { Interval = 33 };
             animation.Tick += (sender, e) =>
             {
+                animation.Interval = AnimationCadence.Interval;
                 if (!Visible || WindowState == FormWindowState.Minimized || !ThemeEditor.AnimationsEnabled) return;
                 SettingsTC.Invalidate();
                 if (SettingsTC.SelectedTab != null)
@@ -95,12 +96,17 @@ namespace RBX_Alt_Manager.Forms
 
             var main = SettingsPage("Основные");
             Section(main, "ПРИЛОЖЕНИЕ");
+            var economy = new CheckBox { Checked = !AccountManager.General.Exists("AnimationEconomy") || AccountManager.General.Get<bool>("AnimationEconomy") };
+            Setting(main, economy, "Экономить ресурсы в фоне", "Когда работаешь в другом приложении, анимация менеджера обновляется реже. В активном менеджере и его настройках движение остаётся плавным.");
+            economy.CheckedChanged += (sender, e) => { AccountManager.General.Set("AnimationEconomy", economy.Checked.ToString()); AccountManager.IniSettings.Save("RAMSettings.ini"); };
+            Description(main, "Быстрые действия: Ctrl+K — команды; Ctrl+F — поиск; Ctrl+Shift+A — выбрать видимые аккаунты; Ctrl+, — настройки.");
             Setting(main, StartOnPCStartup, "Открывать менеджер при запуске Windows", "Добавляет менеджер в автозагрузку текущего пользователя.");
             Setting(main, PresenceCB, "Показывать статус аккаунтов", "Отображает, находится ли аккаунт на сайте или в игре.");
             SettingRow(main, PresenceUpdateLabel, PresenceUpdateRateNum, "Обновлять статус каждые, мин.", "Частота запроса состояния аккаунтов.");
             SettingRow(main, MRGLabel, MaxRecentGamesNumber, "Количество недавних игр", "Сколько игр сохранять в истории для быстрого открытия.");
 
             var accounts = SettingsPage("Аккаунты");
+            InitializeBackupSettings(accounts);
             Section(accounts, "СЕССИИ И ДАННЫЕ");
             Setting(accounts, SavePasswordCB, "Сохранять пароли при ручном добавлении", "Расширение добавляет сессию и ник; пароль Roblox оно не читает.");
             Setting(accounts, DisableAgingAlertCB, "Скрывать отметки о долгом простое", "Отключает жёлтые и красные индикаторы у аккаунтов, которыми давно не пользовались.");

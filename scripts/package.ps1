@@ -1,4 +1,4 @@
-param([string]$Destination = '', [string]$Version = '6.0.2')
+param([string]$Destination = '', [string]$Version = '6.1.0')
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repoRoot = Split-Path $PSScriptRoot -Parent
@@ -37,8 +37,10 @@ foreach ($name in $allowedRoots) {
   $source = Join-Path $repoRoot $name
   if (!(Test-Path $source)) { continue }
   Get-ChildItem -LiteralPath $source -File -Recurse -Force | Where-Object {
-    $_.FullName -notmatch '[\\/](obj|bin|build|packages|\.vs)[\\/]' -and
+    $_.FullName -notmatch '[\\/](obj|bin|build|packages|Backups|\.vs)[\\/]' -and
     $_.Name -notmatch '(?i)^(AccountData|RAMSettings|RAMTheme|RecentGames|FavoritePlaces|AccountFolders)\.' -and
+    $_.Name -notlike 'LaunchProfiles.json*' -and
+    $_.Name -notlike '*.surgee-backup.json*' -and
     $_.Extension -notin @('.user', '.pdb', '.log', '.cache')
   } | ForEach-Object {
     $relative = $_.FullName.Substring($repoRoot.Length + 1)

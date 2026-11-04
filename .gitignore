@@ -344,3 +344,6 @@ AccountFolders.json*
 *.pem
 *.pfx
 *.key
+Backups/
+*.surgee-backup.json*
+LaunchProfiles.json*

@@ -93,7 +93,7 @@ namespace RBX_Alt_Manager
             MinimumSize = SizeFromClientSize(new Size(Ui(1060), Ui(600)));
             ClientSize = new Size(Ui(1120), Ui(640));
             modernTitle = ModernLabel("Твои аккаунты. Твой мир.", 20, true);
-            modernSubtitle = ModernLabel("ROBLOX  /  ЛИЧНЫЙ ЦЕНТР УПРАВЛЕНИЯ", 9, false);
+            modernSubtitle = ModernLabel("ROBLOX  /  ЛИЧНЫЙ ЦЕНТР УПРАВЛЕНИЯ    ·    Ctrl+K — команды", 9, false);
             accountsHeading = ModernLabel("АККАУНТЫ", 10, true);
             launchHeading = ModernLabel("ПОДКЛЮЧЕНИЕ К ИГРЕ", 10, true);
             aliasHeading = ModernLabel("Псевдоним аккаунта", 10, false);
@@ -151,6 +151,7 @@ namespace RBX_Alt_Manager
             Username.Width = Ui(170);
             AccountAlias.Width = Ui(140);
             Description.Width = Ui(210);
+            Description.FillsFreeSpace = true;
 
             SaveTooltip.InitialDelay = 400;
             SaveTooltip.ReshowDelay = 100;
@@ -203,7 +204,9 @@ namespace RBX_Alt_Manager
             FormClosed += (sender, e) => placePicker?.Dispose();
             InitializeAdvancedWindow();
             InitializeAccountFolders();
+            InitializeShortcuts();
             InitializeLaunchInputSaving();
+            InitializePortableBackups();
             roflButton = new NeonButton { Text = "ROFL MODE", Font = Font, Cursor = Cursors.Hand, AccessibleName = "Шуточный экран" };
             roflButton.Click += (sender, e) => ShowRoflMode();
             Controls.Add(roflButton);
@@ -211,6 +214,7 @@ namespace RBX_Alt_Manager
             var glowTimer = new Timer(components) { Interval = 33 };
             glowTimer.Tick += (sender, args) =>
             {
+                glowTimer.Interval = AnimationCadence.Interval;
                 if (WindowState == FormWindowState.Minimized || !Visible || !ThemeEditor.AnimationsEnabled) return;
                 // Settings can sit beside the manager: both visible backgrounds must keep moving.
                 if (placePicker?.Visible == true || roflWindow?.Visible == true) return;
@@ -259,7 +263,11 @@ namespace RBX_Alt_Manager
             Put(folderCreate, right - 215, 108, 142, 34);
             Put(folderMenu, right - 66, 108, 42, 34);
             Put(folderSelector, 40, 154, leftWidth - 32, 32);
-            Put(AccountsView, 40, 198, leftWidth - 32, h - 348);
+            Put(accountSearch, 45, 203, leftWidth - 42, 26);
+            Put(AccountsView, 40, 244, leftWidth - 32, h - 394);
+            Username.Width = Ui((leftWidth - 36) * .34f);
+            AccountAlias.Width = Ui((leftWidth - 36) * .28f);
+            Description.Width = Math.Max(Ui(100), AccountsView.Width - Username.Width - AccountAlias.Width - SystemInformation.VerticalScrollBarWidth - Ui(4));
             Put(Add, 40, h - 126, 134, 38);
             Put(Remove, 184, h - 126, 104, 38);
             Put(OpenBrowser, 300, h - 126, 138, 38);
@@ -267,7 +275,8 @@ namespace RBX_Alt_Manager
             Put(JoinDiscord, 244, h - 76, 88, 30);
             Put(DonateButton, 244, h - 76, 96, 30);
             Put(roflButton, 350, h - 76, 136, 30);
-            Put(launchHeading, right, 112, 420, 26);
+            Put(launchHeading, right, 112, 275, 26);
+            Put(profilesButton, right + 290, 108, 150, 34);
             Put(CurrentPlace, right, 145, 390, 27);
             Put(HistoryIcon, w - 62, 148, 22, 22);
             Put(LabelPlaceID, right, 198, 400, 24);
@@ -294,6 +303,14 @@ namespace RBX_Alt_Manager
                 label.ForeColor = ForeColor;
             }
             modernSubtitle.ForeColor = ThemeEditor.LabelForeground;
+            if (folderSelector != null) { folderSelector.BackColor = ThemeEditor.TextBoxesBackground; folderSelector.ForeColor = ThemeEditor.TextBoxesForeground; }
+            AccountsView.HeaderUsesThemes = false;
+            var headers = new BrightIdeasSoftware.HeaderFormatStyle();
+            foreach (var style in new[] { headers.Normal, headers.Hot, headers.Pressed })
+            { style.BackColor = ThemeEditor.TextBoxesBackground; style.ForeColor = ThemeEditor.TextBoxesForeground; style.Font = Font; }
+            AccountsView.HeaderFormatStyle = headers;
+            AccountsView.HeaderMinimumHeight = Ui(30);
+            AccountsView.EmptyListMsgFont = Font;
             foreach (Button button in Controls.OfType<Button>())
             {
                 button.UseVisualStyleBackColor = false;

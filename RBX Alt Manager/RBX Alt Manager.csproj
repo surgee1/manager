@@ -462,6 +462,14 @@
       <DependentUpon>AccountFields.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\SettingsForm.Clear.cs" />
+    <Compile Include="Forms\SettingsForm.Backups.cs" />
+    <Compile Include="Classes\PortableBackups.cs" />
+    <Compile Include="Classes\LaunchProfiles.cs" />
+    <Compile Include="AccountManager.Shortcuts.cs" />
+    <Compile Include="AccountManager.Undo.cs" />
+    <Compile Include="Classes\AnimationCadence.cs" />
+    <Compile Include="Forms\QuickCommands.cs" />
+    <Compile Include="AccountManager.Backups.cs" />
     <Compile Include="Forms\SettingsForm.Colors.cs" />
     <Compile Include="Classes\PlaceBookmarks.cs" />
     <Compile Include="Classes\PlaceSearch.cs" />

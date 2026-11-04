@@ -246,6 +246,7 @@ namespace RBX_Alt_Manager
             AccountsView.InvokeIfRequired(() =>
             {
                 UpdateFolderSelector();
+                UpdateAccountSearchCaption();
                 AccountsView.BuildList();
                 if (AccountsView.ShowGroups) AccountsView.BuildGroups();
 
@@ -261,12 +262,13 @@ namespace RBX_Alt_Manager
 
         private void LoadAccounts(byte[] Hash = null)
         {
+            accountFileUnreadable = false;
             bool EnteredPassword = false;
             byte[] Data = File.Exists(SaveFilePath) ? File.ReadAllBytes(SaveFilePath) : Array.Empty<byte>();
 
             if (Data.Length > 0)
             {
-                var Header = new ReadOnlySpan<byte>(Data, 0, Cryptography.RAMHeader.Length);
+                var Header = new ReadOnlySpan<byte>(Data, 0, Math.Min(Data.Length, Cryptography.RAMHeader.Length));
 
                 if (Header.SequenceEqual(Cryptography.RAMHeader))
                 {
@@ -283,22 +285,23 @@ namespace RBX_Alt_Manager
                     }
 
                     Data = Cryptography.Decrypt(Data, Hash);
-                    AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(Data));
+                    AccountsList = ReadStoredAccounts(Encoding.UTF8.GetString(Data));
                     PasswordHash = new ReadOnlyMemory<byte>(ProtectedData.Protect(Hash, Array.Empty<byte>(), DataProtectionScope.CurrentUser));
 
                     PasswordPanel.Visible = false;
                     EnteredPassword = true;
                 }
                 else
-                    try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(ProtectedData.Unprotect(Data, Entropy, DataProtectionScope.CurrentUser))); }
-                    catch (CryptographicException e)
+                    try { AccountsList = ReadStoredAccounts(Encoding.UTF8.GetString(ProtectedData.Unprotect(Data, Entropy, DataProtectionScope.CurrentUser))); }
+                    catch (Exception e) when (e is CryptographicException || e is JsonException || e is InvalidDataException || e is FormatException || e is OverflowException)
                     {
-                        try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(Data)); }
+                        try { AccountsList = ReadStoredAccounts(Encoding.UTF8.GetString(Data)); }
                         catch
                         {
+                            accountFileUnreadable = true;
                             File.WriteAllBytes(SaveFilePath + ".bak", Data);
 
-                            MessageBox.Show($"Failed to load accounts!\nA backup file was created in case the data can be recovered.\n\n{e.Message}");
+                            MessageBox.Show("Не удалось прочитать файл аккаунтов. Сохранена копия исходного файла; автоматическая перезапись отключена.\n\nДля восстановления открой Настройки → Аккаунты → Восстановить из копии.", "Данные аккаунтов");
                         }
                     }
             }
@@ -307,7 +310,7 @@ namespace RBX_Alt_Manager
 
             if (!EnteredPassword && AccountsList.Count == 0 && File.Exists($"{SaveFilePath}.backup") && File.ReadAllBytes($"{SaveFilePath}.backup") is byte[] BackupData && BackupData.Length > 0)
             {
-                var Header = new ReadOnlySpan<byte>(BackupData, 0, Cryptography.RAMHeader.Length);
+                var Header = new ReadOnlySpan<byte>(BackupData, 0, Math.Min(BackupData.Length, Cryptography.RAMHeader.Length));
 
                 if (Header.SequenceEqual(Cryptography.RAMHeader) && MessageBox.Show("The existing backup file is password-locked, would you like to attempt to load it?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
@@ -331,11 +334,12 @@ namespace RBX_Alt_Manager
                     {
                         string Decoded = Encoding.UTF8.GetString(ProtectedData.Unprotect(BackupData, Entropy, DataProtectionScope.CurrentUser));
 
-                        AccountsList = JsonConvert.DeserializeObject<List<Account>>(Decoded);
+                        AccountsList = ReadStoredAccounts(Decoded);
+                        accountFileUnreadable = false;
                     }
                     catch
                     {
-                        try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(BackupData)); }
+                        try { AccountsList = ReadStoredAccounts(Encoding.UTF8.GetString(BackupData)); accountFileUnreadable = false; }
                         catch { MessageBox.Show("Failed to load backup file!", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Error); }
                     }
                 }
@@ -343,6 +347,10 @@ namespace RBX_Alt_Manager
 
             AccountsView.SetObjects(AccountsList);
             RefreshView();
+
+            portableBackupReady = !accountFileUnreadable;
+            if (accountFileUnreadable) BackupStatus = "Файл аккаунтов не прочитан. Автокопии приостановлены; восстанови переносимую копию.";
+            MarkBackupDirty();
 
             if (AccountsList.Count > 0)
             {
@@ -357,7 +365,8 @@ namespace RBX_Alt_Manager
         public static void SaveAccounts(bool BypassRateLimit = false, bool BypassCountCheck = false)
         {
             if (Program.PreviewMode) return;
-            if ((!BypassRateLimit && (DateTime.Now - startTime).Seconds < 2) || (!BypassCountCheck && AccountsList.Count == 0)) return;
+            if (Instance?.accountFileUnreadable == true) throw new IOException("Сохранение заблокировано: текущий файл аккаунтов не удалось прочитать. Восстанови переносимую копию.");
+            if ((!BypassRateLimit && (DateTime.Now - startTime).TotalSeconds < 2) || (!BypassCountCheck && AccountsList.Count == 0)) return;
 
             lock (saveLock)
             {
@@ -371,14 +380,15 @@ namespace RBX_Alt_Manager
                     File.WriteAllBytes(Backup.FullName, OldInfo);
 
                 if (!PasswordHash.IsEmpty)
-                    File.WriteAllBytes(SaveFilePath, Cryptography.Encrypt(SaveData, ProtectedData.Unprotect(PasswordHash.ToArray(), Array.Empty<byte>(), DataProtectionScope.CurrentUser)));
+                    PortableBackups.AtomicWrite(SaveFilePath, Cryptography.Encrypt(SaveData, ProtectedData.Unprotect(PasswordHash.ToArray(), Array.Empty<byte>(), DataProtectionScope.CurrentUser)));
                 else
                 {
                     if (File.Exists(Path.Combine(Environment.CurrentDirectory, "NoEncryption.IUnderstandTheRisks.iautamor")))
-                        File.WriteAllBytes(SaveFilePath, Encoding.UTF8.GetBytes(SaveData));
+                        PortableBackups.AtomicWrite(SaveFilePath, Encoding.UTF8.GetBytes(SaveData));
                     else
-                        File.WriteAllBytes(SaveFilePath, ProtectedData.Protect(Encoding.UTF8.GetBytes(SaveData), Entropy, DataProtectionScope.LocalMachine));
+                        PortableBackups.AtomicWrite(SaveFilePath, ProtectedData.Protect(Encoding.UTF8.GetBytes(SaveData), Entropy, DataProtectionScope.LocalMachine));
                 }
+                Instance?.MarkBackupDirty();
             }
         }
 
@@ -825,6 +835,7 @@ namespace RBX_Alt_Manager
             var PresenceTimer = new System.Timers.Timer(60000 * 2) { Enabled = true };
             PresenceTimer.Elapsed += (s, e) => AccountsView.InvokeIfRequired(async () => await UpdatePresence());
             StartBrowserBridge();
+            if (!PasswordPanel.Visible && !accountFileUnreadable) { portableBackupReady = true; MarkBackupDirty(); }
         }
 
         public void ApplyTheme()
@@ -1187,33 +1198,11 @@ namespace RBX_Alt_Manager
 
         private void Remove_Click(object sender, EventArgs e)
         {
-            if (AccountsView.SelectedObjects.Count > 1)
-            {
-                DialogResult result = MessageBox.Show($"Are you sure you want to remove {AccountsView.SelectedObjects.Count} accounts?", "Remove Accounts", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                if (result == DialogResult.Yes)
-                {
-                    foreach (Account acc in AccountsView.SelectedObjects)
-                        AccountsList.Remove(acc);
-
-                    RefreshView();
-
-                    SaveAccounts();
-                }
-            }
-            else if (SelectedAccount != null)
-            {
-                DialogResult result = MessageBox.Show($"Are you sure you want to remove {SelectedAccount.Username}?", "Remove Account", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                if (result == DialogResult.Yes)
-                {
-                    AccountsList.RemoveAll(x => x == SelectedAccount);
-
-                    RefreshView();
-
-                    SaveAccounts();
-                }
-            }
+            var selected = AccountsView.SelectedObjects.Cast<Account>().ToList();
+            if (selected.Count == 0) return;
+            if (MessageBox.Show(this, "Удалить выбранные аккаунты: " + selected.Count + "?\n\nПеред удалением создадим копию в Backups. Вернуть записи можно через Ctrl+K → Вернуть удалённые аккаунты.", "Удаление аккаунтов", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            try { RemoveAccountsCore(selected); }
+            catch { MessageBox.Show(this, "Удаление не выполнено. Не удалось создать копию или сохранить базу. Проверь доступ к папке менеджера.", "Данные сохранены"); }
         }
 
         private void Add_Click(object sender, EventArgs e) => SystemBrowser.Open("https://www.roblox.com/login");
@@ -1302,13 +1291,11 @@ namespace RBX_Alt_Manager
 
         private void AccountsView_SelectedIndexChanged(object sender, EventArgs e)
         {
+            SelectedAccounts = AccountsView.SelectedObjects.Cast<Account>().ToList();
             if (AccountsView.SelectedItems.Count != 1)
             {
                 SelectedAccount = null;
                 SelectedAccountItem = null;
-
-                if (AccountsView.SelectedObjects.Count > 1)
-                    SelectedAccounts = AccountsView.SelectedObjects.Cast<Account>().ToList();
 
                 return;
             }

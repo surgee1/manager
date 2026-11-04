@@ -89,6 +89,47 @@ namespace RBX_Alt_Manager
 
         public Account() { }
 
+        internal static Account FromPortableRecord(JObject record)
+        {
+            string Text(string key, int limit)
+            {
+                var token = record[key];
+                if (token == null || token.Type == JTokenType.Null) return "";
+                if (token.Type != JTokenType.String || ((string)token).Length > limit)
+                    throw new InvalidDataException("Неверное поле аккаунта: " + key);
+                return (string)token;
+            }
+            var account = new Account {
+                Username = Text("Username", 100), SecurityToken = Text("SecurityToken", 20000),
+                _Alias = Text("Alias", 50), _Description = Text("Description", 5000), _Password = Text("Password", 5000),
+                Group = Text("Group", 1000), BrowserTrackerID = Text("BrowserTrackerID", 1000)
+            };
+            if (string.IsNullOrWhiteSpace(account.Username)) throw new InvalidDataException("В копии есть аккаунт без имени.");
+            if (string.IsNullOrWhiteSpace(account.Group)) account.Group = "Default";
+            if (record["UserID"] != null && record["UserID"].Type != JTokenType.Integer) throw new InvalidDataException("Неверный ID аккаунта.");
+            account.UserID = (long?)record["UserID"] ?? 0;
+            if (account.UserID < 0) throw new InvalidDataException("Неверный ID аккаунта.");
+            if (record["Valid"] != null && record["Valid"].Type != JTokenType.Boolean) throw new InvalidDataException("Неверный статус аккаунта.");
+            account.Valid = (bool?)record["Valid"] ?? false;
+            foreach (string key in new[] { "LastUse", "LastAttemptedRefresh" })
+            {
+                var token = record[key];
+                DateTime date = default;
+                if (token != null && token.Type != JTokenType.Null && !DateTime.TryParse((string)token,
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out date))
+                    throw new InvalidDataException("Неверная дата аккаунта.");
+                if (key == "LastUse") account.LastUse = date; else account.LastAttemptedRefresh = date;
+            }
+            if (record["Fields"] is JObject fields)
+                foreach (var field in fields.Properties())
+                {
+                    if (field.Value.Type != JTokenType.String && field.Value.Type != JTokenType.Null) throw new InvalidDataException("Неверное дополнительное поле аккаунта.");
+                    account.Fields[field.Name] = (string)field.Value;
+                }
+            else if (record["Fields"] != null && record["Fields"].Type != JTokenType.Null) throw new InvalidDataException("Неверные дополнительные поля аккаунта.");
+            return account;
+        }
+
         public Account(string Cookie, string AccountJSON = null)
         {
             SecurityToken = Cookie;

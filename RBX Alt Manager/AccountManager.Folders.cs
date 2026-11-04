@@ -34,7 +34,8 @@ namespace RBX_Alt_Manager
             try { if (File.Exists(FoldersPath)) savedFolders = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(FoldersPath)) ?? new List<string>(); }
             catch { folderLoadError = "Не удалось прочитать AccountFolders.json. Файл не будет перезаписан."; }
             folderSelector = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Font = Font,
-                DrawMode = DrawMode.OwnerDrawFixed, ItemHeight = Ui(24), AccessibleName = "Папка аккаунтов" };
+                DrawMode = DrawMode.OwnerDrawFixed, FlatStyle = FlatStyle.Flat, ItemHeight = Ui(24), AccessibleName = "Папка аккаунтов",
+                BackColor = ThemeEditor.TextBoxesBackground, ForeColor = ThemeEditor.TextBoxesForeground };
             folderSelector.DrawItem += (sender, e) =>
             {
                 using (var fill = new SolidBrush((e.State & DrawItemState.Selected) != 0 ? ThemeEditor.ButtonsBackground : ThemeEditor.TextBoxesBackground)) e.Graphics.FillRectangle(fill, e.Bounds);
@@ -42,7 +43,7 @@ namespace RBX_Alt_Manager
                     new Rectangle(e.Bounds.X + 8, e.Bounds.Y, e.Bounds.Width - 12, e.Bounds.Height), ThemeEditor.FormsForeground,
                     TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             };
-            folderSelector.SelectedIndexChanged += (sender, e) => { if (!updatingFolders) AccountsView.BuildList(); };
+            folderSelector.SelectedIndexChanged += (sender, e) => { if (!updatingFolders) { AccountsView.BuildList(); UpdateAccountSearchCaption(); } };
             folderCreate = new NeonButton { Text = "+ Папка", Font = Font, Cursor = Cursors.Hand, AccessibleName = "Создать папку" };
             folderCreate.Click += (sender, e) => PromptNewFolder(false);
             folderMenu = new NeonButton { Text = "⋯", Font = Font, Cursor = Cursors.Hand, AccessibleName = "Действия с папками" };
@@ -52,7 +53,7 @@ namespace RBX_Alt_Manager
             Hint(folderCreate, "Создать новую папку аккаунтов.");
             Hint(folderMenu, "Переместить выбранные аккаунты, переименовать или удалить папку.");
             AccountsView.UseFiltering = true;
-            AccountsView.ModelFilter = new ModelFilter(model => ActiveFolder == null || string.Equals(FolderName(((Account)model).Group), ActiveFolder, StringComparison.OrdinalIgnoreCase));
+            AccountsView.ModelFilter = new ModelFilter(model => (ActiveFolder == null || string.Equals(FolderName(((Account)model).Group), ActiveFolder, StringComparison.OrdinalIgnoreCase)) && AccountMatchesSearch((Account)model));
             moveToToolStripMenuItem.Click -= moveToToolStripMenuItem_Click;
             moveToToolStripMenuItem.Text = "Переместить в папку";
             moveToToolStripMenuItem.DropDownOpening += (sender, e) => FillMoveMenu(moveToToolStripMenuItem.DropDownItems);
@@ -86,6 +87,7 @@ namespace RBX_Alt_Manager
             File.WriteAllText(temp, JsonConvert.SerializeObject(savedFolders, Formatting.Indented));
             if (File.Exists(FoldersPath)) File.Replace(temp, FoldersPath, FoldersPath + ".backup");
             else File.Move(temp, FoldersPath);
+            MarkBackupDirty();
         }
         private void ValidateFolder(string name)
         {
@@ -143,6 +145,11 @@ namespace RBX_Alt_Manager
         private void ShowFolderMenu()
         {
             var menu = new ContextMenuStrip();
+            menu.Items.Add("Выбрать видимые  ·  Ctrl+Shift+A", null, (sender, e) => SelectVisibleAccounts());
+            menu.Items.Add("Снять выделение", null, (sender, e) => AccountsView.SelectedObjects = new List<Account>());
+            menu.Items.Add("Вернуть удалённые аккаунты", null, (sender, e) =>
+            { try { UndoLastRemoval(); } catch { MessageBox.Show(this, "Не удалось сохранить восстановленные записи."); } });
+            menu.Items.Add(new ToolStripSeparator());
             var move = new ToolStripMenuItem("Переместить выбранные") { Enabled = AccountsView.SelectedObjects.Count > 0 };
             FillMoveMenu(move.DropDownItems); menu.Items.Add(move);
             string name = ActiveFolder;

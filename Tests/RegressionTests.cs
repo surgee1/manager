@@ -35,6 +35,7 @@ class RegressionTests
     }
     static async Task Run()
     {
+        PortableBackupChecks();
         var fake = new Fake { Reply = (request, call) =>
         {
             Check(request.RequestUri.Host == "auth.roblox.com", "ticket sent only to Roblox auth");
@@ -132,5 +133,64 @@ class RegressionTests
         using (var zip = ZipFile.Open(archive, ZipArchiveMode.Update))
         { zip.GetEntry("Manager/SurgeeUpdater.exe").Delete(); using (var writer = new StreamWriter(zip.CreateEntry("Manager/SurgeeUpdater.exe").Open())) writer.Write("corrupted"); }
         Reject(() => ManagerUpdates.Stage(archive), "corrupted ZIP content rejected");
+    }
+    static void PortableBackupChecks()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "SurgeeBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var record = new JObject { ["Username"] = "SyntheticUser", ["UserID"] = 42, ["SecurityToken"] = "SYNTHETIC_SESSION",
+            ["Alias"] = "Основной", ["Description"] = "Заметки 🌙", ["Password"] = "SYNTHETIC_PASSWORD", ["Group"] = "Папка",
+            ["LastUse"] = "2026-11-04T00:00:00Z", ["Fields"] = new JObject { ["custom"] = "Тест" } };
+        var account = RBX_Alt_Manager.Account.FromPortableRecord(record);
+        var backup = PortableBackups.Capture(new[] { account }, new[] { "Папка", "Пустая папка" });
+        string export = Path.Combine(directory, "manual" + PortableBackups.Extension);
+        PortableBackups.Write(export, backup);
+        var read = PortableBackups.Read(export);
+        Check(read.Hash == backup.Hash && read.Accounts.Count == 1, "portable backup survives JSON roundtrip without Windows keys");
+        Check(System.Text.Encoding.UTF8.GetString(File.ReadAllBytes(export)).Contains("SYNTHETIC_SESSION"), "portable copy is readable independently of DPAPI");
+        int added;
+        var restored = PortableBackups.Merge(new RBX_Alt_Manager.Account[0], read, out added);
+        Check(added == 1 && restored[0].SecurityToken == "SYNTHETIC_SESSION" && restored[0].Password == "SYNTHETIC_PASSWORD", "restore on empty manager keeps session and saved password");
+        Check(restored[0].Alias == "Основной" && restored[0].Description == "Заметки 🌙" && restored[0].Fields["custom"] == "Тест" && restored[0].Group == "Папка", "restore preserves unicode metadata, custom fields and folder");
+        Check(read.Folders.Count == 2, "empty folders included in portable copy");
+        var freshRecord = (JObject)record.DeepClone(); freshRecord["SecurityToken"] = "FRESH_SESSION"; freshRecord["Username"] = "RenamedUser"; freshRecord["Alias"] = "";
+        var fresh = RBX_Alt_Manager.Account.FromPortableRecord(freshRecord);
+        var merged = PortableBackups.Merge(new[] { fresh }, read, out added);
+        Check(added == 0 && merged.Count == 1 && merged[0].SecurityToken == "FRESH_SESSION" && merged[0].Username == "RenamedUser" && merged[0].Alias == "Основной", "merge matches ID, preserves current session and fills missing metadata");
+        merged = PortableBackups.Merge(merged, read, out added);
+        Check(added == 0 && merged.Count == 1, "repeated restore is idempotent");
+        var noId = (JObject)record.DeepClone(); noId["UserID"] = 0; noId["Username"] = "syntheticuser";
+        Check(PortableBackups.Merge(new[] { RBX_Alt_Manager.Account.FromPortableRecord(noId) }, read, out added).Count == 1 && added == 0, "missing ID falls back to case-insensitive username");
+        string corrupted = Path.Combine(directory, "bad.json");
+        File.WriteAllText(corrupted, File.ReadAllText(export).Replace("SYNTHETIC_SESSION", "DAMAGED_SESSION"));
+        Reject(() => PortableBackups.Read(corrupted), "tampered or damaged portable copy rejected");
+        File.WriteAllText(corrupted, "{\"format\":"); Reject(() => PortableBackups.Read(corrupted), "truncated backup rejected");
+        File.WriteAllText(corrupted, "{\"format\":\"surgee-portable-backup\",\"version\":99}"); Reject(() => PortableBackups.Read(corrupted), "unknown backup version rejected");
+        File.WriteAllText(corrupted, "{\"format\":\"a\",\"format\":\"b\"}"); Reject(() => PortableBackups.Read(corrupted), "duplicate JSON keys rejected");
+        var badRecord = (JObject)record.DeepClone(); badRecord["Alias"] = new string('a', 51);
+        Reject(() => RBX_Alt_Manager.Account.FromPortableRecord(badRecord), "overlong metadata rejected before database mutation");
+        string prior = File.ReadAllText(export);
+        using (var locked = new FileStream(export, FileMode.Open, FileAccess.Read, FileShare.Read))
+            Reject(() => PortableBackups.Write(export, read), "locked export fails safely");
+        Check(File.ReadAllText(export) == prior, "failed atomic export leaves previous backup intact");
+        string automatic = PortableBackups.WriteAutomatic(directory, read, 3);
+        Check(PortableBackups.WriteAutomatic(directory, read, 3) == automatic, "unchanged same-day data does not create duplicate automatic copies");
+        File.WriteAllText(Path.Combine(directory, "auto-do-not-delete" + PortableBackups.Extension), "user file");
+        for (int i = 0; i < 5; i++)
+        {
+            var changed = PortableBackups.Capture(new[] { account }, new[] { "Папка", "Changed " + i });
+            PortableBackups.WriteAutomatic(directory, changed, 3);
+        }
+        Check(Directory.GetFiles(directory, "auto-*" + PortableBackups.Extension).Length == 4, "automatic retention keeps three generated copies and ignores unrelated files");
+        Check(File.Exists(export) && File.ReadAllText(export) == prior, "retention never deletes manual export");
+        var profile = new LaunchProfile { Name = "Вечер", PlaceId = "123456789", Server = "https://www.roblox.com/share?code=SYNTHETIC&type=Server", Folder = "Папка" };
+        string profilesPath = Path.Combine(directory, "LaunchProfiles.json");
+        LaunchProfiles.Save(profilesPath, new List<LaunchProfile> { profile });
+        var profiles = LaunchProfiles.Read(profilesPath);
+        Check(profiles.Count == 1 && profiles[0].Server == profile.Server && profiles[0].Folder == profile.Folder, "launch profile preserves full private URL and folder after reload");
+        Check(LaunchProfiles.Upsert(profiles, profile).Count == 1, "saving same launch profile replaces instead of duplicating");
+        var invalidProfile = new LaunchProfile { Name = "Invalid", PlaceId = "not-an-id" };
+        Reject(() => LaunchProfiles.Upsert(profiles, invalidProfile), "invalid launch profile rejected before saving");
+        Check(LaunchProfiles.Read(profilesPath).Count == 1, "invalid profile leaves saved profiles unchanged");
     }
 }
