@@ -23,6 +23,7 @@ namespace RBX_Alt_Manager.Forms
             InitializeBrowserExtensionSettings();
             InitializeColorSettings();
             InitializeUpdateSettings();
+            Classes.RoundedWindow.Attach(this);
         }
 
         private void SettingsForm_Load(object sender, EventArgs e)

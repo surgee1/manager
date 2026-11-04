@@ -208,6 +208,7 @@ namespace RBX_Alt_Manager
                 button.AccessibleName = button.Text;
                 button.AccessibleDescription = SaveTooltip.GetToolTip(button);
             }
+            RoundedWindow.Attach(this);
             Resize += (sender, args) => LayoutModernInterface();
             ResizeBegin += (sender, args) => { if (!modernInteractiveMove) { modernInteractiveMove = true; AnimationCadence.BeginInteraction(); } };
             ResizeEnd += (sender, args) => { if (modernInteractiveMove) { modernInteractiveMove = false; AnimationCadence.EndInteraction(); } InvalidateModernFrame(); };
@@ -430,6 +431,7 @@ namespace RBX_Alt_Manager
             advancedWindow = new Form { Text = "Дополнительные действия", ShowIcon = false,
                 StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(Ui(520), Ui(480)),
                 Font = Font, MinimizeBox = false, MaximizeBox = false, FormBorderStyle = FormBorderStyle.FixedDialog };
+            RoundedWindow.Attach(advancedWindow);
             var tabs = new NBTabControl { Dock = DockStyle.Fill, Padding = new Point(Ui(14), Ui(10)) };
             advancedWindow.Controls.Add(tabs);
             TabPage Page(string title)

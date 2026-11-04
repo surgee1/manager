@@ -386,6 +386,7 @@
     <Compile Include="Classes\Batch.cs" />
     <Compile Include="Classes\AccountBrowser.cs" />
     <Compile Include="Classes\ClientSettingsPatcher.cs" />
+    <Compile Include="Classes\RoundedWindow.cs" />
     <Compile Include="Classes\Cryptography.cs" />
     <Compile Include="Classes\MenuButton.cs">
       <SubType>Component</SubType>

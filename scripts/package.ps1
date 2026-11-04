@@ -1,4 +1,4 @@
-param([string]$Destination = '', [string]$Version = '6.2.3')
+param([string]$Destination = '', [string]$Version = '6.2.4')
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repoRoot = Split-Path $PSScriptRoot -Parent

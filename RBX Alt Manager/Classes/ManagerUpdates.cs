@@ -20,7 +20,7 @@ namespace RBX_Alt_Manager.Classes
     }
     internal static class ManagerUpdates
     {
-        internal const string Version = "6.2.3";
+        internal const string Version = "6.2.4";
         internal const string ExtensionVersion = "0.4.0";
         internal const string Repository = "https://github.com/surgee1/manager";
         private static readonly SemaphoreSlim Gate = new SemaphoreSlim(1);
