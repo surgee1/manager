@@ -26,14 +26,18 @@ jobs:
       - name: Cross-architecture updater checks
         shell: pwsh
         run: |
-          $compiler = "$env:WINDIR/Microsoft.NET/Framework64/v4.0.30319/csc.exe"
-          & $compiler /nologo /platform:x64 /out:build/Tests/ProcessProbe64.exe Tests/ProcessArchitectureSmoke.cs 'RBX Alt Manager/Classes/UpdateParentProcess.cs'
+          $compiler = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+          $probeSource = (Resolve-Path 'Tests\ProcessArchitectureSmoke.cs').Path
+          $waitSource = (Resolve-Path 'RBX Alt Manager\Classes\UpdateParentProcess.cs').Path
+          $probe = Join-Path $PWD 'build\Tests\ProcessProbe64.exe'
+          $waiter = Join-Path $PWD 'build\Tests\UpdateWait32.exe'
+          & $compiler /nologo /platform:x64 ("/out:" + $probe) $probeSource $waitSource
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $compiler /nologo /platform:x86 /out:build/Tests/UpdateWait32.exe Tests/ProcessArchitectureSmoke.cs 'RBX Alt Manager/Classes/UpdateParentProcess.cs'
+          & $compiler /nologo /platform:x86 ("/out:" + $waiter) $probeSource $waitSource
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & ./build/Tests/UpdateWait32.exe ./build/Tests/ProcessProbe64.exe 64
+          & $waiter $probe 64
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & ./build/Tests/ProcessProbe64.exe ./build/Tests/UpdateWait32.exe 32
+          & $probe $waiter 32
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Package release
         shell: pwsh
