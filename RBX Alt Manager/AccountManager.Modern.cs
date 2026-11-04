@@ -165,6 +165,8 @@ namespace RBX_Alt_Manager
             SaveTooltip.ToolTipTitle = "";
             Hint(ArgumentsB, "Параметры запуска Roblox: режим телепортации, старый способ запуска и версия клиента.");
             Hint(ConfigButton, "Настройки менеджера: запуск, браузер, отображение и дополнительные функции.");
+            Hint(AccountsView, "Двойной щелчок по аккаунту — открыть его в браузере через расширение. F2 — редактировать поле.");
+            AccountsView.ItemActivate += AccountsView_ItemActivate;
             Hint(JoinServer, "Запустить выбранные аккаунты в указанной игре или на сервере.");
             Hint(ServerList, "Поиск игр, список серверов и избранные игры.");
             Hint(PlaceID, "Числовой ID места Roblox. Можно вставить ссылку на игру.");

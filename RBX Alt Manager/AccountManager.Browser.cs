@@ -74,6 +74,13 @@ namespace RBX_Alt_Manager
             }));
             return completion.Task;
         }
+        private void AccountsView_ItemActivate(object sender, EventArgs e)
+        {
+            if (!(AccountsView.FocusedObject is Account account)) return;
+            AccountsView.SelectedObject = account;
+            OpenSelectedAccountBrowser();
+        }
+
         private void OpenSelectedAccountBrowser()
         {
             var selection = AccountsView.SelectedObjects.Cast<Account>().ToList();

@@ -852,7 +852,7 @@ namespace RBX_Alt_Manager
             }
 
             AccountsView.HeaderStyle = ThemeEditor.ShowHeaders ? (AccountsView.ShowGroups ? ColumnHeaderStyle.Nonclickable : ColumnHeaderStyle.Clickable) : ColumnHeaderStyle.None;
-            AccountsView.CellEditActivation = ObjectListView.CellEditActivateMode.DoubleClick;
+            AccountsView.CellEditActivation = ObjectListView.CellEditActivateMode.F2Only;
 
             Controls.ApplyTheme();
 
