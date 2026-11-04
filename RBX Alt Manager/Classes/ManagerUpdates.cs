@@ -16,12 +16,12 @@ namespace RBX_Alt_Manager.Classes
 {
     internal sealed class ReleaseInfo
     {
-        public string Version, ManagerUrl, ExtensionUrl, ManagerHash, ExtensionVersion;
+        public string Version, ManagerUrl, ExtensionUrl, ManagerHash, ExtensionVersion, ExtensionHash;
     }
     internal static class ManagerUpdates
     {
-        internal const string Version = "6.1.0";
-        internal const string ExtensionVersion = "0.3.0";
+        internal const string Version = "6.2.0";
+        internal const string ExtensionVersion = "0.4.0";
         internal const string Repository = "https://github.com/surgee1/manager";
         private static readonly SemaphoreSlim Gate = new SemaphoreSlim(1);
         private static ReleaseInfo cached;
@@ -36,7 +36,7 @@ namespace RBX_Alt_Manager.Classes
             {
                 if (!fresh && cached != null && DateTime.UtcNow - checkedAt < TimeSpan.FromMinutes(1)) return cached;
                 using var client = new HttpClient(new HttpClientHandler { UseCookies = false }) { Timeout = TimeSpan.FromSeconds(20) };
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("Surgee-Manager/" + Version);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("Spectrum-Manager/" + Version);
                 client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
                 using var response = await client.GetAsync("https://api.github.com/repos/surgee1/manager/releases/latest").ConfigureAwait(false);
                 if (response.StatusCode == HttpStatusCode.NotFound) throw new InvalidOperationException("В surgee1/manager ещё нет опубликованных релизов.");
@@ -63,9 +63,9 @@ namespace RBX_Alt_Manager.Classes
             {
                 string name = (string)asset["name"] ?? "", url = (string)asset["browser_download_url"] ?? "";
                 if (!IsAssetUrl(url)) continue;
-                if (name.StartsWith("Surgee-Manager-", StringComparison.Ordinal) && name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                if ((name.StartsWith("Spectrum-Manager-", StringComparison.Ordinal) || (result.ManagerUrl == null && name.StartsWith("Surgee-Manager-", StringComparison.Ordinal))) && name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                 { result.ManagerUrl = url; result.ManagerHash = ((string)asset["digest"] ?? "").Replace("sha256:", ""); }
-                if (name == "Surgee-Browser-Extension.zip") result.ExtensionUrl = url;
+                if (name == "Spectrum-Browser-Extension.zip" || (result.ExtensionUrl == null && name == "Surgee-Browser-Extension.zip")) { result.ExtensionUrl = url; result.ExtensionHash = ((string)asset["digest"] ?? "").Replace("sha256:", ""); }
             }
             if (result.ManagerUrl == null) throw new InvalidDataException("В релизе отсутствует ZIP менеджера.");
             return result;
@@ -99,6 +99,27 @@ namespace RBX_Alt_Manager.Classes
                 throw new InvalidDataException("Контрольная сумма архива не совпала. Установка отменена.");
             return path;
         }
+        internal static async Task<string> DownloadExtensionAsync(ReleaseInfo release)
+        {
+            if (!IsAssetUrl(release.ExtensionUrl) || !System.Text.RegularExpressions.Regex.IsMatch(release.ExtensionHash ?? "", "^[a-fA-F0-9]{64}$"))
+                throw new InvalidDataException("GitHub не вернул проверяемый ZIP расширения.");
+            string path = Path.Combine(NewStage(), "extension.zip");
+            using var client = new HttpClient(new HttpClientHandler { UseCookies = false }) { Timeout = TimeSpan.FromSeconds(60) };
+            using var response = await client.GetAsync(release.ExtensionUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            const long limit = 10 * 1024 * 1024;
+            if (response.Content.Headers.ContentLength > limit) throw new InvalidDataException("ZIP расширения слишком большой.");
+            using (var input = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            using (var output = File.Create(path))
+            {
+                byte[] buffer = new byte[81920]; long total = 0; int count;
+                while ((count = await input.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
+                { total += count; if (total > limit) throw new InvalidDataException("ZIP расширения слишком большой."); await output.WriteAsync(buffer, 0, count).ConfigureAwait(false); }
+            }
+            if (!string.Equals(FileUpdateTransaction.Hash(path), release.ExtensionHash, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Контрольная сумма расширения не совпала.");
+            return path;
+        }
 
         private static string NewStage()
         { string path = Path.Combine(Path.GetTempPath(), "SurgeeUpdate", Guid.NewGuid().ToString("N")); Directory.CreateDirectory(path); return path; }
@@ -109,7 +130,7 @@ namespace RBX_Alt_Manager.Classes
             using var zip = ZipFile.OpenRead(archivePath);
             if (zip.Entries.Count > 5000 || zip.Entries.Sum(e => e.Length) > 800L * 1024 * 1024) throw new InvalidDataException("Архив слишком большой.");
             var manifests = zip.Entries.Where(e => e.Name == "surgee-release.json").ToArray();
-            if (manifests.Length != 1 || manifests[0].Length > 100000) throw new InvalidDataException("Это не пакет обновления Surgee 6 или новее.");
+            if (manifests.Length != 1 || manifests[0].Length > 100000) throw new InvalidDataException("Это не пакет обновления Spectrum Manager / Surgee 6 или новее.");
             var manifestEntry = manifests[0];
             JObject manifest;
             using (var reader = new StreamReader(manifestEntry.Open())) manifest = JObject.Parse(reader.ReadToEnd());

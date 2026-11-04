@@ -64,7 +64,7 @@ namespace RBX_Alt_Manager.Forms
 
         private void InitializeClearSettings()
         {
-            Text = "Настройки • Surgee Manager";
+            Text = "Настройки • Spectrum Manager";
             Font = new Font("Segoe UI Semibold", 10.5f);
             ClientSize = new Size(760, 600);
             MinimumSize = new Size(776, 639);
@@ -83,14 +83,20 @@ namespace RBX_Alt_Manager.Forms
             Helper.InitialDelay = 400;
             Helper.AutoPopDelay = 15000;
             DoubleBuffered = true;
+            bool dragging = false;
+            ResizeBegin += (sender, e) => { if (!dragging) { dragging = true; AnimationCadence.BeginInteraction(); } };
+            ResizeEnd += (sender, e) => { if (dragging) { dragging = false; AnimationCadence.EndInteraction(); } Invalidate(true); };
+            FormClosed += (sender, e) => { if (dragging) { dragging = false; AnimationCadence.EndInteraction(); } };
             var animation = new Timer(components) { Interval = 33 };
             animation.Tick += (sender, e) =>
             {
                 animation.Interval = AnimationCadence.Interval;
+                if (AnimationCadence.Interacting) return;
                 if (!Visible || WindowState == FormWindowState.Minimized || !ThemeEditor.AnimationsEnabled) return;
                 SettingsTC.Invalidate();
                 if (SettingsTC.SelectedTab != null)
-                    foreach (Control child in SettingsTC.SelectedTab.Controls) child.Invalidate(true);
+                    foreach (Control child in SettingsTC.SelectedTab.Controls)
+                    { if (child is ThemedSettingsPanel panel) panel.RequestFrame(); child.Invalidate(true); }
             };
             animation.Start();
 
@@ -134,14 +140,14 @@ namespace RBX_Alt_Manager.Forms
             var advanced = SettingsPage("Дополнительно");
             Section(advanced, "ФУНКЦИИ ИСХОДНОГО ПРОЕКТА");
             Setting(advanced, EnableDMCB, "Показывать дополнительные действия аккаунтов", "Открывает поля аккаунта и действия с сессиями в контекстном меню.");
-            Setting(advanced, EnableWSCB, "Включить старый локальный API", "Этот API не нужен расширению Surgee. Для изменения нужен перезапуск.");
-            SettingRow(advanced, PortLabel, PortNumber, "Порт старого API", "Порт расширения Surgee отдельный: 7964.");
+            Setting(advanced, EnableWSCB, "Включить старый локальный API", "Этот API не нужен расширению Spectrum Manager. Для изменения нужен перезапуск.");
+            SettingRow(advanced, PortLabel, PortNumber, "Порт старого API", "Порт расширения Spectrum Manager отдельный: 7964.");
             Setting(advanced, ERRPCB, "Требовать пароль для каждого запроса API", "Настройка только для старого API исходного проекта.");
-            Setting(advanced, AllowGCCB, "Разрешить API получать cookie", "Относится только к старому API. Расширение Surgee не использует эту функцию.");
+            Setting(advanced, AllowGCCB, "Разрешить API получать cookie", "Относится только к старому API. Расширение Spectrum Manager использует отдельное подключение с кодом.");
             Setting(advanced, AllowGACB, "Разрешить API читать список аккаунтов", "Доступ к списку через старый API.");
             Setting(advanced, AllowLACB, "Разрешить API запускать аккаунты", "Запуск игр командами старого API.");
             Setting(advanced, AllowAECB, "Разрешить API изменять данные аккаунтов", "Редактирование псевдонимов и заметок через старый API.");
-            Setting(advanced, AllowExternalConnectionsCB, "Разрешить подключения к старому API по сети", "По умолчанию выключено. Расширение Surgee работает локально без этой настройки.");
+            Setting(advanced, AllowExternalConnectionsCB, "Разрешить подключения к старому API по сети", "По умолчанию выключено. Расширение Spectrum Manager работает локально без этой настройки.");
             SettingRow(advanced, WSPWLabel, PasswordTextBox, "Пароль старого API", "Отдельный пароль API; не пароль Roblox и не код подключения расширения.");
             SettingRow(advanced, RegionFormatLabel, RegionFormatTB, "Формат региона сервера (старый механизм)", "Шаблон названия региона из исходного проекта.");
             AutoUpdateCB.Visible = false;
@@ -156,16 +162,20 @@ namespace RBX_Alt_Manager.Forms
         private Bitmap backdrop;
         private string backdropKey;
         private long backdropFrame = -1;
+        private long requestedFrame;
         private double scrollingUntil;
         public ThemedSettingsPanel()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
         }
+        internal void RequestFrame() { if (!AnimationCadence.Interacting && VisualBackground.Time >= scrollingUntil) requestedFrame++; }
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             if (Width < 1 || Height < 1) return;
+            if (AnimationCadence.Interacting && backdrop != null)
+            { if (backdrop.Size == ClientSize) e.Graphics.DrawImageUnscaled(backdrop, 0, 0); else e.Graphics.DrawImage(backdrop, ClientRectangle); return; }
             string key = Width + ":" + Height + ":" + ThemeEditor.VisualProfile + ":" + ThemeEditor.FormsBackground.ToArgb() + ":" + ThemeEditor.AccountBackground.ToArgb() + ":" + ThemeEditor.AccentPrimary.ToArgb() + ":" + ThemeEditor.AccentSecondary.ToArgb() + ":" + ThemeEditor.AnimationsEnabled;
-            long frame = ThemeEditor.AnimationsEnabled ? (long)(VisualBackground.Time * 30) : 0;
+            long frame = ThemeEditor.AnimationsEnabled ? requestedFrame : 0;
             if (VisualBackground.Time < scrollingUntil && backdropFrame >= 0) frame = backdropFrame;
             if (backdrop == null || backdropKey != key || backdropFrame != frame)
             {
@@ -182,7 +192,7 @@ namespace RBX_Alt_Manager.Forms
             }
             e.Graphics.DrawImageUnscaled(backdrop, 0, 0);
         }
-        protected override void OnScroll(ScrollEventArgs e) { scrollingUntil = VisualBackground.Time + .16; base.OnScroll(e); Invalidate(true); Update(); }
+        protected override void OnScroll(ScrollEventArgs e) { scrollingUntil = VisualBackground.Time + .16; base.OnScroll(e); Invalidate(true); }
         protected override void Dispose(bool disposing) { if (disposing) backdrop?.Dispose(); base.Dispose(disposing); }
     }
 }

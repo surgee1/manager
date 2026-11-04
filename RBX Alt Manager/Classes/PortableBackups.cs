@@ -42,7 +42,7 @@ namespace RBX_Alt_Manager.Classes
         {
             using var reader = new JsonTextReader(new StringReader(json)) { DateParseHandling = DateParseHandling.None, MaxDepth = 32 };
             var value = JObject.Load(reader, new JsonLoadSettings { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
-            if (reader.Read()) throw new InvalidDataException("После JSON найдены лишние данные.");
+            if (reader.TokenType != JsonToken.EndObject || reader.Depth != 0 || reader.Read()) throw new InvalidDataException("Неполный JSON или лишние данные после него.");
             return value;
         }
         internal static PortableBackup Read(string path)
@@ -52,7 +52,7 @@ namespace RBX_Alt_Manager.Classes
             using var reader = new StreamReader(file, new UTF8Encoding(false, true), true);
             var document = Parse(reader.ReadToEnd());
             if ((string)document["format"] != "surgee-portable-backup" || (int?)document["version"] != 1)
-                throw new InvalidDataException("Это не переносимая копия Surgee поддерживаемой версии.");
+                throw new InvalidDataException("Это не переносимая копия Spectrum Manager поддерживаемой версии.");
             if (!(document["payload"] is JObject payload) || !string.Equals((string)document["sha256"], Digest(payload), StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("Копия повреждена: контрольная сумма не совпала.");
             Validate(payload);

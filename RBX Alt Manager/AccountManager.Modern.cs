@@ -25,6 +25,10 @@ namespace RBX_Alt_Manager
             roflWindow.Show(this);
         }
         private PlacePicker placePicker;
+        private Bitmap modernScene;
+        private bool modernSceneDirty = true, modernInteractiveMove;
+        private long modernSceneRenderCount;
+        private void InvalidateModernFrame() { modernSceneDirty = true; Invalidate(); }
 
         private void ShowPlacePicker()
         {
@@ -88,11 +92,11 @@ namespace RBX_Alt_Manager
                 control.Anchor = AnchorStyles.Top | AnchorStyles.Left;
                 if (control != PasswordPanel) control.Font = Font;
             }
-            Text = "Roblox • Менеджер аккаунтов";
+            Text = "Spectrum Manager";
             MaximizeBox = true;
             MinimumSize = SizeFromClientSize(new Size(Ui(1060), Ui(600)));
             ClientSize = new Size(Ui(1120), Ui(640));
-            modernTitle = ModernLabel("Твои аккаунты. Твой мир.", 20, true);
+            modernTitle = ModernLabel("Spectrum Manager", 22, true);
             modernSubtitle = ModernLabel("ROBLOX  /  ЛИЧНЫЙ ЦЕНТР УПРАВЛЕНИЯ    ·    Ctrl+K — команды", 9, false);
             accountsHeading = ModernLabel("АККАУНТЫ", 10, true);
             launchHeading = ModernLabel("ПОДКЛЮЧЕНИЕ К ИГРЕ", 10, true);
@@ -181,11 +185,14 @@ namespace RBX_Alt_Manager
             Hint(EditTheme, "Настроить цвета интерфейса.");
             Hint(Add, "Открыть вход Roblox в основном браузере Windows. После входа нажми «Добавить в менеджер» в расширении.");
             Hint(Remove, "Удалить выбранные записи из менеджера после подтверждения.");
-            Hint(OpenBrowser, "Открыть Roblox в основном браузере Windows. Используется текущая сессия этого браузера.");
+            Hint(OpenBrowser, "Открыть выбранный аккаунт Roblox в браузере Windows через расширение Spectrum Manager 0.4.0+. Сменит аккаунт во всех вкладках Roblox этого профиля браузера.");
             Hint(HideUsernamesCheckbox, "Скрыть имена аккаунтов в списке.");
             Hint(DonateButton, "бог этого мира surgee");
             Hint(JoinDiscord, "Открыть Discord сообщества исходного проекта.");
             TranslateModernMenus();
+            OpenBrowserStrip.Items.Clear();
+            OpenBrowserStrip.Items.Add("Открыть выбранный аккаунт", null, (sender, e) => OpenSelectedAccountBrowser());
+            OpenBrowserStrip.Items.Add("Открыть Roblox с текущим входом браузера", null, (sender, e) => SystemBrowser.Open("https://www.roblox.com/"));
             AddAccountsStrip.Items.Remove(bulkUserPassToolStripMenuItem);
             AddAccountsStrip.Items.Remove(customURLJSToolStripMenuItem);
             OpenBrowserStrip.Items.Remove(URLJSToolStripMenuItem);
@@ -200,11 +207,14 @@ namespace RBX_Alt_Manager
                 button.AccessibleDescription = SaveTooltip.GetToolTip(button);
             }
             Resize += (sender, args) => LayoutModernInterface();
+            ResizeBegin += (sender, args) => { if (!modernInteractiveMove) { modernInteractiveMove = true; AnimationCadence.BeginInteraction(); } };
+            ResizeEnd += (sender, args) => { if (modernInteractiveMove) { modernInteractiveMove = false; AnimationCadence.EndInteraction(); } InvalidateModernFrame(); };
             Paint += PaintModernInterface;
-            FormClosed += (sender, e) => placePicker?.Dispose();
+            FormClosed += (sender, e) => { placePicker?.Dispose(); modernScene?.Dispose(); modernScene = null; if (modernInteractiveMove) { modernInteractiveMove = false; AnimationCadence.EndInteraction(); } };
             InitializeAdvancedWindow();
             InitializeAccountFolders();
             InitializeShortcuts();
+            InitializeAccountImport();
             InitializeLaunchInputSaving();
             InitializePortableBackups();
             roflButton = new NeonButton { Text = "ROFL MODE", Font = Font, Cursor = Cursors.Hand, AccessibleName = "Шуточный экран" };
@@ -215,10 +225,11 @@ namespace RBX_Alt_Manager
             glowTimer.Tick += (sender, args) =>
             {
                 glowTimer.Interval = AnimationCadence.Interval;
+                if (AnimationCadence.Interacting) return;
                 if (WindowState == FormWindowState.Minimized || !Visible || !ThemeEditor.AnimationsEnabled) return;
                 // Settings can sit beside the manager: both visible backgrounds must keep moving.
                 if (placePicker?.Visible == true || roflWindow?.Visible == true) return;
-                Invalidate();
+                InvalidateModernFrame();
                 foreach (var button in Controls.OfType<NeonButton>())
                     if (button.Visible) button.Invalidate();
                 if (advancedWindow != null && advancedWindow.Visible) advancedWindow.Invalidate(true);
@@ -268,9 +279,10 @@ namespace RBX_Alt_Manager
             Username.Width = Ui((leftWidth - 36) * .34f);
             AccountAlias.Width = Ui((leftWidth - 36) * .28f);
             Description.Width = Math.Max(Ui(100), AccountsView.Width - Username.Width - AccountAlias.Width - SystemInformation.VerticalScrollBarWidth - Ui(4));
-            Put(Add, 40, h - 126, 134, 38);
-            Put(Remove, 184, h - 126, 104, 38);
-            Put(OpenBrowser, 300, h - 126, 138, 38);
+            Put(Add, 40, h - 126, 128, 38);
+            Put(importAccountsButton, 176, h - 126, 104, 38);
+            Put(Remove, 288, h - 126, 100, 38);
+            Put(OpenBrowser, 400, h - 126, right - 456, 38);
             Put(HideUsernamesCheckbox, 40, h - 76, 180, 30);
             Put(JoinDiscord, 244, h - 76, 88, 30);
             Put(DonateButton, 244, h - 76, 96, 30);
@@ -289,7 +301,7 @@ namespace RBX_Alt_Manager
             Put(DownloadProgressBar, 24, h - 15, leftWidth, 8);
             Put(DLChromiumLabel, 40, h - 173, leftWidth - 32, 24);
             PasswordPanel.Bounds = ClientRectangle;
-            Invalidate();
+            InvalidateModernFrame();
         }
 
         private void ApplyModernPalette()
@@ -342,13 +354,28 @@ namespace RBX_Alt_Manager
             }
             AccountsView.UnfocusedSelectedBackColor = Color.FromArgb(65, 61, 116);
             AccountsView.UnfocusedSelectedForeColor = Color.White;
-            Invalidate();
+            InvalidateModernFrame();
         }
 
         private void PaintModernInterface(object sender, PaintEventArgs e)
         {
-            if (modernTitle == null) return;
-            var g = e.Graphics;
+            if (modernTitle == null || ClientSize.Width < 1 || ClientSize.Height < 1) return;
+            if (modernScene == null || (!AnimationCadence.Interacting && (modernSceneDirty || modernScene.Size != ClientSize)))
+            {
+                if (modernScene == null || modernScene.Size != ClientSize)
+                { modernScene?.Dispose(); modernScene = new Bitmap(ClientSize.Width, ClientSize.Height, System.Drawing.Imaging.PixelFormat.Format32bppPArgb); }
+                using (var canvas = Graphics.FromImage(modernScene)) RenderModernScene(canvas);
+                modernSceneDirty = false; modernSceneRenderCount++;
+            }
+            var state = e.Graphics.Save();
+            e.Graphics.CompositingMode = CompositingMode.SourceCopy;
+            if (modernScene.Size == ClientSize) e.Graphics.DrawImageUnscaled(modernScene, 0, 0);
+            else e.Graphics.DrawImage(modernScene, ClientRectangle);
+            e.Graphics.Restore(state);
+            PaintModernFields(e.Graphics);
+        }
+        private void RenderModernScene(Graphics g)
+        {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             int right = (int)(ClientSize.Width / modernScale) - 480;
             using (var bg = new LinearGradientBrush(ClientRectangle, ThemeEditor.FormsBackground, NeonButton.Mix(ThemeEditor.FormsBackground, ThemeEditor.AccentSecondary, 0.05f), 35f))
@@ -376,6 +403,13 @@ namespace RBX_Alt_Manager
                     g.DrawPath(pen, path);
                 }
             VisualBackground.Draw(g, ClientSize);
+            using (var neon = new LinearGradientBrush(new Rectangle(24, Ui(90), Width - 48, 2), ThemeEditor.AccentPrimary, ThemeEditor.AccentSecondary, 0f))
+            using (var pen = new Pen(neon, 2f))
+                g.DrawLine(pen, Ui(24), Ui(90), ClientSize.Width - Ui(24), Ui(90));
+        }
+        private void PaintModernFields(Graphics g)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
             foreach (var field in Controls.OfType<TextBoxBase>())
             {
                 var rect = new RectangleF(field.Left - Ui(5), field.Top - Ui(4), field.Width + Ui(10), field.Height + Ui(8));
@@ -387,9 +421,6 @@ namespace RBX_Alt_Manager
                     g.DrawPath(pen, path);
                 }
             }
-            using (var neon = new LinearGradientBrush(new Rectangle(24, Ui(90), Width - 48, 2), ThemeEditor.AccentPrimary, ThemeEditor.AccentSecondary, 0f))
-            using (var pen = new Pen(neon, 2f))
-                g.DrawLine(pen, Ui(24), Ui(90), ClientSize.Width - Ui(24), Ui(90));
         }
 
         private void InitializeAdvancedWindow()

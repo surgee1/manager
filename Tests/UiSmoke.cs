@@ -48,6 +48,7 @@ class UiSmoke
             main.Load -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Load", Flags));
             main.Shown -= (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), main, type.GetMethod("AccountManager_Shown", Flags));
             main.Show();
+            Check(main.Text == "Spectrum Manager" && ((Control)Field(main, "modernTitle")).Text == "Spectrum Manager", "Spectrum Manager branding appears in window title and main heading");
             // Startup loading is detached in this isolated test; dismiss its designer overlay.
             ((Control)Field(main, "PasswordPanel")).Visible = false;
             type.GetMethod("RestoreLaunchInputs", Flags).Invoke(main, null);
@@ -91,13 +92,17 @@ class UiSmoke
             Check(((Color)theme.GetField("AccentPrimary").GetValue(null)).ToArgb() == ColorTranslator.FromHtml("#397FFF").ToArgb(), "custom palette applied to live interface");
             Check(File.ReadAllText("RAMTheme.ini").Contains("AccentPrimary=#397FFF"), "custom palette persists to theme file");
             var profileMethod = settings.GetType().GetMethod("ApplyVisualProfile", Flags);
-            foreach (string profile in new[] { "matrix", "nyan", "aurora", "sunset", "manga", "sakura", "anime-night", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "futuristic" })
+            foreach (string profile in new[] { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 Check((string)theme.GetField("VisualProfile").GetValue(null) == profile, "profile switches: " + profile);
                 Capture(main, "profile-" + profile + ".png");
             }
             Check(File.Exists("Themes/kaneki_manga.png"), "illustrated theme assets are bundled");
+            var supported = (string[])theme.GetField("SupportedProfiles", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+            Check(supported.Length == 10 && Array.IndexOf(supported, "matrix") < 0 && Array.IndexOf(supported, "manga") < 0 && Array.IndexOf(supported, "sakura") < 0, "removed theme presets are absent from supported catalog");
+            profileMethod.Invoke(settings, new object[] { "manga" });
+            Check((string)theme.GetField("VisualProfile").GetValue(null) == "kaneki_manga", "old removed theme resolves to a supported character profile");
             TabPage portraitColors = null;
             foreach (TabPage page in tabs.TabPages) if (page.Text == "Цвета") portraitColors = page;
             tabs.SelectedTab = portraitColors;
@@ -109,7 +114,9 @@ class UiSmoke
             theme.GetField("AnimationsEnabled").SetValue(null, true);
             theme.GetField("CharacterMotion").SetValue(null, 75);
             var portraitHashes = new System.Collections.Generic.HashSet<string>();
-            foreach (string profile in new[] { "manga", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend" })
+            var general = type.GetField("General").GetValue(null);
+            general.GetType().GetMethod("Set").Invoke(general, new object[] { "AnimationEconomy", "false", null });
+            foreach (string profile in new[] { "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 using (var first = PortraitFrame(assembly, profile, .4))
@@ -308,9 +315,47 @@ class UiSmoke
             main.Show(); main.Activate(); Pump(50);
             var cadence = assembly.GetType("RBX_Alt_Manager.Classes.AnimationCadence");
             Check((int)cadence.GetProperty("Interval", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null, null) == 33, "active manager retains smooth animation cadence");
+            general.GetType().GetMethod("Set").Invoke(general, new object[] { "AnimationEconomy", "true", null });
             main.Hide(); Pump(80);
             Check((int)cadence.GetProperty("Interval", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null, null) == 200, "inactive manager reduces animation cadence to five frames per second");
             main.Show(); main.Activate();
+            var jsonType = Type.GetType("Newtonsoft.Json.Linq.JObject, Newtonsoft.Json");
+            var metadataTask = (System.Threading.Tasks.Task<object>)type.GetMethod("HandleBrowserActionAsync", Flags).Invoke(main, new object[] { "/v1/accounts/list", null });
+            Pump(100);
+            var metadata = metadataTask.GetAwaiter().GetResult();
+            Check(metadata.GetType().GetProperty("accounts") != null && metadata.GetType().GetProperty("cookie") == null, "extension list callback exposes metadata without account session");
+            object openPayload = jsonType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[] { "{\"id\":\"123\"}" });
+            var openTask = (System.Threading.Tasks.Task<object>)type.GetMethod("HandleBrowserActionAsync", Flags).Invoke(main, new object[] { "/v1/accounts/open", openPayload });
+            Pump(100); object openedAccount = openTask.GetAwaiter().GetResult();
+            Check((string)openedAccount.GetType().GetProperty("userId").GetValue(openedAccount, null) == "123" && (string)openedAccount.GetType().GetProperty("cookie").GetValue(openedAccount, null) == "SYNTHETIC_TEST_SESSION", "extension open callback resolves the exact selected account session");
+            string fixtureImport = "ui-original-import.json";
+            File.WriteAllText(fixtureImport, "[{\"UserID\":456,\"Username\":\"ImportedUiAccount\",\"SecurityToken\":\"SYNTHETIC_IMPORTED_SESSION\",\"Alias\":\"Из менеджера\",\"Description\":\"Импорт работает\",\"Group\":\"Imported folder\"}]");
+            var importer = assembly.GetType("RBX_Alt_Manager.Classes.AccountImports");
+            var entropy = (byte[])type.GetField("Entropy", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+            var importBatch = importer.GetMethod("Read", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { fixtureImport, entropy, null });
+            object[] importArgs = { importBatch, false, 0, 0 };
+            type.GetMethod("ImportAccountsCore", Flags).Invoke(main, importArgs);
+            Check((int)importArgs[2] == 1 && ((IList)type.GetField("AccountsList").GetValue(null)).Count == 2, "GUI import core adds accounts from another manager and persists them");
+            Check(Directory.GetFiles("Backups", "before-import-*.surgee-backup.json").Length > 0, "GUI import creates portable copy before merging account data");
+            Check(((Button)Field(main, "importAccountsButton")).Text == "Импорт", "Import button is available in main window");
+            var importedList = (IList)type.GetField("AccountsList").GetValue(null);
+            type.GetMethod("ImportAccountsCore", Flags).Invoke(main, new object[] { importBatch, false, 0, 0 });
+            Check(((IList)type.GetField("AccountsList").GetValue(null)).Count == 2, "repeated GUI import does not duplicate persisted accounts");
+            type.GetMethod("InvalidateModernFrame", Flags).Invoke(main, null);
+            using (var scene = new Bitmap(main.Width, main.Height))
+            {
+                main.DrawToBitmap(scene, new Rectangle(Point.Empty, scene.Size));
+                long renders = (long)Field(main, "modernSceneRenderCount");
+                for (int i = 0; i < 5; i++) main.DrawToBitmap(scene, new Rectangle(Point.Empty, scene.Size));
+                Check((long)Field(main, "modernSceneRenderCount") == renders, "transparent children reuse one scene instead of repeatedly repainting character");
+                type.GetMethod("OnResizeBegin", Flags).Invoke(main, new object[] { EventArgs.Empty });
+                type.GetMethod("InvalidateModernFrame", Flags).Invoke(main, null);
+                main.DrawToBitmap(scene, new Rectangle(Point.Empty, scene.Size));
+                Check((long)Field(main, "modernSceneRenderCount") == renders, "window drag uses frozen scene without heavy background work");
+                type.GetMethod("OnResizeEnd", Flags).Invoke(main, new object[] { EventArgs.Empty });
+                main.DrawToBitmap(scene, new Rectangle(Point.Empty, scene.Size));
+                Check((long)Field(main, "modernSceneRenderCount") == renders + 1, "animation scene resumes once after window drag ends");
+            }
             ((System.Windows.Forms.Timer)Field(main, "PlaceTimer")).Stop();
             main.ClientSize = new Size(1060, 600);
             Application.DoEvents();

@@ -1,4 +1,4 @@
-﻿using FastColoredTextBoxNS;
+using FastColoredTextBoxNS;
 using System;
 using System.Drawing;
 using System.IO;
@@ -12,7 +12,8 @@ namespace RBX_Alt_Manager.Forms
         public static Color AccountBackground = SystemColors.Control;
         public static Color AccentPrimary = Color.FromArgb(174, 54, 219);
         public static Color AccentSecondary = Color.FromArgb(32, 165, 207);
-        public static string VisualProfile = "futuristic";
+        public static string VisualProfile = "kaneki_manga";
+        internal static readonly string[] SupportedProfiles = { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex" };
         public static bool AnimationsEnabled = true;
         public static int CharacterMotion = 75;
         public static Color AccountForeground = SystemColors.ControlText;
@@ -34,7 +35,7 @@ namespace RBX_Alt_Manager.Forms
         public static Color LabelBackground = SystemColors.Control;
         public static Color LabelForeground = SystemColors.ControlText;
         public static bool LabelTransparent = true;
-        
+
         public static bool LightImages = false;
         // public static bool UseNormalTabControls = false;
 
@@ -106,6 +107,7 @@ namespace RBX_Alt_Manager.Forms
 
             Theme = ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
             if (Theme.Exists("VisualProfile")) VisualProfile = Theme.Get("VisualProfile");
+            if (Array.IndexOf(SupportedProfiles, VisualProfile) < 0) VisualProfile = "kaneki_manga";
             if (Theme.Exists("AnimationsEnabled") && bool.TryParse(Theme.Get("AnimationsEnabled"), out bool motion)) AnimationsEnabled = motion;
             if (Theme.Exists("CharacterMotion") && int.TryParse(Theme.Get("CharacterMotion"), out int strength)) CharacterMotion = Math.Max(0, Math.Min(100, strength));
             if (Theme.Exists("AccentPrimary")) AccentPrimary = ColorTranslator.FromHtml(Theme.Get("AccentPrimary"));

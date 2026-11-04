@@ -5,32 +5,86 @@ const add = document.getElementById('import');
 const connect = document.getElementById('connect');
 const code = document.getElementById('code');
 const pairing = document.getElementById('pairing');
+const refresh = document.getElementById('refresh-accounts');
+const search = document.getElementById('account-search');
+const accounts = document.getElementById('accounts');
+let accountItems = [], busy = false;
+
+function setBusy(value) {
+  busy = value;
+  add.disabled = connect.disabled = refresh.disabled = value;
+  for (const button of accounts.querySelectorAll('button')) button.disabled = value;
+}
+function renderAccounts() {
+  accounts.replaceChildren();
+  const query = search.value.trim().toLocaleLowerCase();
+  const filtered = accountItems.filter(item => `${item.username} ${item.alias} ${item.folder}`.toLocaleLowerCase().includes(query));
+  for (const account of filtered.slice(0, 100)) {
+    const button = document.createElement('button');
+    button.className = 'account'; button.disabled = busy;
+    const name = document.createElement('strong'); name.textContent = account.username;
+    const detail = document.createElement('span'); detail.textContent = [account.alias, account.folder].filter(Boolean).join(' · ');
+    button.append(name, detail);
+    button.addEventListener('click', () => run({ action: 'open', id: account.id }));
+    accounts.append(button);
+  }
+  if (!filtered.length) { const empty = document.createElement('p'); empty.className = 'intro'; empty.textContent = query ? 'Ничего не найдено.' : 'Нет аккаунтов. Добавь их в менеджер.'; accounts.append(empty); }
+  if (filtered.length > 100) { const hint = document.createElement('p'); hint.className = 'intro'; hint.textContent = 'Показаны первые 100. Уточни поиск.'; accounts.append(hint); }
+}
+async function loadAccounts() {
+  if (busy) return;
+  setBusy(true);
+  try {
+    const response = await chrome.runtime.sendMessage({ action: 'accounts' });
+    if (!response?.ok) throw new Error(response?.error || 'Нет ответа от менеджера.');
+    accountItems = response.result.accounts; renderAccounts();
+    status.className = ''; status.textContent = `Аккаунтов в менеджере: ${accountItems.length}. Выбери нужный для входа.`;
+  } catch (error) { status.className = 'error'; status.textContent = error.message; }
+  finally { setBusy(false); }
+}
+refresh.addEventListener('click', loadAccounts);
+search.addEventListener('input', renderAccounts);
 
 async function run(message) {
-  add.disabled = connect.disabled = true;
+  if (busy) return;
+  setBusy(true);
   status.className = '';
-  status.textContent = message.action === 'import' ? 'Проверяем аккаунт и добавляем в менеджер…' : 'Подключаем менеджер…';
+  status.textContent = message.action === 'open' ? 'Переключаем и проверяем аккаунт Roblox…' : message.action === 'import' ? 'Проверяем аккаунт и добавляем в менеджер…' : 'Подключаем менеджер…';
   try {
     const response = await chrome.runtime.sendMessage(message);
     if (!response?.ok) throw new Error(response?.error || 'Нет ответа от расширения. Перезагрузи его.');
     const result = response.result;
     status.className = 'success';
-    if (message.action === 'import') {
+    if (message.action === 'open') status.textContent = `Открыт аккаунт: ${result.username}`;
+    else if (message.action === 'import') {
       const display = result.displayName && result.displayName !== result.username ? ` (${result.displayName})` : '';
       status.textContent = `${result.updated ? 'Обновлён' : 'Добавлен'}: ${result.username}${display}`;
     } else { status.textContent = 'Менеджер подключён. Теперь можно добавлять аккаунты.'; code.value = ''; pairing.open = false; }
   } catch (error) { status.className = 'error'; status.textContent = error.message; }
-  finally { add.disabled = connect.disabled = false; }
+  finally { setBusy(false); }
+  if (message.action === 'connect' || message.action === 'import') await loadAccounts();
 }
 add.addEventListener('click', () => run({ action: 'import' }));
 connect.addEventListener('click', () => run({ action: 'connect', code: code.value.trim() }));
 chrome.storage.local.get('pairingCode').then(({ pairingCode }) => {
   pairing.open = !pairingCode;
-  if (pairingCode) status.textContent = 'Готово. Открой Roblox в активной вкладке.';
+  if (pairingCode) loadAccounts();
 });
 
 document.getElementById('version').textContent = chrome.runtime.getManifest().version;
 document.getElementById('reload-extension').addEventListener('click', () => chrome.runtime.reload());
+document.getElementById('install-update').addEventListener('click', async () => {
+  const button = document.getElementById('install-update');
+  const text = document.getElementById('update-status');
+  button.disabled = true; setBusy(true);
+  text.textContent = 'Менеджер проверяет GitHub и устанавливает обновление…';
+  try {
+    const response = await chrome.runtime.sendMessage({ action: 'install-update' });
+    if (!response?.ok) throw new Error(response?.error || 'Обнови менеджер до 6.2.0 или новее.');
+    text.textContent = response.result.updated ? `Установлена версия ${response.result.version}. Перезагружаем расширение…` : `Уже установлена актуальная версия ${response.result.version}.`;
+  } catch (error) { text.textContent = error.message; }
+  finally { button.disabled = false; setBusy(false); }
+});
 document.getElementById('check-updates').addEventListener('click', async () => {
   const button = document.getElementById('check-updates');
   const text = document.getElementById('update-status');

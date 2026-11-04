@@ -21,9 +21,9 @@ namespace RBX_Alt_Manager
         internal bool AutomaticBackupsEnabled => !General.Exists("PortableBackups") || General.Get<bool>("PortableBackups");
         internal static List<Account> ReadStoredAccounts(string json)
         {
-            var array = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(json,
-                new JsonSerializerSettings { DateParseHandling = DateParseHandling.None, MaxDepth = 32, TypeNameHandling = TypeNameHandling.None });
-            if (array == null) throw new InvalidDataException("Пустой файл аккаунтов.");
+            using var reader = new JsonTextReader(new StringReader(json)) { DateParseHandling = DateParseHandling.None, MaxDepth = 32 };
+            var array = Newtonsoft.Json.Linq.JArray.Load(reader, new Newtonsoft.Json.Linq.JsonLoadSettings { DuplicatePropertyNameHandling = Newtonsoft.Json.Linq.DuplicatePropertyNameHandling.Error });
+            if (reader.TokenType != JsonToken.EndArray || reader.Depth != 0 || reader.Read()) throw new InvalidDataException("Неполный или повреждённый файл аккаунтов.");
             return array.Select(token => token is Newtonsoft.Json.Linq.JObject record
                 ? Account.FromPortableRecord(record) : throw new InvalidDataException("Неверная запись аккаунта.")).ToList();
         }

@@ -15,7 +15,7 @@ namespace RBX_Alt_Manager.Classes
         private static readonly Dictionary<string, Image> Images = new Dictionary<string, Image>();
         private static readonly Dictionary<string, Bitmap> FittedImages = new Dictionary<string, Bitmap>();
         private static readonly Stopwatch Clock = Stopwatch.StartNew();
-        internal static double Time => Clock.Elapsed.TotalSeconds;
+        internal static double Time => Math.Max(0, Clock.Elapsed.TotalSeconds - AnimationCadence.PausedSeconds);
         static VisualBackground()
         {
             Application.ApplicationExit += (sender, e) =>
@@ -43,6 +43,9 @@ namespace RBX_Alt_Manager.Classes
                 case "kaneki_manga":
                 case "uruma":
                 case "happyend":
+                case "gangsta":
+                case "subaru":
+                case "alex":
                     Portrait(g, size, time, ThemeEditor.VisualProfile);
                     Stars(g, size, time);
                     break;

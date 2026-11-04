@@ -1648,7 +1648,7 @@ namespace RBX_Alt_Manager
 
         private void JoinDiscord_Click(object sender, EventArgs e) => Process.Start("https://discord.gg/MsEH7smXY8");
 
-        private void OpenBrowser_Click(object sender, EventArgs e) => SystemBrowser.Open("https://www.roblox.com/");
+        private void OpenBrowser_Click(object sender, EventArgs e) => OpenSelectedAccountBrowser();
 
         private void customURLToolStripMenuItem_Click(object sender, EventArgs e)
         {

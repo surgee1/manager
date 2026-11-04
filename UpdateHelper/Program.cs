@@ -42,7 +42,7 @@ internal static class UpdateProgram
         catch (Exception e)
         {
             MessageBox.Show("Не удалось установить обновление. Аккаунты и настройки не заменялись.\n\n" + e.Message,
-                "Обновление Surgee", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                "Обновление Spectrum Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

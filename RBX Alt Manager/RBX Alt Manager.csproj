@@ -42,8 +42,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>..\build\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -485,6 +485,11 @@
     <Compile Include="Forms\RoflForm.cs" />
     <Compile Include="AccountManager.Browser.cs" />
     <Compile Include="Classes\BrowserBridge.cs" />
+    <Compile Include="Classes\BrowserIntents.cs" />
+    <Compile Include="Classes\AccountImports.cs" />
+    <Compile Include="AccountManager.Import.cs" />
+    <Compile Include="Classes\ExtensionUpdates.cs" />
+    <Compile Include="AccountManager.ExtensionUpdates.cs" />
     <Compile Include="Classes\SystemBrowser.cs" />
     <Compile Include="Classes\NeonButton.cs" />
     <Compile Include="Classes\VisualBackground.cs" />

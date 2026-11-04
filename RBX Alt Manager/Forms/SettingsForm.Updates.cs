@@ -17,7 +17,7 @@ namespace RBX_Alt_Manager.Forms
             var page = SettingsPage("Обновления");
             updatesTab = (TabPage)page.Parent;
             SettingsTC.Multiline = true;
-            Section(page, "SURGEE MANAGER " + ManagerUpdates.Version);
+            Section(page, "SPECTRUM MANAGER " + ManagerUpdates.Version);
             Description(page, "Обновления из surgee1/manager. Аккаунты, папки, избранное и оформление сохраняются.");
             updateStatus = new Label { Text = "Нажми «Проверить», чтобы найти новую версию.", AutoSize = true, MaximumSize = new Size(630, 0), Margin = new Padding(3, 15, 3, 15) };
             page.Controls.Add(updateStatus);
@@ -29,7 +29,7 @@ namespace RBX_Alt_Manager.Forms
             installUpdate.Click += async (sender, e) =>
             {
                 if (availableRelease == null) return;
-                if (MessageBox.Show(this, "Установить Surgee " + availableRelease.Version + "? Менеджер скачает обновление и перезапустится.", "Обновление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                if (MessageBox.Show(this, "Установить Spectrum Manager " + availableRelease.Version + "? Менеджер скачает обновление и перезапустится.", "Обновление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
                 SetUpdateBusy(true);
                 try
                 {
@@ -42,7 +42,7 @@ namespace RBX_Alt_Manager.Forms
             };
             importUpdate.Click += async (sender, e) =>
             {
-                using var dialog = new OpenFileDialog { Filter = "Обновление Surgee (*.zip)|*.zip", Title = "Выбери ZIP менеджера версии 6 или новее" };
+                using var dialog = new OpenFileDialog { Filter = "Обновление Spectrum Manager (*.zip)|*.zip", Title = "Выбери ZIP менеджера версии 6 или новее" };
                 if (dialog.ShowDialog(this) != DialogResult.OK) return;
                 if (MessageBox.Show(this, "Установить обновление из выбранного ZIP и перезапустить менеджер?", "Обновление", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
                 SetUpdateBusy(true);

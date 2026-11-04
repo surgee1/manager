@@ -36,6 +36,9 @@ class RegressionTests
     static async Task Run()
     {
         PortableBackupChecks();
+        BrowserBridgeTests.Run(Check, Reject);
+        ExtensionUpdateTests.Run(Check, Reject);
+        AccountImportTests.Run(Check, Reject);
         var fake = new Fake { Reply = (request, call) =>
         {
             Check(request.RequestUri.Host == "auth.roblox.com", "ticket sent only to Roblox auth");
@@ -99,6 +102,8 @@ class RegressionTests
         Check(!ManagerUpdates.IsAssetUrl("https://github.com/other/repo/releases/download/v9/app.zip") && !ManagerUpdates.IsAssetUrl("https://github.com.example.org/surgee1/manager/releases/download/v9/app.zip"), "updates confined to configured GitHub repository");
         var release = ManagerUpdates.ParseRelease(JObject.Parse("{\"tag_name\":\"v6.1.0\",\"body\":\"<!-- surgee-extension:0.4.0 -->\",\"assets\":[{\"name\":\"Surgee-Manager-v6.1.zip\",\"browser_download_url\":\"https://github.com/surgee1/manager/releases/download/v6.1.0/Surgee-Manager-v6.1.zip\"}]}"));
         Check(release.Version == "6.1.0" && release.ExtensionVersion == "0.4.0", "release versions parsed for app and extension");
+        release = ManagerUpdates.ParseRelease(JObject.Parse("{\"tag_name\":\"v6.2.0\",\"body\":\"<!-- surgee-extension:0.4.0 -->\",\"assets\":[{\"name\":\"Spectrum-Manager-v6.2.0.zip\",\"browser_download_url\":\"https://github.com/surgee1/manager/releases/download/v6.2.0/Spectrum-Manager-v6.2.0.zip\"},{\"name\":\"Surgee-Manager-v6.2.0.zip\",\"browser_download_url\":\"https://github.com/surgee1/manager/releases/download/v6.2.0/Surgee-Manager-v6.2.0.zip\"},{\"name\":\"Spectrum-Browser-Extension.zip\",\"digest\":\"sha256:" + new string('a', 64) + "\",\"browser_download_url\":\"https://github.com/surgee1/manager/releases/download/v6.2.0/Spectrum-Browser-Extension.zip\"},{\"name\":\"Surgee-Browser-Extension.zip\",\"browser_download_url\":\"https://github.com/surgee1/manager/releases/download/v6.2.0/Surgee-Browser-Extension.zip\"}]}"));
+        Check(release.ManagerUrl.Contains("Spectrum-Manager") && release.ExtensionUrl.EndsWith("Spectrum-Browser-Extension.zip") && release.ExtensionHash == new string('a', 64), "Spectrum package names take precedence while legacy assets remain compatible");
 
         string root = Path.Combine(Path.GetTempPath(), "SurgeeTests", Guid.NewGuid().ToString("N"));
         string stage = Path.Combine(root, "stage"), destination = Path.Combine(root, "app");

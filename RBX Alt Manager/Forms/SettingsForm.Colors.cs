@@ -13,7 +13,7 @@ namespace RBX_Alt_Manager.Forms
             var flow = SettingsPage("Цвета");
             Section(flow, "ВИЗУАЛЬНЫЕ ПРОФИЛИ");
             Description(flow, "Выбери анимированный стиль или профиль с персонажем. Ниже можно менять цвета и отключать движение.");
-            var presets = new FlowLayoutPanel { Width = 650, Height = 246, WrapContents = true };
+            var presets = new FlowLayoutPanel { Width = 650, Height = 195, WrapContents = true };
             flow.Controls.Add(presets);
             void Preset(string name, string profile)
             {
@@ -21,20 +21,16 @@ namespace RBX_Alt_Manager.Forms
                 button.Click += (sender, e) => ApplyVisualProfile(profile);
                 presets.Controls.Add(button);
             }
-            Preset("Футуризм", "futuristic");
-            Preset("Матрица", "matrix");
             Preset("Nyan Cat", "nyan");
-            Preset("Северное сияние", "aurora");
-            Preset("Закат", "sunset");
-            Preset("Манга", "manga");
-            Preset("Сакура", "sakura");
-            Preset("Аниме-ночь", "anime-night");
             Preset("Токийский гуль", "kaneki");
             Preset("Наруто", "naruto");
             Preset("Магическая битва", "gojo");
             Preset("Канэки — манга", "kaneki_manga");
             Preset("Распятие шести", "uruma");
             Preset("Жестокий хэппи энд", "happyend");
+            Preset("Gangsta. — Николас", "gangsta");
+            Preset("Re:Zero — Субару", "subaru");
+            Preset("Алекс Бенедетто", "alex");
             var motion = new CheckBox { Text = "Анимация фона и переливов", AutoSize = true,
                 Checked = ThemeEditor.AnimationsEnabled, Margin = new Padding(0, 12, 0, 12) };
             motion.CheckedChanged += (sender, e) => { ThemeEditor.AnimationsEnabled = motion.Checked; SaveAppearance(); };
@@ -104,22 +100,20 @@ namespace RBX_Alt_Manager.Forms
 
         private void ApplyVisualProfile(string profile)
         {
+            if (Array.IndexOf(ThemeEditor.SupportedProfiles, profile) < 0) profile = "kaneki_manga";
             ThemeEditor.VisualProfile = profile;
             switch (profile)
             {
-                case "matrix": ApplyColorPreset("#24E86A", "#9BFFB6", "#050D09", "#0B1911"); break;
                 case "nyan": ApplyColorPreset("#F572C2", "#7A9CFF", "#11112D", "#202044"); break;
-                case "aurora": ApplyColorPreset("#397FFF", "#23D6AF", "#0B1720", "#152936"); break;
-                case "sunset": ApplyColorPreset("#F07157", "#D459B1", "#20121D", "#342232"); break;
-                case "manga": ApplyColorPreset("#C7CCD6", "#788296", "#0C0D10", "#181A20"); break;
-                case "sakura": ApplyColorPreset("#ED80B4", "#BEA4F8", "#1D1221", "#302238"); break;
-                case "anime-night": ApplyColorPreset("#8675EF", "#52B9E3", "#0C1429", "#19243A"); break;
                 case "kaneki": ApplyColorPreset("#C92B52", "#C6C9D6", "#110C12", "#21171F"); break;
                 case "naruto": ApplyColorPreset("#EE8D28", "#F6CC63", "#14121A", "#27232B"); break;
                 case "gojo": ApplyColorPreset("#55BBFF", "#9D71EF", "#0B1021", "#19213B"); break;
                 case "kaneki_manga": ApplyColorPreset("#C4C6CC", "#AF344E", "#0C0C10", "#1B1B22"); break;
                 case "uruma": ApplyColorPreset("#C1C5CD", "#8796B5", "#0B0D11", "#191D25"); break;
                 case "happyend": ApplyColorPreset("#B7B5CB", "#74809A", "#101017", "#20202D"); break;
+                case "gangsta": ApplyColorPreset("#B6C0CB", "#61ACAB", "#0D1115", "#1A2229"); break;
+                case "subaru": ApplyColorPreset("#ED913D", "#A277DA", "#100F19", "#201B2A"); break;
+                case "alex": ApplyColorPreset("#80B7CF", "#A6C2C1", "#0C131A", "#182631"); break;
                 default: ApplyColorPreset("#AE36DB", "#20A5CF", "#111521", "#191D2A"); break;
             }
         }

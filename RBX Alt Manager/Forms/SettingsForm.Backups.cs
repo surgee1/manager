@@ -53,7 +53,7 @@ namespace RBX_Alt_Manager.Forms
                 {
                     var snapshot = AccountManager.Instance.CapturePortableBackup();
                     Directory.CreateDirectory(AccountManager.Instance.BackupDirectory);
-                    using var dialog = new SaveFileDialog { Filter = "Копия Surgee (*.surgee-backup.json)|*.surgee-backup.json", DefaultExt = "surgee-backup.json",
+                    using var dialog = new SaveFileDialog { Filter = "Копия Spectrum Manager (*.surgee-backup.json)|*.surgee-backup.json", DefaultExt = "surgee-backup.json",
                         FileName = "accounts-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + PortableBackups.Extension,
                         InitialDirectory = AccountManager.Instance.BackupDirectory, Title = "Копия содержит данные входа — храни её у себя", OverwritePrompt = true };
                     if (dialog.ShowDialog(this) != DialogResult.OK) return;
@@ -68,7 +68,7 @@ namespace RBX_Alt_Manager.Forms
             Setting(page, restore, "Восстановить из копии…", "Объединяет без дублей. Текущие сессии и заполненные данные сохраняются; недостающие данные добавляются из копии. Перед восстановлением создаётся отдельная копия текущей базы.");
             restore.Click += async (sender, e) =>
             {
-                using var dialog = new OpenFileDialog { Filter = "Копия Surgee (*.surgee-backup.json)|*.surgee-backup.json|JSON (*.json)|*.json", InitialDirectory = AccountManager.Instance.BackupDirectory, Title = "Выбери переносимую копию Surgee" };
+                using var dialog = new OpenFileDialog { Filter = "Копия Spectrum Manager (*.surgee-backup.json)|*.surgee-backup.json|JSON (*.json)|*.json", InitialDirectory = AccountManager.Instance.BackupDirectory, Title = "Выбери переносимую копию Spectrum Manager" };
                 if (dialog.ShowDialog(this) != DialogResult.OK) return;
                 restore.Enabled = false;
                 try

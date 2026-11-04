@@ -7,12 +7,14 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace RBX_Alt_Manager
 {
     public partial class AccountManager
     {
         private BrowserBridge browserBridge;
+        private readonly BrowserIntents browserIntents = new BrowserIntents();
         public string BrowserBridgeStatus { get; private set; } = "Подключение ещё не запущено";
         public string BrowserPairingCode
         {
@@ -34,12 +36,55 @@ namespace RBX_Alt_Manager
         {
             try
             {
-                browserBridge = new BrowserBridge(7964, BrowserPairingCode, ImportBrowserSessionAsync, CheckBrowserUpdatesAsync);
+                browserBridge = new BrowserBridge(7964, BrowserPairingCode, ImportBrowserSessionAsync, CheckBrowserUpdatesAsync, HandleBrowserActionAsync);
                 browserBridge.Start();
                 BrowserBridgeStatus = "Готово • 127.0.0.1:7964";
                 FormClosed += (sender, e) => browserBridge.Dispose();
             }
             catch { BrowserBridgeStatus = "Порт 7964 занят. Закрой другую копию менеджера и перезапусти эту."; }
+        }
+        private Task<object> HandleBrowserActionAsync(string action, JObject payload)
+        {
+            if (action == "/v1/extension/update") return UpdateInstalledExtensionAsync(payload);
+            var completion = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            if (IsDisposed || !IsHandleCreated) throw new InvalidOperationException("Открой менеджер.");
+            BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    if (PasswordPanel.Visible) throw new InvalidOperationException("Сначала разблокируй базу в менеджере.");
+                    if (accountFileUnreadable) throw new InvalidOperationException("Сначала восстанови файл аккаунтов.");
+                    if (action == "/v1/accounts/list")
+                    {
+                        completion.SetResult(new { ok = true, accounts = AccountsList.Where(account => account.UserID > 0)
+                            .Select(account => new { id = account.UserID.ToString(), username = account.Username, alias = account.Alias, folder = FolderName(account.Group) }).ToArray() });
+                        return;
+                    }
+                    long id;
+                    if (action == "/v1/browser/consume") id = browserIntents.Consume(payload?.Value<string>("nonce"));
+                    else if (!long.TryParse(payload?.Value<string>("id"), out id) || id <= 0) throw new InvalidOperationException("Выбери аккаунт из списка менеджера.");
+                    var selected = AccountsList.FirstOrDefault(account => account.UserID == id);
+                    if (selected == null) throw new InvalidOperationException("Аккаунт уже удалён из менеджера. Обнови список.");
+                    string cookie = selected.SecurityToken;
+                    if (string.IsNullOrWhiteSpace(cookie) || cookie.Length > 6000 || cookie.IndexOfAny(new[] { '\r', '\n', ';' }) >= 0)
+                        throw new InvalidOperationException("У аккаунта нет пригодной сессии. Добавь его через расширение после входа Roblox.");
+                    completion.SetResult(new { ok = true, userId = id.ToString(), username = selected.Username, cookie });
+                }
+                catch (Exception error) { completion.SetException(error); }
+            }));
+            return completion.Task;
+        }
+        private void OpenSelectedAccountBrowser()
+        {
+            var selection = AccountsView.SelectedObjects.Cast<Account>().ToList();
+            if (selection.Count != 1) { MessageBox.Show(this, "Выбери один аккаунт, который нужно открыть в браузере.", "Браузер"); return; }
+            if (browserBridge == null) { MessageBox.Show(this, BrowserBridgeStatus, "Подключение расширения"); return; }
+            try
+            {
+                string nonce = browserIntents.Create(selection[0].UserID);
+                SystemBrowser.Open("http://127.0.0.1:7964/browser/open/" + nonce);
+            }
+            catch (InvalidOperationException error) { MessageBox.Show(this, error.Message, "Браузер"); }
         }
         private async Task<object> CheckBrowserUpdatesAsync()
         {
