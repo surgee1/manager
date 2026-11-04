@@ -31,6 +31,7 @@ namespace RBX_Alt_Manager.Forms
             Preset("Gangsta. — Николас", "gangsta");
             Preset("Re:Zero — Субару", "subaru");
             Preset("Алекс Бенедетто", "alex");
+            Preset("HxH — Курапика", "kurapika");
             var motion = new CheckBox { Text = "Анимация фона и переливов", AutoSize = true,
                 Checked = ThemeEditor.AnimationsEnabled, Margin = new Padding(0, 12, 0, 12) };
             motion.CheckedChanged += (sender, e) => { ThemeEditor.AnimationsEnabled = motion.Checked; SaveAppearance(); };
@@ -114,6 +115,7 @@ namespace RBX_Alt_Manager.Forms
                 case "gangsta": ApplyColorPreset("#B6C0CB", "#61ACAB", "#0D1115", "#1A2229"); break;
                 case "subaru": ApplyColorPreset("#ED913D", "#A277DA", "#100F19", "#201B2A"); break;
                 case "alex": ApplyColorPreset("#80B7CF", "#A6C2C1", "#0C131A", "#182631"); break;
+                case "kurapika": ApplyColorPreset("#D9B35E", "#CB3F58", "#0C111D", "#192337"); break;
                 default: ApplyColorPreset("#AE36DB", "#20A5CF", "#111521", "#191D2A"); break;
             }
         }

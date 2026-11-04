@@ -46,6 +46,7 @@ namespace RBX_Alt_Manager.Classes
                 case "gangsta":
                 case "subaru":
                 case "alex":
+                case "kurapika":
                     Portrait(g, size, time, ThemeEditor.VisualProfile);
                     Stars(g, size, time);
                     break;

@@ -92,7 +92,7 @@ class UiSmoke
             Check(((Color)theme.GetField("AccentPrimary").GetValue(null)).ToArgb() == ColorTranslator.FromHtml("#397FFF").ToArgb(), "custom palette applied to live interface");
             Check(File.ReadAllText("RAMTheme.ini").Contains("AccentPrimary=#397FFF"), "custom palette persists to theme file");
             var profileMethod = settings.GetType().GetMethod("ApplyVisualProfile", Flags);
-            foreach (string profile in new[] { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex" })
+            foreach (string profile in new[] { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 Check((string)theme.GetField("VisualProfile").GetValue(null) == profile, "profile switches: " + profile);
@@ -100,7 +100,7 @@ class UiSmoke
             }
             Check(File.Exists("Themes/kaneki_manga.png"), "illustrated theme assets are bundled");
             var supported = (string[])theme.GetField("SupportedProfiles", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-            Check(supported.Length == 10 && Array.IndexOf(supported, "matrix") < 0 && Array.IndexOf(supported, "manga") < 0 && Array.IndexOf(supported, "sakura") < 0, "removed theme presets are absent from supported catalog");
+            Check(supported.Length == 11 && Array.IndexOf(supported, "matrix") < 0 && Array.IndexOf(supported, "manga") < 0 && Array.IndexOf(supported, "sakura") < 0, "removed theme presets are absent from supported catalog");
             profileMethod.Invoke(settings, new object[] { "manga" });
             Check((string)theme.GetField("VisualProfile").GetValue(null) == "kaneki_manga", "old removed theme resolves to a supported character profile");
             TabPage portraitColors = null;
@@ -116,7 +116,7 @@ class UiSmoke
             var portraitHashes = new System.Collections.Generic.HashSet<string>();
             var general = type.GetField("General").GetValue(null);
             general.GetType().GetMethod("Set").Invoke(general, new object[] { "AnimationEconomy", "false", null });
-            foreach (string profile in new[] { "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex" })
+            foreach (string profile in new[] { "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 using (var first = PortraitFrame(assembly, profile, .4))
