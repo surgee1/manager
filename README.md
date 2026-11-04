@@ -38,12 +38,12 @@ nuget restore 'RBX Alt Manager.sln'
 msbuild 'Tests/RegressionTests.csproj' /t:Build /p:Configuration=Debug /p:PostBuildEvent= /p:GenerateResourceUsePreserializedResources=true
 & 'build/Tests/SurgeeRegressionTests.exe'
 node --test Tests/extension.test.mjs
-./scripts/package.ps1 -Version '6.0.1'
+./scripts/package.ps1
 ```
 
 Архивы появятся в `build/artifacts`. Скрипт использует только файлы приложения и исходников и не берёт аккаунты или пользовательские настройки из рабочей папки.
 
-Workflow `.github/workflows/release.yml` собирает и публикует релиз при отправке тега `v6.0.1`. Для следующего релиза обнови версии в `ManagerUpdates.cs`, `AssemblyInfo.cs`, `Browser Extension/manifest.json` при изменении расширения и скрипте упаковки, затем отправь новый тег. `GH_TOKEN` workflow получает из стандартного `github.token`; личный токен в исходники не добавляется.
+Workflow `.github/workflows/release.yml` собирает и публикует релиз при отправке тега `vX.Y.Z`, совпадающего с версией приложения. Для следующего релиза обнови версии в `ManagerUpdates.cs`, `AssemblyInfo.cs`, `Browser Extension/manifest.json` при изменении расширения и скрипте упаковки, затем отправь новый тег. `GH_TOKEN` workflow получает из стандартного `github.token`; личный токен в исходники не добавляется.
 
 ## Лицензия и авторство
 

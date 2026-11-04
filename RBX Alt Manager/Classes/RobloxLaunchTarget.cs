@@ -85,13 +85,32 @@ namespace RBX_Alt_Manager.Classes
             target.LinkCode = (string)data["linkCode"] ?? "";
             target.AccessCode = (string)data["accessCode"] ?? "";
             Guid access;
-            if (target.AccessCode.Length == 0 && Guid.TryParse(target.LinkCode, out access))
+            // TryParse also accepts 32 digits as GUID format N. Roblox's numeric invite
+            // codes can have exactly that length; only a hyphenated GUID is an access code.
+            if (target.AccessCode.Length == 0 && Guid.TryParseExact(target.LinkCode, "D", out access))
             { target.AccessCode = target.LinkCode; target.LinkCode = ""; }
             if ((target.AccessCode.Length == 0 && target.LinkCode.Length == 0) ||
                 (target.LinkCode.Length > 0 && !Regex.IsMatch(target.LinkCode, "^[a-zA-Z0-9_-]{1,256}$")) ||
                 (target.AccessCode.Length > 0 && !Regex.IsMatch(target.AccessCode, "^[a-zA-Z0-9_-]{1,256}$")))
                 target.Error = "Roblox не вернул код подключения к приватному серверу. Проверь приглашение на сайте.";
             return target;
+        }
+
+        internal static bool TryReadAccessCode(string html, out string code)
+        {
+            code = "";
+            if (string.IsNullOrEmpty(html)) return false;
+            var match = Regex.Match(html, @"Roblox\.GameLauncher\.joinPrivateGame\(\s*\d+\s*,\s*['""](?<code>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})['""]");
+            if (!match.Success) return false;
+            code = match.Groups["code"].Value;
+            return true;
+        }
+
+        internal static string PrivateLauncherUrl(long place, string access, string link)
+        {
+            if (place <= 0 || string.IsNullOrWhiteSpace(access)) throw new ArgumentException("Не получен код доступа приватного сервера.");
+            return "https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId=" + place +
+                "&accessCode=" + HttpUtility.UrlEncode(access) + "&linkCode=" + HttpUtility.UrlEncode(link ?? "");
         }
     }
 }

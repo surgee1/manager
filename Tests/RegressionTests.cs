@@ -83,6 +83,15 @@ class RegressionTests
         Check(target.IsPrivate && target.AccessCode == uuid && target.LinkCode == "12345" && target.JobId == "", "modern share URL becomes private launch parameters instead of gameId URL");
         Check(RobloxLaunchTarget.FromShareReply(42, JObject.Parse("{\"privateServerInviteData\":{\"placeId\":99,\"linkCode\":123}} ")).Error.Length > 0, "share response place mismatch is explicit");
         Check(RobloxLaunchTarget.FromShareReply(42, JObject.Parse("{\"data\":\"bad\"}")).Error.Length > 0, "malformed invite data handled");
+        const string numericInvite = "12345678901234567890123456789012";
+        target = RobloxLaunchTarget.FromShareReply(42, JObject.Parse("{\"privateServerInviteData\":{\"placeId\":42,\"linkCode\":\"" + numericInvite + "\"}}"));
+        Check(target.LinkCode == numericInvite && target.AccessCode == "", "32-digit invite stays linkCode instead of being mistaken for GUID format N");
+        string accessCode;
+        Check(RobloxLaunchTarget.TryReadAccessCode("Roblox.GameLauncher.joinPrivateGame(42, '" + uuid + "');", out accessCode) && accessCode == uuid, "private page provides the separate access GUID");
+        var launchQuery = System.Web.HttpUtility.ParseQueryString(new Uri(RobloxLaunchTarget.PrivateLauncherUrl(42, accessCode, target.LinkCode)).Query);
+        Check(launchQuery["request"] == "RequestPrivateGame" && launchQuery["linkCode"] == numericInvite && launchQuery["accessCode"] == uuid, "private launch keeps both distinct codes exactly as resolved");
+        Check(!RobloxLaunchTarget.TryReadAccessCode(null, out accessCode), "missing private page handled without crash");
+        Reject(() => RobloxLaunchTarget.PrivateLauncherUrl(42, "", numericInvite), "incomplete private parameters fail before client launch");
 
         foreach (string name in new[] { "../bad.dll", "/bad.dll", "C:/bad.dll", "Themes/../../bad.png", "AccountData.json", "RAMSettings.ini", "RAMTheme.ini", "FavoritePlaces.json", "AccountFolders.json" })
             Check(!FileUpdateTransaction.Allowed(name), "updater excludes traversal and personal data: " + name);

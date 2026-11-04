@@ -458,18 +458,7 @@ namespace RBX_Alt_Manager
 
         public bool ParseAccessCode(RestResponse response, out string Code)
         {
-            Code = "";
-
-            Match match = Regex.Match(response.Content, "Roblox.GameLauncher.joinPrivateGame\\(\\d+\\,\\s*'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)'");
-
-            if (match.Success && match.Groups.Count == 2)
-            {
-                Code = match.Groups[1]?.Value ?? string.Empty;
-
-                return true;
-            }
-
-            return false;
+            return RobloxLaunchTarget.TryReadAccessCode(response?.Content, out Code);
         }
 
         public async Task<string> JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false, bool Internal = false) // oh god i am not refactoring everything to be async im sorry
@@ -566,6 +555,11 @@ namespace RBX_Alt_Manager
                     }
                 }
 
+                if (JoinVIP && string.IsNullOrEmpty(AccessCode))
+                    return "Roblox не вернул код доступа приватного сервера. Проверь приглашение на сайте и повтори. Клиент не запущен с неполными параметрами.";
+
+                string privateLauncher = JoinVIP ? RobloxLaunchTarget.PrivateLauncherUrl(PlaceID, AccessCode, LinkCode) : null;
+
                 if (JoinVIP)
                 {
                     var request = MakeRequest("/account/settings/private-server-invite-privacy").AddHeader("X-CSRF-TOKEN", Token).AddHeader("Referer", "https://www.roblox.com/my/account");
@@ -615,7 +609,7 @@ namespace RBX_Alt_Manager
                         ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
                         
                         if (JoinVIP)
-                            Roblox.Arguments = string.Format("--app -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}\"", Ticket, PlaceID, AccessCode, LinkCode);
+                            Roblox.Arguments = $"--app -t {Ticket} -j \"{privateLauncher}\"";
                         else if (FollowUser)
                             Roblox.Arguments = string.Format("--app -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Ticket, PlaceID);
                         else
@@ -637,7 +631,7 @@ namespace RBX_Alt_Manager
                             LaunchInfo.UseShellExecute = true;
 
                             if (JoinVIP)
-                                LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={PlaceID}&accessCode={AccessCode}&linkCode={LinkCode}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
+                                LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode(privateLauncher)}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
                             else if (FollowUser)
                                 LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={PlaceID}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
                             else
