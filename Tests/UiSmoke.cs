@@ -10,7 +10,7 @@ class UiSmoke
     const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
     static object Field(object value, string name) { return value.GetType().GetField(name, Flags).GetValue(value); }
     static void Check(bool value, string label) { if (!value) throw new Exception(label); File.AppendAllText("ui-checks.txt", "PASS " + label + Environment.NewLine); }
-    static void Capture(Form form, string path) { using (var b = new Bitmap(form.Width, form.Height)) { form.DrawToBitmap(b, new Rectangle(Point.Empty, form.Size)); b.Save(path); } }
+    static void Capture(Control form, string path) { using (var b = new Bitmap(form.Width, form.Height)) { form.DrawToBitmap(b, new Rectangle(Point.Empty, form.Size)); b.Save(path); } }
     static Form FindLaunch(Control parent) { foreach (Control child in parent.Controls) { if (child.GetType().Name == "ArgumentsForm") return (Form)child; var nested = FindLaunch(child); if (nested != null) return nested; } return null; }
     static void MissingEnglish(Control root, System.Collections.Generic.HashSet<string> missing)
     {
@@ -192,13 +192,14 @@ class UiSmoke
             Check(((ListView)view).OwnerDraw && ((ColumnHeader)prefixColumn).DisplayIndex == 2, "Prefix dropdown cells render between alias and notes");
             var item = view.GetType().GetMethod("ModelToItem").Invoke(view, new object[] { account });
             int prefixIndex = ((ListView)view).Columns.IndexOf((ColumnHeader)prefixColumn);
-            view.GetType().GetMethod("EditSubItem").Invoke(view, new object[] { item, prefixIndex });
+            type.GetMethod("ShowPrefixMenu", Flags).Invoke(main, new object[] { account, ((ListViewItem)item).SubItems[prefixIndex].Bounds });
             Application.DoEvents();
-            ComboBox prefixEditor = null;
-            foreach (Control child in ((Control)view).Controls) if (child is ComboBox) prefixEditor = (ComboBox)child;
-            Check(prefixEditor != null && prefixEditor.DropDownStyle == ComboBoxStyle.DropDownList && prefixEditor.Items.Count == 3, "Prefix cell opens three-choice dropdown");
-            prefixEditor.SelectedIndex = 1;
-            view.GetType().GetMethod("FinishCellEdit", Type.EmptyTypes).Invoke(view, null);
+            var prefixPopup = (ContextMenuStrip)Field(main, "prefixMenu");
+            Check(prefixPopup.Visible && prefixPopup.Items.Count == 3 && prefixPopup.Renderer.GetType().Name == "PrefixMenuRenderer", "Prefix cell opens themed three-choice dropdown");
+            Check(prefixPopup.Region != null && prefixPopup.BackColor == (Color)assembly.GetType("RBX_Alt_Manager.Forms.ThemeEditor").GetField("TextBoxesBackground").GetValue(null), "Prefix popup uses rounded theme surface");
+            foreach (Control child in ((Control)view).Controls) Check(!(child is ComboBox), "Prefix editor does not create native white ComboBox");
+            Capture(prefixPopup, "prefix-menu.png");
+            prefixPopup.Items[1].PerformClick();
             Check((string)accountType.GetMethod("GetField").Invoke(account, new object[] { "ClientPrefix" }) == "Legit", "Prefix dropdown commits Legit to selected account");
             type.GetMethod("SetAccountPrefix", Flags).Invoke(main, new object[] { account, "Cheat" });
             Check((string)accountType.GetMethod("GetField").Invoke(account, new object[] { "ClientPrefix" }) == "Cheat", "Cheat prefix replaces previous selection");
