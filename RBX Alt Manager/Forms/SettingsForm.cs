@@ -84,7 +84,7 @@ namespace RBX_Alt_Manager.Forms
                 WrapContents = false, AutoScroll = true, Padding = new Padding(18) };
             page.Controls.Add(flow);
             flow.Controls.Add(new Label { AutoSize = true, MaximumSize = new Size(560, 0),
-                Text = "Opera GX / браузер по умолчанию\n\n1. Установи расширение из папки Browser Extension (версия 0.4.0+).\n2. Вставь код ниже в расширение.\n3. Для добавления открой Roblox и нажми «Добавить в менеджер».\n4. Для входа выбери аккаунт в расширении или выдели его в менеджере и нажми «Браузер». После обновления файлов перезагрузи расширение в opera://extensions.\n\nПереключение меняет аккаунт во всех вкладках Roblox текущего профиля браузера.",
+                Text = "Opera GX / браузер по умолчанию\n\n1. Установи расширение из папки Browser Extension (версия 0.5.0+).\n2. Вставь код ниже в расширение.\n3. Для добавления открой Roblox и нажми «Добавить в менеджер».\n4. Для входа выбери аккаунт в расширении или выдели его в менеджере и нажми «Браузер». После обновления файлов перезагрузи расширение в opera://extensions.\n\nПереключение меняет аккаунт во всех вкладках Roblox текущего профиля браузера.",
                 Margin = new Padding(0, 0, 0, 18) });
             flow.Controls.Add(new Label { AutoSize = true, Text = "Код подключения к этому менеджеру" });
             var code = new TextBox { ReadOnly = true, Text = AccountManager.Instance.BrowserPairingCode,

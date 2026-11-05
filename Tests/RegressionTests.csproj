@@ -16,6 +16,7 @@
     <Compile Include="StartupUpdateTests.cs"/>
     <Compile Include="ClientLaunchTests.cs"/>
     <Compile Include="ClientBrowserTests.cs"/>
+    <Compile Include="CredentialTests.cs"/>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
   <Target Name="CopyBrowserTestRuntime" AfterTargets="Build">

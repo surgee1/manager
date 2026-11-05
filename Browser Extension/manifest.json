@@ -2,11 +2,11 @@
   "manifest_version": 3,
   "incognito": "not_allowed",
   "name": "Spectrum Manager",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Добавление и переключение своих аккаунтов Roblox через локальный Spectrum Manager.",
   "permissions": ["cookies", "storage", "activeTab"],
   "host_permissions": ["https://*.roblox.com/*", "http://127.0.0.1/*"],
-  "content_scripts": [{ "matches": ["http://127.0.0.1/browser/open/*"], "js": ["handoff.js"], "run_at": "document_idle", "all_frames": false }],
+  "content_scripts": [{ "matches": ["http://127.0.0.1/browser/open/*", "http://127.0.0.1/browser/login/*", "https://www.roblox.com/login*"], "js": ["handoff.js"], "run_at": "document_idle", "all_frames": false }],
   "background": { "service_worker": "background.js", "type": "module" },
   "action": { "default_title": "Spectrum Manager • Roblox", "default_popup": "popup.html" }
 }

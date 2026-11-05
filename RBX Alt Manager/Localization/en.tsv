@@ -460,5 +460,63 @@ Legit готов · 	Legit ready ·\s
 Шаблон названия региона: <city> — город, <countryCode> — код страны.	Region name template: <city> is the city; <countryCode> is the country code.
 Запускает несколько аккаунтов одновременно. По умолчанию включено. Для изменения закрой Roblox.	Launch multiple accounts. Enabled by default. Close Roblox before changing this setting.
 Roblox уже запущен. Закрой все его окна и перезапусти Spectrum Manager, чтобы включить несколько клиентов.	Roblox is already running. Close all Roblox windows and restart Spectrum Manager to enable multiple clients.
-Opera GX / браузер по умолчанию\n\n1. Установи расширение из папки Browser Extension (версия 0.4.0+).\n2. Вставь код ниже в расширение.\n3. Для добавления открой Roblox и нажми «Добавить в менеджер».\n4. Для входа выбери аккаунт в расширении или выдели его в менеджере и нажми «Браузер». После обновления файлов перезагрузи расширение в opera://extensions.\n\nПереключение меняет аккаунт во всех вкладках Roblox текущего профиля браузера.	Opera GX / default browser\n\n1. Install the extension from Browser Extension (version 0.4.0+).\n2. Paste the pairing code below into the extension.\n3. To add an account, open Roblox and click Add to manager.\n4. To sign in, select the account in the extension, or select it in the manager and click Browser. Reload the extension in opera://extensions after updating its files.\n\nSwitching changes the account in every Roblox tab in the current browser profile.
+Opera GX / браузер по умолчанию\n\n1. Установи расширение из папки Browser Extension (версия 0.5.0+).\n2. Вставь код ниже в расширение.\n3. Для добавления открой Roblox и нажми «Добавить в менеджер».\n4. Для входа выбери аккаунт в расширении или выдели его в менеджере и нажми «Браузер». После обновления файлов перезагрузи расширение в opera://extensions.\n\nПереключение меняет аккаунт во всех вкладках Roblox текущего профиля браузера.	Opera GX / default browser\n\n1. Install the extension from Browser Extension (version 0.5.0+).\n2. Paste the pairing code below into the extension.\n3. To add an account, open Roblox and click Add to manager.\n4. To sign in, select the account in the extension, or select it in the manager and click Browser. Reload the extension in opera://extensions after updating its files.\n\nSwitching changes the account in every Roblox tab in the current browser profile.
 Скопировать код	Copy code
+Добавить user:pass	Add user:pass
+Добавить user:pass…	Add user:pass…
+Войти в основном браузере	Sign in using default browser
+Войти в Chromium	Sign in using Chromium
+Выбрать способ добавления: основной браузер, Chromium, user:pass или cookie.	Choose how to add: default browser, Chromium, user:pass or cookie.
+Вставить user:pass	Paste user:pass
+Из файла .txt…	From .txt file…
+Очистить список	Clear list
+Добавить строку	Add row
+Способ входа	Sign-in method
+Основной браузер Windows (расширение 0.5.0+)	Default Windows browser (extension 0.5.0+)
+Сохранять введённые пароли в менеджере	Save entered passwords in the manager
+Одна пара username:password на строку. Пароли в списке скрыты.	One username:password pair per line. Passwords are masked in the list.
+Начать импорт	Start import
+Выбери файл user:pass	Choose a user:pass file
+Не удалось прочитать файл user:pass.	Could not read the user:pass file.
+Список очищен.	List cleared.
+Останавливаем импорт…	Stopping import…
+Отдельная сессия для каждого аккаунта. В основном браузере вход не меняется. CAPTCHA и подтверждение — вручную.	A separate session for each account. Your default browser stays signed in. Complete CAPTCHA and verification manually.
+Нужно расширение Spectrum 0.5.0+. Вход в обычном браузере временно переключается и восстанавливается после импорта.	Requires Spectrum extension 0.5.0+. The default browser temporarily switches accounts and restores your previous sign-in after import.
+В списке есть повторяющиеся логины или больше 100 аккаунтов.	The list contains duplicate usernames or more than 100 accounts.
+Ожидает входа	Waiting for sign-in
+В списке аккаунтов: 	Accounts in list:\s
+Добавлен	Added
+Отменено	Cancelled
+Вход не завершён. Попробуй снова.	Sign-in did not complete. Try again.
+Импорт завершён. Добавлено: 	Import complete. Added:\s
+Импорт остановлен. Уже добавленные аккаунты сохранены.	Import stopped. Accounts already added are saved.
+Сначала разблокируй базу аккаунтов.	Unlock the account database first.
+Открываем основной браузер. Нужно расширение Spectrum 0.5.0+.	Opening your default browser. Requires Spectrum extension 0.5.0+.
+Открываем официальный вход Roblox…	Opening the official Roblox sign-in page…
+Заверши вход в окне Chromium. CAPTCHA и подтверждение выполняются вручную.	Complete sign-in in Chromium. Solve CAPTCHA and verification manually.
+Roblox открыл другой аккаунт. Импорт отменён.	Roblox opened a different account. Import cancelled.
+Окно входа закрыто. Аккаунты в менеджере сохранены.	The sign-in window was closed. Accounts in the manager are saved.
+Не удалось завершить вход в Chromium. Проверь соединение и попробуй снова.	Could not complete Chromium sign-in. Check your connection and try again.
+Вход не завершён за 4 минуты. Проверь логин, пароль и подтверждение Roblox.	Sign-in timed out after 4 minutes. Check your username, password and Roblox verification.
+Аккаунт добавлен; проверь прежний вход в основном браузере.	Account added; check your previous sign-in in the default browser.
+Не удалось открыть Chromium. Этап: 	Could not open Chromium. Stage:\s
+запуск браузера	launching browser
+создание отдельной сессии	creating separate session
+создание окна	creating window
+установка сессии	setting session
+проверка аккаунта Roblox	verifying Roblox account
+открытие главной страницы Roblox	opening Roblox home
+Код: 	Code:\s
+Аккаунт сохранён.	Account saved.
+Roblox не ответил на проверку входа.	Roblox did not respond to sign-in verification.
+Проверка входа Roblox: HTTP 	Roblox sign-in verification: HTTP\s
+Повтори позже.	Try again later.
+Roblox открыл другой аккаунт. Окно закрыто; аккаунты в менеджере сохранены.	Roblox opened a different account. The window was closed; manager accounts are saved.
+Слишком большой список user:pass.	The user:pass list is too large.
+За один импорт можно добавить до 100 аккаунтов.	You can add up to 100 accounts per import.
+Вставь хотя бы одну строку username:password.	Paste at least one username:password line.
+Пароль не выводится в сообщениях.	Passwords are omitted from messages.
+ожидается username:password.	expected username:password.
+повторяющийся логин.	duplicate username.
+Состояние	Status
+Отменить	Cancel

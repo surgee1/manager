@@ -20,6 +20,7 @@ namespace RBX_Alt_Manager
             {
                 await Task.Delay(1800);
                 var release = await ManagerUpdates.CheckFreshAsync();
+                while (!IsDisposed && credentialImportForm?.Visible == true) await Task.Delay(1000);
                 if (IsDisposed || Disposing || !ShouldOfferUpdate(ManagerUpdates.Version, release.Version)) return;
                 using (var dialog = new Form { Text = "Доступно обновление", ClientSize = new Size(500, 206),
                     StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.FixedDialog,

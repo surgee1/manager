@@ -176,7 +176,7 @@ namespace RBX_Alt_Manager
             Hint(BrowserButton, "Открыть дополнительные действия и инструменты аккаунта.");
             Hint(LaunchNexus, "Открыть контроль запущенных аккаунтов и настройки автоперезапуска.");
             Hint(EditTheme, "Настроить цвета интерфейса.");
-            Hint(Add, "Открыть вход Roblox в основном браузере Windows. После входа нажми «Добавить в менеджер» в расширении.");
+            Hint(Add, "Выбрать способ добавления: основной браузер, Chromium, user:pass или cookie.");
             Hint(Remove, "Удалить выбранные записи из менеджера после подтверждения.");
             Hint(OpenBrowser, "Один аккаунт — браузер Windows через расширение. Несколько — отдельные окна Chromium с независимыми сессиями. Через меню можно открыть в Chromium и один аккаунт.");
             Hint(HideUsernamesCheckbox, "Скрыть имена аккаунтов в списке.");
@@ -187,8 +187,11 @@ namespace RBX_Alt_Manager
             OpenBrowserStrip.Items.Add("Открыть выбранный аккаунт", null, (sender, e) => OpenSelectedAccountBrowser());
             OpenBrowserStrip.Items.Add("Открыть выбранные в Chromium", null, (sender, e) => OpenSelectedInChromium());
             OpenBrowserStrip.Items.Add("Открыть Roblox с текущим входом браузера", null, (sender, e) => SystemBrowser.Open("https://www.roblox.com/"));
-            AddAccountsStrip.Items.Remove(bulkUserPassToolStripMenuItem);
-            AddAccountsStrip.Items.Remove(customURLJSToolStripMenuItem);
+            AddAccountsStrip.Items.Clear();
+            AddAccountsStrip.Items.Add("Войти в основном браузере", null, (sender, e) => SystemBrowser.Open("https://www.roblox.com/login"));
+            AddAccountsStrip.Items.Add("Войти в Chromium", null, (sender, e) => AddThroughChromium());
+            AddAccountsStrip.Items.Add("Добавить user:pass…", null, (sender, e) => ShowCredentialImport());
+            AddAccountsStrip.Items.Add(byCookieToolStripMenuItem);
             OpenBrowserStrip.Items.Remove(URLJSToolStripMenuItem);
             OpenBrowserStrip.Items.Remove(joinGroupToolStripMenuItem);
             var registration = new ToolStripMenuItem("Регистрация в браузере");

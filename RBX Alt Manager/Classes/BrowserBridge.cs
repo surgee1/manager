@@ -109,7 +109,7 @@ namespace RBX_Alt_Manager.Classes
                         origin = incomingOrigin;
                     }
                     if (route[0] == "OPTIONS") { Reply(stream, 204, null, origin); return; }
-                    if (route[0] == "GET" && Regex.IsMatch(route[1], "^/browser/open/[a-f0-9]{64}$") && origin == null)
+                    if (route[0] == "GET" && Regex.IsMatch(route[1], "^/browser/(open|login)/[a-f0-9]{64}$") && origin == null)
                     { ReplyBrowserPage(stream); return; }
                     headers.TryGetValue("Authorization", out string auth);
                     if (!Same(auth ?? "", "Bearer " + token))
@@ -125,7 +125,8 @@ namespace RBX_Alt_Manager.Classes
                         catch { Reply(stream, 502, new { error = "Не удалось проверить обновления GitHub. Повтори позже." }, origin); }
                         return;
                     }
-                    bool switching = browserAction != null && (route[1] == "/v1/accounts/open" || route[1] == "/v1/browser/consume" || route[1] == "/v1/extension/update");
+                    bool switching = browserAction != null && (route[1] == "/v1/accounts/open" || route[1] == "/v1/browser/consume" || route[1] == "/v1/extension/update" ||
+                        route[1] == "/v1/login/consume" || route[1] == "/v1/login/state" || route[1] == "/v1/login/import" || route[1] == "/v1/login/finish" || route[1] == "/v1/login/fail");
                     if (route[0] != "POST" || (route[1] != "/v1/accounts/import" && !switching))
                     { Reply(stream, 404, new { error = "Неизвестная команда." }, origin); return; }
                     if (!headers.TryGetValue("Content-Type", out string contentType) || !contentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
@@ -160,7 +161,7 @@ namespace RBX_Alt_Manager.Classes
         {
             const string html = "<!doctype html><html lang=ru><meta charset=utf-8><meta name=referrer content=no-referrer>" +
                 "<title>Вход • Spectrum Manager</title><style>body{margin:0;background:#101321;color:#edf0ff;font:17px 'Segoe UI',sans-serif;display:grid;min-height:100vh;place-items:center}main{max-width:650px;padding:40px;border:1px solid #695fa3;border-radius:24px;background:#1b2033}h1{font-size:28px}p{line-height:1.7;color:#c5cbe4}</style>" +
-                "<main><h1>Открываем выбранный аккаунт</h1><p id=surgee-status>Ждём расширение Spectrum Manager 0.4.0 или новее…</p>" +
+                "<main><h1>Spectrum Manager — Roblox</h1><p id=surgee-status>Ждём расширение Spectrum Manager 0.5.0 или новее…</p>" +
                 "<p>Если вход не начался, открой расширения браузера и перезагрузи Spectrum Manager после обновления файлов. Менеджер должен оставаться открытым.</p>" +
                 "<p>Переключится аккаунт Roblox во всём этом профиле браузера, включая другие вкладки.</p></main></html>";
             byte[] body = Encoding.UTF8.GetBytes(html);

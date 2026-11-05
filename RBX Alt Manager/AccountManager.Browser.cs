@@ -69,6 +69,7 @@ namespace RBX_Alt_Manager
         private Task<object> HandleBrowserActionAsync(string action, JObject payload)
         {
             if (action == "/v1/extension/update") return UpdateInstalledExtensionAsync(payload);
+            if (action.StartsWith("/v1/login/", StringComparison.Ordinal)) return HandleCredentialBrowserActionAsync(action, payload);
             var completion = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             if (IsDisposed || !IsHandleCreated) throw new InvalidOperationException("Открой менеджер.");
             BeginInvoke(new Action(() =>
@@ -125,9 +126,12 @@ namespace RBX_Alt_Manager
                 latestExtensionVersion = release.ExtensionVersion, extensionDownloadUrl = release.ExtensionUrl,
                 managerDownloadUrl = release.ManagerUrl, releasesUrl = ManagerUpdates.Repository + "/releases" };
         }
-        private async Task<object> ImportBrowserSessionAsync(string cookie)
+        private Task<object> ImportBrowserSessionAsync(string cookie) => ImportVerifiedBrowserSessionAsync(cookie);
+        private async Task<object> ImportVerifiedBrowserSessionAsync(string cookie, string expectedUsername = null, string passwordToSave = null, Func<bool> canStore = null)
         {
             if (IsDisposed || !IsHandleCreated) throw new InvalidOperationException("Открой окно менеджера.");
+            if (string.IsNullOrWhiteSpace(cookie) || cookie.Length > 6000 || cookie.IndexOfAny(new[] { ';', '\r', '\n', '\0' }) >= 0)
+                throw new InvalidOperationException("Неверный формат сессии Roblox.");
             using var handler = new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false };
             using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(15) };
             using var request = new HttpRequestMessage(HttpMethod.Get, "https://users.roblox.com/v1/users/authenticated");
@@ -141,13 +145,16 @@ namespace RBX_Alt_Manager
             long id = user.Value<long>("id");
             string name = user.Value<string>("name");
             if (id <= 0 || string.IsNullOrEmpty(name)) throw new InvalidOperationException("Roblox не вернул данные аккаунта.");
+            if (expectedUsername != null && !string.Equals(name, expectedUsername, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Roblox открыл другой аккаунт. Импорт отменён.");
             var completion = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             BeginInvoke(new Action(() =>
             {
                 try
                 {
                     if (PasswordPanel.Visible) throw new InvalidOperationException("Сначала разблокируй базу в менеджере.");
-                    completion.SetResult(StoreBrowserSession(cookie, id, name, user.Value<string>("displayName")));
+                    if (canStore != null && !canStore()) throw new InvalidOperationException("Вход отменён.");
+                    completion.SetResult(StoreBrowserSessionCore(cookie, id, name, user.Value<string>("displayName"), passwordToSave));
                 }
                 catch (Exception e) { completion.SetException(e); }
             }));
@@ -155,6 +162,8 @@ namespace RBX_Alt_Manager
         }
 
         private object StoreBrowserSession(string cookie, long id, string name, string displayName)
+            => StoreBrowserSessionCore(cookie, id, name, displayName, null);
+        private object StoreBrowserSessionCore(string cookie, long id, string name, string displayName, string password)
         {
             var account = AccountsList.FirstOrDefault(item => item.UserID == id);
             bool updated = account != null;
@@ -169,6 +178,7 @@ namespace RBX_Alt_Manager
             account.LastUse = DateTime.Now;
             account.CSRFToken = null;
             account.TokenSet = DateTime.MinValue;
+            if (password != null) account.SetImportedPassword(password);
             LastValidAccount = account;
             SaveAccounts(true);
             RefreshView(account);

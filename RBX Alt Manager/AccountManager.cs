@@ -1154,7 +1154,7 @@ namespace RBX_Alt_Manager
             catch { UiMessageBox.Show(this, "Удаление не выполнено. Не удалось создать копию или сохранить базу. Проверь доступ к папке менеджера.", "Данные сохранены"); }
         }
 
-        private void Add_Click(object sender, EventArgs e) => SystemBrowser.Open("https://www.roblox.com/login");
+        private void Add_Click(object sender, EventArgs e) => AddAccountsStrip.Show(Add, new System.Drawing.Point(0, Add.Height));
 
         private void DownloadProgressBar_Click(object sender, EventArgs e)
         {

@@ -88,6 +88,8 @@ namespace RBX_Alt_Manager
         }
 
         public Account() { }
+        internal void SetImportedPassword(string password)
+        { if (password == null || password.Length > 5000) throw new ArgumentException("Invalid imported password."); _Password = password; }
 
         internal static Account FromPortableRecord(JObject record)
         {

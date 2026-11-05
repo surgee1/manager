@@ -398,6 +398,10 @@
     <Compile Include="AccountManager.Clients.cs" />
     <Compile Include="AccountManager.Prefixes.cs" />
     <Compile Include="AccountManager.UpdateOffers.cs" />
+    <Compile Include="AccountManager.Credentials.cs" />
+    <Compile Include="Classes\CredentialPairs.cs" />
+    <Compile Include="Classes\CredentialLoginJobs.cs" />
+    <Compile Include="Forms\CredentialImportForm.cs" />
     <Compile Include="Forms\SettingsForm.Clients.cs" />
     <Compile Include="Classes\Cryptography.cs" />
     <Compile Include="Classes\MenuButton.cs">

@@ -374,6 +374,18 @@ class UiSmoke
             setLanguage.Invoke(null, new object[] { "en" });
             Check(settings.Text == "Settings • Spectrum Manager" && ((Button)Field(main, "JoinServer")).Text == "Join", "English applies live to main window and settings");
             Check(File.ReadAllText("RAMSettings.ini").Contains("InterfaceLanguage=en"), "Language preference saves to disk");
+            var credentialsType = assembly.GetType("RBX_Alt_Manager.Forms.CredentialImportForm");
+            using (var credentials = (Form)Activator.CreateInstance(credentialsType, Flags, null, new object[] { null, false }, null))
+            {
+                credentialsType.GetMethod("AddText", Flags).Invoke(credentials, new object[] { "Fixture_User:PRIVATE_UI_SENTINEL" });
+                var grid = (DataGridView)Field(credentials, "grid");
+                Check(grid.Rows.Count == 1 && (string)grid.Rows[0].Cells[1].Value == "••••••••", "Credential queue masks passwords");
+                Check(((TextBox)Field(credentials, "single")).UseSystemPasswordChar && grid.ReadOnly && grid.ClipboardCopyMode == DataGridViewClipboardCopyMode.Disable, "Credential form prevents accidental visible or grid clipboard password exposure");
+                var untranslated = new System.Collections.Generic.HashSet<string>(); MissingEnglish(credentials, untranslated);
+                File.WriteAllLines("credentials-missing-english.txt", untranslated);
+                Check(untranslated.Count == 0 && credentials.Text == "Add user:pass", "Credential import dialog supports English");
+                credentials.Show(); Pump(80); Capture(credentials, "credentials-english.png"); credentials.Close();
+            }
             var missingEnglish = new System.Collections.Generic.HashSet<string>(); MissingEnglish(main, missingEnglish); MissingEnglish(settings, missingEnglish); MissingEnglish(advanced, missingEnglish);
             File.WriteAllLines("missing-english.txt", missingEnglish);
             Check(missingEnglish.Count == 0, "Main, settings and advanced interface contain no untranslated static Russian text in English mode");

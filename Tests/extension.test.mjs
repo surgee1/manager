@@ -1,8 +1,74 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { importActiveAccount, managerRequest, checkUpdates, validReleaseUrl, MANAGER_URL, handoffNonce, openAccount, listAccounts, updateExtension } from '../Browser Extension/core.js';
+import { importActiveAccount, managerRequest, checkUpdates, validReleaseUrl, MANAGER_URL, handoffNonce, openAccount, listAccounts, updateExtension, loginNonce, loginWithCredentials, takeLoginCredentials, recoverCredentialLogin } from '../Browser Extension/core.js';
 
 const code = 'a'.repeat(64);
+const loginToken = 'b'.repeat(64);
+function credentialFixture(options = {}) {
+  const calls = [], sets = [], session = {};
+  const old = { name: '.ROBLOSECURITY', value: 'OLD_FIXTURE_SESSION', domain: '.roblox.com', path: '/', secure: true, httpOnly: true, sameSite: 'no_restriction', storeId: 'profile', session: true };
+  let current = old, delivered = false;
+  const sender = { frameId: 0, tab: { id: 77 }, url: 'https://www.roblox.com/login' };
+  const api = {
+    storage: { local: { get: async () => ({ pairingCode: code }) }, session: {
+      get: async () => ({ ...session }), set: async values => Object.assign(session, values), remove: async key => { delete session[key]; }
+    } },
+    tabs: { create: async details => { assert.equal(details.url, 'https://www.roblox.com/login'); return { id: 77 }; },
+      get: async () => ({ url: sender.url }), update: async (id, details) => { assert.equal(id, 77); calls.push({ refreshed: details.url }); } },
+    cookies: { getAllCookieStores: async () => [{ id: 'profile', tabIds: [41, 77] }],
+      getAll: async () => current ? [current] : [], remove: async () => { current = null; return {}; },
+      get: async () => ({ value: 'NEW_FIXTURE_SESSION' }),
+      set: async details => { sets.push(details); current = { ...details }; return current; } }
+  };
+  const fetcher = async (url, init) => {
+    calls.push({ url, init });
+    let value = { ok: true };
+    if (url.endsWith('/v1/login/consume')) value = { ok: true, username: 'Fixture_User', password: 'PRIVATE_FIXTURE_PASSWORD' };
+    if (url.endsWith('/v1/login/state')) {
+      assert.equal(takeLoginCredentials({ ...sender, tab: { id: 78 } }), null);
+      assert.equal(takeLoginCredentials({ ...sender, frameId: 1 }), null);
+      assert.equal(takeLoginCredentials({ ...sender, url: 'https://evil.test/login' }), null);
+      if (!delivered) { const data = takeLoginCredentials(sender); assert.equal(data.password, 'PRIVATE_FIXTURE_PASSWORD'); delivered = true; }
+      assert.equal(takeLoginCredentials(sender), null);
+      value = { ok: true, active: !options.cancelled };
+    }
+    if (url.endsWith('/users/authenticated')) {
+      assert.equal(init.credentials, 'include');
+      return { ok: !options.timeout, status: options.timeout ? 401 : 200, json: async () => ({ id: 42, name: options.wrong ? 'Wrong_User' : 'Fixture_User' }) };
+    }
+    if (url.endsWith('/v1/login/import')) {
+      assert.deepEqual(JSON.parse(init.body), { nonce: loginToken, cookie: 'NEW_FIXTURE_SESSION' });
+      value = { ok: true, username: 'Fixture_User', userId: '42', cookie: 'SHOULD_NOT_RETURN' };
+    }
+    return { ok: true, json: async () => value };
+  };
+  return { api, fetcher, calls, sets, session, current: () => current };
+}
+test('login handoff accepts only exact loopback URL', () => {
+  assert.equal(loginNonce(MANAGER_URL + '/browser/login/' + loginToken), loginToken);
+  for (const url of ['https://evil.test/browser/login/' + loginToken, MANAGER_URL + '/browser/login/' + loginToken + '?x=1', MANAGER_URL + '/browser/login/' + loginToken + '#x', MANAGER_URL + '/browser/open/' + loginToken]) assert.equal(loginNonce(url), null);
+});
+test('credential login verifies identity, passes password once to exact login tab and restores previous session', async () => {
+  const f = credentialFixture();
+  const result = await loginWithCredentials(f.api, loginToken, { id: 41 }, f.fetcher, async () => {});
+  assert.deepEqual(result, { username: 'Fixture_User', userId: '42', restoreFailed: false });
+  assert.equal(f.current().value, 'OLD_FIXTURE_SESSION'); assert.equal(f.current().httpOnly, true);
+  assert.deepEqual(f.session, {}); assert.equal(takeLoginCredentials({}), null);
+  assert.equal(f.calls.some(call => call.init?.body?.includes('PRIVATE_FIXTURE_PASSWORD')), false);
+  assert.ok(f.calls.some(call => call.url?.endsWith('/v1/login/finish')));
+});
+for (const option of ['wrong', 'cancelled', 'timeout']) test('credential login restores previous session on ' + option, async () => {
+  const f = credentialFixture({ [option]: true });
+  await assert.rejects(loginWithCredentials(f.api, loginToken, { id: 41 }, f.fetcher, async () => {}));
+  assert.equal(f.current().value, 'OLD_FIXTURE_SESSION'); assert.deepEqual(f.session, {});
+  assert.equal(f.calls.some(call => call.url?.endsWith('/v1/login/import')), false);
+});
+test('interrupted credential login restores session after worker restart', async () => {
+  const f = credentialFixture();
+  await f.api.storage.session.set({ spectrumCredentialLoginRestore: { storeId: 'profile', cookies: [{ ...f.current() }] } });
+  await f.api.cookies.remove(); await recoverCredentialLogin(f.api);
+  assert.equal(f.current().value, 'OLD_FIXTURE_SESSION'); assert.deepEqual(f.session, {});
+});
 function fixture(options = {}) {
   const calls = [];
   let reads = 0;
