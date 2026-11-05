@@ -384,7 +384,11 @@ class UiSmoke
                 var untranslated = new System.Collections.Generic.HashSet<string>(); MissingEnglish(credentials, untranslated);
                 File.WriteAllLines("credentials-missing-english.txt", untranslated);
                 Check(untranslated.Count == 0 && credentials.Text == "Add user:pass", "Credential import dialog supports English");
-                credentials.Show(); Pump(80); Capture(credentials, "credentials-english.png"); credentials.Close();
+                credentials.Show(); Pump(80);
+                var importStart = (Button)Field(credentials, "start");
+                Check(importStart.Visible && importStart.Right <= importStart.Parent.ClientSize.Width && importStart.Bottom <= importStart.Parent.ClientSize.Height, "Credential import action fits visible dialog");
+                Check(grid.Columns[0].HeaderText == "Username", "Credential table headers support English");
+                Capture(credentials, "credentials-english.png"); credentials.Close();
             }
             var missingEnglish = new System.Collections.Generic.HashSet<string>(); MissingEnglish(main, missingEnglish); MissingEnglish(settings, missingEnglish); MissingEnglish(advanced, missingEnglish);
             File.WriteAllLines("missing-english.txt", missingEnglish);

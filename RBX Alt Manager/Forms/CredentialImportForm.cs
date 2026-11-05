@@ -54,8 +54,13 @@ namespace RBX_Alt_Manager.Forms
             grid.Columns.Add("state", UiText.Translate("Состояние")); grid.Columns[2].FillWeight = 54;
             savePassword = new CheckBox { Text = "Сохранять введённые пароли в менеджере", Checked = storePasswords, Bounds = new Rectangle(18, 9, 480, 28) };
             status = new Label { Text = "Одна пара username:password на строку. Пароли в списке скрыты.", Bounds = new Rectangle(18, 40, 480, 44), Font = new Font("Segoe UI", 9) };
-            start = Button("Начать импорт", new Rectangle(510, 44, 218, 38)); start.Anchor = AnchorStyles.Top | AnchorStyles.Right; start.Accent = true;
-            stop = Button("Отменить", new Rectangle(510, 0, 218, 36)); stop.Anchor = AnchorStyles.Top | AnchorStyles.Right; stop.Enabled = false;
+            start = Button("Начать импорт", new Rectangle(510, 44, 218, 38)); start.Accent = true;
+            stop = Button("Отменить", new Rectangle(510, 0, 218, 36)); stop.Enabled = false;
+            bottom.Resize += (sender, e) =>
+            {
+                start.Left = stop.Left = bottom.ClientSize.Width - 236;
+                status.Width = savePassword.Width = Math.Max(180, start.Left - 36);
+            };
             bottom.Controls.AddRange(new Control[] { savePassword, status, stop, start });
             Controls.Add(grid); Controls.Add(bottom); Controls.Add(top);
             paste.Click += (sender, e) => { if (Clipboard.ContainsText()) AddText(Clipboard.GetText()); };
