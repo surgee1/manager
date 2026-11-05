@@ -33,4 +33,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SurgeeRegressionTests")]
-[assembly: AssemblyFileVersion("6.2.11.0")]
+[assembly: AssemblyFileVersion("6.2.12.0")]

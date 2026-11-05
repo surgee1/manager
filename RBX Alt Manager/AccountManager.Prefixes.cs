@@ -143,11 +143,16 @@ namespace RBX_Alt_Manager
             { graphics.FillPath(brush, path); graphics.DrawPath(border, path); }
             graphics.SmoothingMode = previous;
             string prefix = RobloxClients.Prefix(account);
+            DrawContent(graphics, box, prefix == "" ? UiText.Translate("Без префикса") : prefix, ListView.Font, Forms.ThemeEditor.TextBoxesForeground);
+        }
+        internal static void DrawContent(Graphics graphics, Rectangle box, string value, Font font, Color color)
+        {
             var text = new Rectangle(box.Left + 7, box.Top, box.Width - 23, box.Height);
-            TextRenderer.DrawText(graphics, prefix == "" ? UiText.Translate("Без префикса") : prefix, ListView.Font, text, Forms.ThemeEditor.TextBoxesForeground,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
-            TextRenderer.DrawText(graphics, "▾", ListView.Font, new Rectangle(box.Right - 18, box.Top, 16, box.Height), Forms.ThemeEditor.LabelForeground,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            const TextFormatFlags graphicsFlags = TextFormatFlags.PreserveGraphicsTranslateTransform | TextFormatFlags.PreserveGraphicsClipping;
+            TextRenderer.DrawText(graphics, value, font, text, color,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | graphicsFlags);
+            TextRenderer.DrawText(graphics, "▾", font, new Rectangle(box.Right - 18, box.Top, 16, box.Height), color,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | graphicsFlags);
         }
     }
 }

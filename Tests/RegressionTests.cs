@@ -42,6 +42,7 @@ class RegressionTests
     static async Task Run()
     {
         PortableBackupChecks();
+        PrefixRenderingTests.Run(Check);
         await CredentialTests.Run(Check, Reject);
         BrowserBridgeTests.Run(Check, Reject);
         ExtensionUpdateTests.Run(Check, Reject);
