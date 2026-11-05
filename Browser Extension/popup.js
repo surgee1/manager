@@ -8,6 +8,18 @@ const pairing = document.getElementById('pairing');
 const refresh = document.getElementById('refresh-accounts');
 const search = document.getElementById('account-search');
 const accounts = document.getElementById('accounts');
+const saveLoginPasswords = document.getElementById('save-login-passwords');
+chrome.storage.local.get('saveLoginPasswords').then(value => { saveLoginPasswords.checked = value.saveLoginPasswords === true; });
+saveLoginPasswords.addEventListener('change', async () => {
+  saveLoginPasswords.disabled = true;
+  try {
+    const response = await chrome.runtime.sendMessage({ action: 'password-setting', enabled: saveLoginPasswords.checked });
+    if (!response?.ok) throw new Error(response?.error || 'Не удалось изменить настройку.');
+    status.className = '';
+    status.textContent = response.result.enabled ? 'Теперь войди в Roblox по нику и паролю. После входа аккаунт сохранится автоматически.' : 'Сохранение паролей через расширение выключено.';
+  } catch (error) { saveLoginPasswords.checked = !saveLoginPasswords.checked; status.className = 'error'; status.textContent = error.message; }
+  finally { saveLoginPasswords.disabled = false; }
+});
 let accountItems = [], busy = false;
 
 function setBusy(value) {
@@ -31,14 +43,20 @@ function renderAccounts() {
   if (!filtered.length) { const empty = document.createElement('p'); empty.className = 'intro'; empty.textContent = query ? 'Ничего не найдено.' : 'Нет аккаунтов. Добавь их в менеджер.'; accounts.append(empty); }
   if (filtered.length > 100) { const hint = document.createElement('p'); hint.className = 'intro'; hint.textContent = 'Показаны первые 100. Уточни поиск.'; accounts.append(hint); }
 }
-async function loadAccounts() {
+async function loadAccounts(preserveStatus = false) {
   if (busy) return;
   setBusy(true);
   try {
     const response = await chrome.runtime.sendMessage({ action: 'accounts' });
     if (!response?.ok) throw new Error(response?.error || 'Нет ответа от менеджера.');
     accountItems = response.result.accounts; renderAccounts();
-    status.className = ''; status.textContent = `Аккаунтов в менеджере: ${accountItems.length}. Выбери нужный для входа.`;
+    if (preserveStatus !== true) {
+      const saved = await chrome.storage.session?.get('passwordLoginStatus');
+      const result = saved?.passwordLoginStatus;
+      status.className = result ? (result.ok ? 'success' : 'error') : '';
+      status.textContent = result ? (result.ok ? `Добавлен: ${result.username}${result.passwordSaved ? ' · пароль сохранён' : ''}` : result.error)
+        : `Аккаунтов в менеджере: ${accountItems.length}. Выбери нужный для входа.`;
+    }
   } catch (error) { status.className = 'error'; status.textContent = error.message; }
   finally { setBusy(false); }
 }
@@ -58,11 +76,11 @@ async function run(message) {
     if (message.action === 'open') status.textContent = `Открыт аккаунт: ${result.username}`;
     else if (message.action === 'import') {
       const display = result.displayName && result.displayName !== result.username ? ` (${result.displayName})` : '';
-      status.textContent = `${result.updated ? 'Обновлён' : 'Добавлен'}: ${result.username}${display}`;
+      status.textContent = `${result.updated ? 'Обновлён' : 'Добавлен'}: ${result.username}${display}${result.passwordSaved ? ' · пароль сохранён' : ''}`;
     } else { status.textContent = 'Менеджер подключён. Теперь можно добавлять аккаунты.'; code.value = ''; pairing.open = false; }
   } catch (error) { status.className = 'error'; status.textContent = error.message; }
   finally { setBusy(false); }
-  if (message.action === 'connect' || message.action === 'import') await loadAccounts();
+  if (message.action === 'connect' || message.action === 'import') await loadAccounts(true);
 }
 add.addEventListener('click', () => run({ action: 'import' }));
 connect.addEventListener('click', () => run({ action: 'connect', code: code.value.trim() }));

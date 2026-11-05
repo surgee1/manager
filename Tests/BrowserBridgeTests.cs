@@ -23,6 +23,7 @@ static class BrowserBridgeTests
         string token = new string('a', 64), origin = "chrome-extension://" + new string('a', 32);
         using var bridge = new BrowserBridge(0, token, cookie => Task.FromResult<object>(new { ok = true }), null, (route, payload) =>
         {
+            if (route == "/v1/accounts/import-password") return Task.FromResult<object>(new { ok = true, passwordSaved = payload.Value<string>("username") == "Fixture_User" && payload.Value<string>("password") == new string('Ж', 1024) });
             if (route == "/v1/accounts/list") return Task.FromResult<object>(new { ok = true, accounts = new[] { new { id = "42", username = "SyntheticName" } } });
             long id;
             if (route == "/v1/browser/consume") id = intents.Consume((string)payload["nonce"]);
@@ -31,6 +32,12 @@ static class BrowserBridgeTests
             return Task.FromResult<object>(new { ok = true, userId = id.ToString(), username = "SyntheticName", cookie = "SYNTHETIC_SESSION" });
         });
         bridge.Start(); int port = bridge.Port;
+        string loginPayload = new JObject { ["cookie"] = new string('a', 6000), ["username"] = "Fixture_User", ["password"] = new string('Ж', 1024) }.ToString();
+        check(Request(port, "POST", "/v1/accounts/import-password", null, origin, loginPayload).StartsWith("HTTP/1.1 401"), "password import requires pairing");
+        check(Request(port, "POST", "/v1/accounts/import-password", token, "https://www.roblox.com", loginPayload).StartsWith("HTTP/1.1 403"), "Roblox page cannot call password import directly");
+        var passwordResponse = Request(port, "POST", "/v1/accounts/import-password", token, origin, loginPayload);
+        check(passwordResponse.StartsWith("HTTP/1.1 200") && passwordResponse.Contains("true") && !passwordResponse.Contains(new string('Ж', 10)), "password import supports UTF-8 credentials without echoing secrets");
+        check(Request(port, "GET", "/v1/accounts/import-password", token, origin).StartsWith("HTTP/1.1 404"), "password import cannot be triggered by GET");
         var response = Request(port, "GET", "/v1/accounts/list", null, origin);
         check(response.StartsWith("HTTP/1.1 401") && !response.Contains("SyntheticName"), "account metadata requires pairing");
         response = Request(port, "GET", "/v1/accounts/list", token, "https://example.com");

@@ -92,7 +92,7 @@ namespace RBX_Alt_Manager.Classes
                     if (route[0] == "POST")
                     {
                         if (headers.ContainsKey("Transfer-Encoding") || !headers.TryGetValue("Content-Length", out string size) ||
-                            !int.TryParse(size, out int length) || length < 1 || length > 8192)
+                            !int.TryParse(size, out int length) || length < 1 || length > 32768)
                         { Reply(stream, 413, new { error = "Неверный размер запроса." }, null); return; }
                         body = new byte[length]; int read = 0;
                         while (read < length)
@@ -115,7 +115,7 @@ namespace RBX_Alt_Manager.Classes
                     if (!Same(auth ?? "", "Bearer " + token))
                     { Reply(stream, 401, new { error = "Неверный код подключения. Скопируй его из настроек менеджера." }, origin); return; }
                     if (route[0] == "GET" && route[1] == "/v1/status")
-                    { Reply(stream, 200, new { ok = true, app = "Spectrum Manager", version = ManagerUpdates.Version }, origin); return; }
+                    { Reply(stream, 200, new { ok = true, app = "Spectrum Manager", version = ManagerUpdates.Version, passwordImport = true, savePasswords = AccountManager.General?.Get<bool>("SavePasswords") ?? true }, origin); return; }
                     if (route[0] == "GET" && route[1] == "/v1/accounts/list" && browserAction != null)
                     { Reply(stream, 200, await browserAction(route[1], null), origin); return; }
                     if (route[0] == "GET" && route[1] == "/v1/updates" && updates != null)
@@ -125,7 +125,7 @@ namespace RBX_Alt_Manager.Classes
                         catch { Reply(stream, 502, new { error = "Не удалось проверить обновления GitHub. Повтори позже." }, origin); }
                         return;
                     }
-                    bool switching = browserAction != null && (route[1] == "/v1/accounts/open" || route[1] == "/v1/browser/consume" || route[1] == "/v1/extension/update" ||
+                    bool switching = browserAction != null && (route[1] == "/v1/accounts/import-password" || route[1] == "/v1/accounts/open" || route[1] == "/v1/browser/consume" || route[1] == "/v1/extension/update" ||
                         route[1] == "/v1/login/consume" || route[1] == "/v1/login/state" || route[1] == "/v1/login/import" || route[1] == "/v1/login/finish" || route[1] == "/v1/login/fail");
                     if (route[0] != "POST" || (route[1] != "/v1/accounts/import" && !switching))
                     { Reply(stream, 404, new { error = "Неизвестная команда." }, origin); return; }

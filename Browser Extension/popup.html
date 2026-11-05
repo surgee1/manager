@@ -12,6 +12,8 @@
   </section>
   <p class="intro">Добавить текущий вход? Открой Roblox в активной вкладке.</p>
   <button id="import" class="primary">Добавить в менеджер</button>
+  <label class="password-option"><input id="save-login-passwords" type="checkbox">Сохранять пароль при входе в Roblox</label>
+  <p class="intro password-hint">Включи опцию и войди на roblox.com/login по нику и паролю. После успешного входа аккаунт добавится с паролем автоматически. Для уже открытой сессии войди заново. Нужен менеджер 6.2.13+.</p>
   <p id="status" role="status" aria-live="polite">Первый запуск? Подключи менеджер ниже.</p>
   <details id="pairing"><summary>Подключение к менеджеру</summary>
     <label for="code">Код из Настройки → Расширение</label>
@@ -27,6 +29,6 @@
     <p class="intro">Менеджер скачает обновление из surgee1/manager, проверит ZIP и заменит файлы расширения. Затем оно перезагрузится. Если папку не удастся определить, менеджер предложит выбрать её один раз.</p>
     <button id="reload-extension">Перезагрузить расширение</button>
   </details>
-  <footer>Сессии передаются между расширением и менеджером только на этом компьютере по твоему действию. Для переключения нужен менеджер 6.2.0+.</footer>
+  <footer>Сессии и выбранные для сохранения пароли передаются только локальному менеджеру на этом компьютере.</footer>
   <script src="popup.js" type="module"></script>
 </body></html>

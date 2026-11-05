@@ -128,7 +128,7 @@ namespace RBX_Alt_Manager.Forms
             var accounts = SettingsPage("Аккаунты");
             InitializeBackupSettings(accounts);
             Section(accounts, "СЕССИИ И ДАННЫЕ");
-            Setting(accounts, SavePasswordCB, "Сохранять пароли при ручном добавлении", "Расширение добавляет сессию и ник; пароль Roblox оно не читает.");
+            Setting(accounts, SavePasswordCB, "Сохранять пароли при добавлении", "Chromium сохраняет пароль, введённый при входе. В расширении 0.6.0+ отдельно включи сохранение паролей.");
             Setting(accounts, DisableAgingAlertCB, "Скрывать отметки о долгом простое", "Отключает жёлтые и красные индикаторы у аккаунтов, которыми давно не пользовались.");
             Setting(accounts, AutoCookieRefreshCB, "Автоматически обновлять старые сессии", "Старый механизм обновления может завершать другие сеансы Roblox этого аккаунта. По умолчанию выключен.");
             Setting(accounts, EncryptionSelectionButton, "Защита файла аккаунтов…", "Выбрать защиту Windows или мастер-пароль для сохранённой базы.");

@@ -19,6 +19,11 @@ static class ExtensionUpdateTests
         var unpacked = ExtensionUpdates.ReadPackage(zip, "0.4.0");
         check(unpacked.Count == 7, "extension ZIP validates required flat files and expected version");
         reject(() => ExtensionUpdates.ReadPackage(zip, "0.5.0"), "extension package version mismatch rejected");
+        var withPasswords = new Dictionary<string, byte[]>(files) { ["manifest.json"] = Manifest("0.6.0"), ["capture.js"] = Encoding.UTF8.GetBytes("synthetic-capture"), ["passwords.js"] = Encoding.UTF8.GetBytes("synthetic-password-import") };
+        string passwordZip = Path.Combine(root, "password-extension.zip"); WriteZip(passwordZip, withPasswords);
+        check(ExtensionUpdates.ReadPackage(passwordZip, "0.6.0").Count == 9, "extension 0.6.0 update accepts both password modules");
+        withPasswords.Remove("capture.js"); string incompleteZip = Path.Combine(root, "incomplete-password.zip"); WriteZip(incompleteZip, withPasswords);
+        reject(() => ExtensionUpdates.ReadPackage(incompleteZip, "0.6.0"), "extension 0.6.0 requires complete password modules before updating");
         string target = Path.Combine(root, "installed"); Directory.CreateDirectory(target);
         File.WriteAllBytes(Path.Combine(target, "manifest.json"), Manifest("0.3.0"));
         foreach (string name in files.Keys.Where(name => name != "manifest.json" && name != "handoff.js")) File.WriteAllText(Path.Combine(target, name), "synthetic-old-file");

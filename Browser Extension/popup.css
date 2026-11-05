@@ -12,3 +12,4 @@ details+details{margin-top:16px}details .intro{margin:12px 0}a{display:block;col
 .section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;font-size:14px}.small{width:auto;padding:7px 12px;font-size:11px}
 #install-update{margin-top:9px}body{max-height:600px;overflow-y:auto}
 .accounts{display:grid;gap:7px;max-height:225px;overflow-y:auto;margin:0 0 12px}.account{text-align:left;padding:11px 13px}.account strong,.account span{display:block;overflow-wrap:anywhere}.account span{font-size:11px;color:#b7c3e3;margin-top:4px}.warning{font-size:11px;margin-bottom:20px}#account-search{font-size:12px}
+.password-option{display:flex;align-items:center;gap:9px;font-size:12px;line-height:1.5;color:#edf0ff}.password-option input{width:16px;height:16px;margin:0;flex:none}.password-hint{font-size:11px;margin:8px 0 12px}

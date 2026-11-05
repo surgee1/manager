@@ -385,6 +385,7 @@
     </Compile>
     <Compile Include="Classes\Batch.cs" />
     <Compile Include="Classes\AccountBrowser.cs" />
+    <Compile Include="Classes\BrowserLoginCapture.cs" />
     <Compile Include="Classes\RoundedWindow.cs" />
     <Compile Include="Classes\UpdateParentProcess.cs" />
     <Compile Include="Classes\StartupDirectory.cs" />

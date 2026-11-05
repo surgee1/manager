@@ -43,5 +43,15 @@ internal static class CredentialTests
         jobs.Remove(nonce);
         foreach (var pair in parsed) pair.Dispose();
         check(parsed[0].Password == null && parsed[1].Password == null, "Credential references cleared on disposal");
+        using (var capture = new BrowserLoginCapture())
+        {
+            capture.Record("Fixture_User", "SYNTHETIC_PASSWORD");
+            check(capture.PasswordFor("fixture_user") == "SYNTHETIC_PASSWORD", "Chromium password follows verified username ignoring case");
+            check(capture.PasswordFor("Other_User") == null, "Chromium cannot assign a captured password to another identity");
+            capture.Record("Fixture_User", "CORRECTED_PASSWORD");
+            check(capture.PasswordFor("Fixture_User") == "CORRECTED_PASSWORD", "A corrected login replaces the failed password attempt");
+            capture.Dispose(); capture.Record("Fixture_User", "LATE_PASSWORD");
+            check(capture.PasswordFor("Fixture_User") == null, "Closing login revokes late callbacks and clears password references");
+        }
     }
 }

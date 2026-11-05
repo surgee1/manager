@@ -22,7 +22,7 @@ jobs:
       - name: Regression checks
         run: '& "build/Tests/SurgeeRegressionTests.exe"; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
       - name: Extension checks
-        run: node --test Tests/extension.test.mjs
+        run: node --test Tests/*.test.mjs
       - name: Cross-architecture updater checks
         shell: pwsh
         run: |

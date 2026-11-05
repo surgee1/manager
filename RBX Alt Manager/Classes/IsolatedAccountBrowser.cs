@@ -1,6 +1,7 @@
 using Newtonsoft.Json.Linq;
 using PuppeteerSharp;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,7 @@ namespace RBX_Alt_Manager.Classes
     {
         private IBrowser browser;
         private string profile;
+        private Process ownedProcess;
         private readonly SemaphoreSlim gate = new SemaphoreSlim(1, 1);
         internal static string FindEngine()
         {
@@ -28,11 +30,28 @@ namespace RBX_Alt_Manager.Classes
             string engine = FindEngine();
             if (engine == null) throw new InvalidOperationException("Для отдельных окон нужен Chrome или Microsoft Edge. Установи один из них и повтори запуск.");
             profile = Path.Combine(Path.GetTempPath(), "Spectrum-Browser-" + Guid.NewGuid().ToString("N"));
-            browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            // Edge may hand startup to a child process before Puppeteer sees a stderr endpoint.
+            // Read Chromium's endpoint file instead; it belongs only to this temporary profile.
+            ownedProcess = Process.Start(new ProcessStartInfo(engine,
+                "--remote-debugging-port=0 --remote-debugging-address=127.0.0.1 --user-data-dir=\"" + profile +
+                "\" --no-first-run --no-default-browser-check --disable-extensions about:blank")
+                { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden });
+            string endpointFile = Path.Combine(profile, "DevToolsActivePort");
+            var timer = Stopwatch.StartNew();
+            while (timer.Elapsed < TimeSpan.FromSeconds(45))
             {
-                ExecutablePath = engine, Headless = false, UserDataDir = profile, DefaultViewport = null, Timeout = 45000,
-                Args = new[] { "--no-first-run", "--no-default-browser-check", "--disable-extensions" }
-            }).ConfigureAwait(false);
+                string[] endpoint = null;
+                try { if (File.Exists(endpointFile)) endpoint = File.ReadAllLines(endpointFile); } catch (IOException) { }
+                if (endpoint?.Length >= 2 && int.TryParse(endpoint[0], out int port) && port > 0 && port <= 65535 &&
+                    System.Text.RegularExpressions.Regex.IsMatch(endpoint[1], "^/devtools/browser/[A-Za-z0-9-]+$"))
+                {
+                    browser = await Puppeteer.ConnectAsync(new ConnectOptions { BrowserWSEndpoint = "ws://127.0.0.1:" + port + endpoint[1], DefaultViewport = null }).ConfigureAwait(false);
+                    return;
+                }
+                await Task.Delay(150).ConfigureAwait(false);
+            }
+            try { if (ownedProcess != null && !ownedProcess.HasExited) ownedProcess.Kill(); } catch { }
+            throw new InvalidOperationException("Браузер не открыл локальное подключение за 45 секунд. Закрой пустое окно и повтори вход.");
             // Credentials live only in separate incognito contexts, never the user's browser profile.
         }
         internal Task<IPage> CreateWindowAsync() => Task.Run(CreateWindowCoreAsync);
@@ -67,24 +86,21 @@ namespace RBX_Alt_Manager.Classes
             }
             finally { gate.Release(); }
         }
-        internal async Task<string> SignInAsync(CredentialPair credentials, IProgress<string> progress, CancellationToken cancel)
+        internal async Task<BrowserSignInResult> SignInAsync(CredentialPair credentials, IProgress<string> progress, CancellationToken cancel, bool savePassword = false)
         {
             var page = await CreateWindowAsync().ConfigureAwait(false);
+            using var capture = new BrowserLoginCapture();
             using var closeOnCancel = cancel.Register(() => { _ = CloseLoginContextQuietlyAsync(page); });
             try
             {
                 progress?.Report("Открываем официальный вход Roblox…");
+                if (savePassword) await capture.AttachAsync(page).ConfigureAwait(false);
                 await page.GoToAsync("https://www.roblox.com/login", new NavigationOptions { Timeout = 45000, WaitUntil = new[] { WaitUntilNavigation.DOMContentLoaded } }).ConfigureAwait(false);
                 if (credentials != null)
                 {
                     await page.WaitForSelectorAsync("#login-password, input[type=password]", new WaitForSelectorOptions { Timeout = 30000 }).ConfigureAwait(false);
-                    await page.EvaluateFunctionAsync(@"(username,password) => {
-                        const u=document.querySelector('#login-username,input[name=username],input[autocomplete=username]');
-                        const p=document.querySelector('#login-password,input[type=password]');
-                        if(!u||!p) throw new Error('Login form not found');
-                        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-                        for(const [element,value] of [[u,username],[p,password]]) { setter.call(element,value); element.dispatchEvent(new Event('input',{bubbles:true})); element.dispatchEvent(new Event('change',{bubbles:true})); }
-                    }", credentials.Username, credentials.Password).ConfigureAwait(false);
+                    await page.TypeAsync("#login-username", credentials.Username).ConfigureAwait(false);
+                    await page.TypeAsync("#login-password", credentials.Password).ConfigureAwait(false);
                     await page.WaitForFunctionAsync("() => { const b=document.querySelector('#login-button'); return b && !b.disabled; }", new WaitForFunctionOptions { Timeout = 10000 }).ConfigureAwait(false);
                     await page.ClickAsync("#login-button").ConfigureAwait(false);
                 }
@@ -110,7 +126,8 @@ namespace RBX_Alt_Manager.Classes
                                     if (response.StatusCode == HttpStatusCode.OK)
                                     {
                                         var identity = JObject.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
-                                        if (identity.Value<long>("id") > 0 && (credentials == null || string.Equals(credentials.Username, identity.Value<string>("name"), StringComparison.OrdinalIgnoreCase))) return cookie;
+                                        if (identity.Value<long>("id") > 0 && (credentials == null || string.Equals(credentials.Username, identity.Value<string>("name"), StringComparison.OrdinalIgnoreCase)))
+                                            return new BrowserSignInResult { Cookie = cookie, Username = identity.Value<string>("name"), Password = savePassword ? capture.PasswordFor(identity.Value<string>("name")) ?? credentials?.Password : null };
                                         throw new InvalidOperationException("Roblox открыл другой аккаунт. Импорт отменён.");
                                     }
                                     if ((int)response.StatusCode == 429) await Task.Delay(15000, cancel).ConfigureAwait(false);
@@ -124,7 +141,7 @@ namespace RBX_Alt_Manager.Classes
             }
             catch (OperationCanceledException) { throw; }
             catch (InvalidOperationException) { throw; }
-            catch { throw new InvalidOperationException("Не удалось завершить вход в Chromium. Проверь соединение и попробуй снова."); }
+            catch (Exception error) { throw new InvalidOperationException("Не удалось завершить вход в Chromium. Код: " + error.GetType().Name + ". Проверь соединение и попробуй снова.", error); }
             finally { try { await page.BrowserContext.CloseAsync().ConfigureAwait(false); } catch { } }
         }
         private static async Task CloseLoginContextQuietlyAsync(IPage page)
@@ -163,6 +180,7 @@ namespace RBX_Alt_Manager.Classes
         {
             if (browser != null) await browser.CloseAsync().ConfigureAwait(false);
             browser = null;
+            ownedProcess?.Dispose(); ownedProcess = null;
             if (profile != null && Path.GetFileName(profile).StartsWith("Spectrum-Browser-", StringComparison.Ordinal) && Path.GetDirectoryName(profile) == Path.GetTempPath().TrimEnd('\\'))
                 try { Directory.Delete(profile, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         }

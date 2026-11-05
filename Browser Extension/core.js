@@ -4,7 +4,7 @@ export const MANAGER_URL = 'http://127.0.0.1:7964';
 export async function managerRequest(path, token, body, fetcher = fetch) {
   if (!/^[a-f0-9]{64}$/i.test(token || '')) throw new UserError('Вставь код из Настройки → Расширение в менеджере.');
   if (!['/v1/status', '/v1/accounts/import', '/v1/updates', '/v1/accounts/list', '/v1/accounts/open', '/v1/browser/consume', '/v1/extension/update',
-    '/v1/login/consume', '/v1/login/state', '/v1/login/import', '/v1/login/finish', '/v1/login/fail'].includes(path)) throw new UserError('Неизвестная команда.');
+    '/v1/accounts/import-password', '/v1/login/consume', '/v1/login/state', '/v1/login/import', '/v1/login/finish', '/v1/login/fail'].includes(path)) throw new UserError('Неизвестная команда.');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), path === '/v1/extension/update' ? 90000 : 20000);
   try {
@@ -21,7 +21,11 @@ export async function managerRequest(path, token, body, fetcher = fetch) {
     }
     let result;
     try { result = await response.json(); } catch { throw new UserError('Менеджер вернул непонятный ответ. Обнови сборку.'); }
-    if (!response.ok || !result.ok) throw new UserError(result.error || 'Не удалось выполнить действие.');
+    if (!response.ok || !result.ok) {
+      const error = new UserError(result.error || 'Не удалось выполнить действие.');
+      error.status = response.status;
+      throw error;
+    }
     return result;
   } finally { clearTimeout(timer); }
 }

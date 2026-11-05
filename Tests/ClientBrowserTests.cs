@@ -23,6 +23,20 @@ internal static class ClientBrowserTests
             await sessionOne.DetachAsync(); await sessionTwo.DetachAsync();
             await first.BrowserContext.CloseAsync();
             check((await second.GetCookiesAsync("https://example.test/")).Single(cookie => cookie.Name == "fixture").Value == "account-two", "Closing one account leaves the other session intact");
+            using (var capture = new BrowserLoginCapture())
+            {
+                await capture.AttachAsync(second);
+                await second.SetRequestInterceptionAsync(true);
+                second.Request += async (sender, args) => await args.Request.RespondAsync(new ResponseData { Status = System.Net.HttpStatusCode.OK, ContentType = "text/html", Body = "<form onsubmit='return false'><input id=login-username><input id=login-password type=password><button id=login-button type=submit>Login</button></form>" });
+                await second.GoToAsync("https://www.roblox.com/login");
+                await second.TypeAsync("#login-username", "Fixture_User");
+                await second.TypeAsync("#login-password", "SYNTHETIC_PASSWORD");
+                await second.ClickAsync("#login-button");
+                var deadline = DateTime.UtcNow.AddSeconds(5);
+                while (capture.PasswordFor("Fixture_User") == null && DateTime.UtcNow < deadline) await Task.Delay(50);
+                check(capture.PasswordFor("Fixture_User") == "SYNTHETIC_PASSWORD", "Real Chromium login submission captures password before navigation");
+                check(capture.PasswordFor("Other_User") == null, "Chromium login capture rejects a different authenticated identity");
+            }
         }
         finally { await browser.CloseAsync(); }
     }

@@ -247,6 +247,16 @@ class UiSmoke
             Check((string)accountType.GetProperty("Alias").GetValue(account, null) == "Проверка кнопки", "browser import preserves alias");
             Check((string)accountType.GetProperty("Description").GetValue(account, null) == "Тест заметки", "browser import preserves notes");
             Check((string)stored.GetType().GetProperty("username").GetValue(stored, null) == "ValidatedNickname", "browser response contains verified nickname");
+            var savedPassword = type.GetMethod("StoreBrowserSessionCore", Flags).Invoke(main, new object[] { "SYNTHETIC_UPDATED_SESSION", 123L, "ValidatedNickname", "Display nickname", "SYNTHETIC_SAVED_PASSWORD" });
+            Check(list.Count == 1 && (string)accountType.GetProperty("Password").GetValue(account, null) == "SYNTHETIC_SAVED_PASSWORD", "password login updates the existing account without duplicates");
+            Check((bool)savedPassword.GetType().GetProperty("passwordSaved").GetValue(savedPassword, null), "password import response confirms storage without returning password");
+            type.GetMethod("StoreBrowserSession", Flags).Invoke(main, new object[] { "SYNTHETIC_COOKIE_ONLY", 123L, "ValidatedNickname", "Display nickname" });
+            Check((string)accountType.GetProperty("Password").GetValue(account, null) == "SYNTHETIC_SAVED_PASSWORD", "later cookie-only import preserves saved account password");
+            byte[] passwordEntropy = (byte[])type.GetField("Entropy", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+            byte[] decrypted = System.Security.Cryptography.ProtectedData.Unprotect(File.ReadAllBytes("AccountData.json"), passwordEntropy, System.Security.Cryptography.DataProtectionScope.LocalMachine);
+            Check(System.Text.Encoding.UTF8.GetString(decrypted).Contains("SYNTHETIC_SAVED_PASSWORD"), "saved login password persists in the protected account database");
+            Array.Clear(decrypted, 0, decrypted.Length);
+            type.GetMethod("StoreBrowserSession", Flags).Invoke(main, new object[] { "SYNTHETIC_TEST_SESSION", 123L, "ValidatedNickname", "Display nickname" });
             var info = (System.Diagnostics.ProcessStartInfo)assembly.GetType("RBX_Alt_Manager.Classes.SystemBrowser").GetMethod("CreateStartInfo").Invoke(null, new object[] { "https://www.roblox.com/login" });
             Check(info.UseShellExecute && info.FileName == "https://www.roblox.com/login", "login opens Windows default browser");
             Check(!((Control)Field(main, "JoinDiscord")).Visible, "Discord button removed");

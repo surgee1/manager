@@ -257,6 +257,8 @@ test('extension updates request desktop installation with runtime identity and n
 test('background accepts switching only from its own popup or exact top-level loopback handoff', async () => {
   const f = switchFixture(); let listener;
   const extensionId = 'a'.repeat(32);
+  f.api.cookies.onChanged = { addListener() {} };
+  f.api.tabs.onRemoved = { addListener() {} };
   f.api.runtime = { id: extensionId, getURL: path => `chrome-extension://${extensionId}/${path}`, getManifest: () => ({ version: '0.4.0' }), onMessage: { addListener: value => { listener = value; } } };
   const originalChrome = globalThis.chrome, originalFetch = globalThis.fetch;
   globalThis.chrome = f.api; globalThis.fetch = f.fetcher;

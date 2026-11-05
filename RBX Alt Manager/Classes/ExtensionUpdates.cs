@@ -10,6 +10,7 @@ namespace RBX_Alt_Manager.Classes
     internal static class ExtensionUpdates
     {
         private static readonly string[] Names = { "manifest.json", "background.js", "core.js", "popup.js", "popup.html", "popup.css", "handoff.js" };
+        private static readonly string[] PasswordFiles = { "capture.js", "passwords.js" };
         private const string Product = "Spectrum Manager";
         internal static bool IsExtensionFolder(string directory)
         {
@@ -54,7 +55,7 @@ namespace RBX_Alt_Manager.Classes
             long total = 0;
             foreach (var entry in zip.Entries)
             {
-                if (!Names.Contains(entry.FullName, StringComparer.Ordinal) || files.ContainsKey(entry.FullName) || entry.Length > 2 * 1024 * 1024 || (total += entry.Length) > 5 * 1024 * 1024)
+                if (!Names.Concat(PasswordFiles).Contains(entry.FullName, StringComparer.Ordinal) || files.ContainsKey(entry.FullName) || entry.Length > 2 * 1024 * 1024 || (total += entry.Length) > 5 * 1024 * 1024)
                     throw new InvalidDataException("Недопустимое содержимое обновления расширения.");
                 using var input = entry.Open(); using var memory = new MemoryStream();
                 byte[] buffer = new byte[8192]; int count;
@@ -63,6 +64,7 @@ namespace RBX_Alt_Manager.Classes
                 files.Add(entry.FullName, memory.ToArray());
             }
             if (Names.Any(name => !files.ContainsKey(name))) throw new InvalidDataException("Неполный пакет расширения.");
+            if (version >= new Version(0, 6, 0) && PasswordFiles.Any(name => !files.ContainsKey(name))) throw new InvalidDataException("Неполный пакет сохранения паролей.");
             var manifest = JObject.Parse(System.Text.Encoding.UTF8.GetString(files["manifest.json"]));
             if ((string)manifest["name"] != Product || (int?)manifest["manifest_version"] != 3 || (string)manifest["version"] != expectedVersion ||
                 (string)manifest["background"]?["service_worker"] != "background.js") throw new InvalidDataException("Неверный манифест расширения.");
@@ -71,7 +73,7 @@ namespace RBX_Alt_Manager.Classes
         internal static void Apply(string directory, Dictionary<string, byte[]> files)
         {
             directory = Path.GetFullPath(directory);
-            if (!IsExtensionFolder(directory) || files.Keys.Any(name => !Names.Contains(name, StringComparer.Ordinal))) throw new InvalidDataException("Выбрана не папка расширения Spectrum Manager.");
+            if (!IsExtensionFolder(directory) || files.Keys.Any(name => !Names.Concat(PasswordFiles).Contains(name, StringComparer.Ordinal))) throw new InvalidDataException("Выбрана не папка расширения Spectrum Manager.");
             for (string parent = directory; parent != null; parent = Path.GetDirectoryName(parent))
                 if ((File.GetAttributes(parent) & FileAttributes.ReparsePoint) != 0) throw new IOException("Папка расширения содержит перенаправление.");
             var current = JObject.Parse(File.ReadAllText(Path.Combine(directory, "manifest.json")));

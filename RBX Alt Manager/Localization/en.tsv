@@ -552,3 +552,11 @@ PIN аккаунта	Account PIN
 Не удалось сохранить псевдоним. Проверь доступ к папке менеджера.	Could not save the alias. Check access to the manager folder.
 Подключение по нику, сохранение игры, заметки и контроль аккаунтов.	Join by username, save a game, edit notes and control accounts.
 Roblox не применил настройку приватности. Проверь вход и попробуй снова.	Roblox did not apply the privacy setting. Check your sign-in and try again.
+Сохранять пароли при добавлении	Save passwords when adding accounts
+Chromium сохраняет пароль, введённый при входе. В расширении 0.6.0+ отдельно включи сохранение паролей.	Chromium saves the password submitted during sign-in. Enable password saving separately in extension 0.6.0+.
+Аккаунт добавлен: 	Account added: \s
+Пароль сохранён.	Password saved.
+Пароль не сохранён. Для сохранения войди по нику и паролю с включённой настройкой сохранения паролей.	Password was not saved. Sign in with your Roblox username and password with password saving enabled.
+Включи сохранение паролей в настройках менеджера.	Enable password saving in manager settings.
+Неверные данные формы входа Roblox.	Invalid Roblox login form data.
+Браузер не открыл локальное подключение за 45 секунд. Закрой пустое окно и повтори вход.	The browser did not open its local connection within 45 seconds. Close the empty window and try again.

@@ -68,6 +68,7 @@ namespace RBX_Alt_Manager
         }
         private Task<object> HandleBrowserActionAsync(string action, JObject payload)
         {
+            if (action == "/v1/accounts/import-password") return ImportBrowserPasswordAsync(payload);
             if (action == "/v1/extension/update") return UpdateInstalledExtensionAsync(payload);
             if (action.StartsWith("/v1/login/", StringComparison.Ordinal)) return HandleCredentialBrowserActionAsync(action, payload);
             var completion = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -127,6 +128,14 @@ namespace RBX_Alt_Manager
                 managerDownloadUrl = release.ManagerUrl, releasesUrl = ManagerUpdates.Repository + "/releases" };
         }
         private Task<object> ImportBrowserSessionAsync(string cookie) => ImportVerifiedBrowserSessionAsync(cookie);
+        private async Task<object> ImportBrowserPasswordAsync(JObject payload)
+        {
+            string name = payload?.Value<string>("username"), password = payload?.Value<string>("password");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name ?? "", "^[A-Za-z0-9_]{3,20}$") || string.IsNullOrEmpty(password) || password.Length > 1024)
+                throw new InvalidOperationException("Неверные данные формы входа Roblox.");
+            await CredentialUiAsync(() => { if (!General.Get<bool>("SavePasswords")) throw new InvalidOperationException("Включи сохранение паролей в настройках менеджера."); return true; });
+            return await ImportVerifiedBrowserSessionAsync(payload.Value<string>("cookie"), name, password, () => General.Get<bool>("SavePasswords"));
+        }
         private async Task<object> ImportVerifiedBrowserSessionAsync(string cookie, string expectedUsername = null, string passwordToSave = null, Func<bool> canStore = null)
         {
             if (IsDisposed || !IsHandleCreated) throw new InvalidOperationException("Открой окно менеджера.");
@@ -182,7 +191,7 @@ namespace RBX_Alt_Manager
             LastValidAccount = account;
             SaveAccounts(true);
             RefreshView(account);
-            return new { ok = true, username = name, displayName, userId = id, updated };
+            return new { ok = true, username = name, displayName, userId = id, updated, passwordSaved = password != null };
         }
     }
 }

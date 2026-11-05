@@ -23,9 +23,9 @@ namespace RBX_Alt_Manager
         {
             if (chromium)
             {
-                string cookie = await isolatedBrowser.SignInAsync(pair, progress, cancel);
+                using var session = await isolatedBrowser.SignInAsync(pair, progress, cancel, savePassword);
                 cancel.ThrowIfCancellationRequested();
-                var result = JObject.FromObject(await ImportVerifiedBrowserSessionAsync(cookie, pair.Username, savePassword ? pair.Password : null, () => !cancel.IsCancellationRequested));
+                var result = JObject.FromObject(await ImportVerifiedBrowserSessionAsync(session.Cookie, pair.Username, session.Password, () => !cancel.IsCancellationRequested));
                 return new CredentialImportResult { Username = result.Value<string>("username"), UserId = result.Value<long>("userId") };
             }
             if (browserBridge == null) throw new InvalidOperationException(BrowserBridgeStatus);
@@ -62,13 +62,26 @@ namespace RBX_Alt_Manager
             BeginInvoke(new Action(() => { try { completion.SetResult(action()); } catch (Exception error) { completion.SetException(error); } }));
             return completion.Task;
         }
+        private bool addingThroughChromium;
         private async void AddThroughChromium()
         {
+            if (addingThroughChromium) return;
             if (PasswordPanel.Visible || accountFileUnreadable) { UiMessageBox.Show(this, "Сначала разблокируй базу аккаунтов.", "Добавить аккаунт"); return; }
+            addingThroughChromium = true;
             using (var cancel = new CancellationTokenSource())
             {
-                try { string cookie = await isolatedBrowser.SignInAsync(null, null, cancel.Token); await ImportBrowserSessionAsync(cookie); }
+                FormClosedEventHandler close = (sender, e) => cancel.Cancel();
+                FormClosed += close;
+                try
+                {
+                    using var session = await isolatedBrowser.SignInAsync(null, null, cancel.Token, General.Get<bool>("SavePasswords"));
+                    cancel.Token.ThrowIfCancellationRequested();
+                    var result = JObject.FromObject(await ImportVerifiedBrowserSessionAsync(session.Cookie, session.Username, General.Get<bool>("SavePasswords") ? session.Password : null));
+                    UiMessageBox.Show(this, "Аккаунт добавлен: " + result.Value<string>("username") + (result.Value<bool>("passwordSaved") ? "\nПароль сохранён." : "\nПароль не сохранён. Для сохранения войди по нику и паролю с включённой настройкой сохранения паролей."), "Добавить аккаунт");
+                }
+                catch (OperationCanceledException) { }
                 catch (Exception error) { UiMessageBox.Show(this, error is InvalidOperationException ? error.Message : "Вход не завершён. Попробуй снова.", "Добавить аккаунт"); }
+                finally { FormClosed -= close; addingThroughChromium = false; }
             }
         }
     }
