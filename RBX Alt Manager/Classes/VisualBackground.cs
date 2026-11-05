@@ -54,6 +54,7 @@ namespace RBX_Alt_Manager.Classes
                 case "ichigo":
                 case "baki":
                 case "nogamenolife":
+                case "hellsing":
                     Portrait(g, size, time, ThemeEditor.VisualProfile);
                     Stars(g, size, time);
                     break;

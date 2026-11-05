@@ -7,12 +7,11 @@ namespace RBX_Alt_Manager.Forms
 {
     public partial class SettingsForm
     {
-        private readonly System.Collections.Generic.List<Action> colorLabels = new System.Collections.Generic.List<Action>();
         private void InitializeColorSettings()
         {
-            var flow = SettingsPage("Цвета");
+            var flow = SettingsPage("Профиль");
             Section(flow, "ВИЗУАЛЬНЫЕ ПРОФИЛИ");
-            Description(flow, "Выбери анимированный стиль или профиль с персонажем. Ниже можно менять цвета и отключать движение.");
+            Description(flow, "Выбери анимированный стиль или профиль с персонажем. Ниже можно отключить анимацию и настроить силу движения.");
             var presets = new FlowLayoutPanel { Width = 650, Height = ((ThemeEditor.SupportedProfiles.Length + 2) / 3) * 46 + 11, WrapContents = true };
             flow.Controls.Add(presets);
             void Preset(string name, string profile)
@@ -39,6 +38,7 @@ namespace RBX_Alt_Manager.Forms
             Preset("Bleach", "ichigo");
             Preset("Baki", "baki");
             Preset("No Game No Life", "nogamenolife");
+            Preset("Hellsing", "hellsing");
             var motion = new CheckBox { Text = "Анимация фона и переливов", AutoSize = true,
                 Checked = ThemeEditor.AnimationsEnabled, Margin = new Padding(0, 12, 0, 12) };
             motion.CheckedChanged += (sender, e) => { ThemeEditor.AnimationsEnabled = motion.Checked; SaveAppearance(); };
@@ -57,38 +57,6 @@ namespace RBX_Alt_Manager.Forms
                 saveStrength.Stop(); saveStrength.Start();
             };
             Helper.SetToolTip(strength, "0% — неподвижный персонаж. Выше — заметнее дыхание, наклон головы и ветер в волосах.");
-            Section(flow, "СВОИ ЦВЕТА");
-            ColorSetting(flow, "Начало перелива", () => ThemeEditor.AccentPrimary, c => ThemeEditor.AccentPrimary = c);
-            ColorSetting(flow, "Конец перелива", () => ThemeEditor.AccentSecondary, c => ThemeEditor.AccentSecondary = c);
-            ColorSetting(flow, "Фон приложения", () => ThemeEditor.FormsBackground, c => ThemeEditor.FormsBackground = c);
-            ColorSetting(flow, "Фон списка аккаунтов и панелей", () => ThemeEditor.AccountBackground, c => ThemeEditor.AccountBackground = c);
-            ColorSetting(flow, "Фон полей ввода", () => ThemeEditor.TextBoxesBackground, c => ThemeEditor.TextBoxesBackground = c);
-            ColorSetting(flow, "Основной текст", () => ThemeEditor.FormsForeground, c =>
-            {
-                ThemeEditor.FormsForeground = ThemeEditor.AccountForeground = ThemeEditor.ButtonsForeground =
-                    ThemeEditor.TextBoxesForeground = ThemeEditor.LabelForeground = c;
-            });
-        }
-
-        private void ColorSetting(FlowLayoutPanel flow, string label, Func<Color> get, Action<Color> set)
-        {
-            var row = new FlowLayoutPanel { Width = 650, Height = 50, WrapContents = false, Margin = new Padding(0, 3, 0, 3) };
-            row.Controls.Add(new Label { Text = label, Width = 390, Height = 42, TextAlign = ContentAlignment.MiddleLeft });
-            var button = new NeonButton { Text = "Выбрать " + ThemeEditor.ToHexString(get()), Width = 210, Height = 40 };
-            button.Click += (sender, e) =>
-            {
-                using (var dialog = new ColorDialog { FullOpen = true, Color = get() })
-                    if (dialog.ShowDialog(this) == DialogResult.OK)
-                    {
-                        set(dialog.Color);
-                        SaveAppearance();
-                    }
-            };
-            row.Controls.Add(button);
-            flow.Controls.Add(row);
-            flow.VisibleChanged += (sender, e) => button.Text = "Выбрать " + ThemeEditor.ToHexString(get());
-            colorLabels.Add(() => button.Text = "Выбрать " + ThemeEditor.ToHexString(get()));
-            Helper.SetToolTip(button, "Выбрать свой цвет: " + label.ToLowerInvariant());
         }
 
         private void ApplyColorPreset(string primary, string secondary, string background, string surface)
@@ -130,6 +98,7 @@ namespace RBX_Alt_Manager.Forms
                 case "ichigo": ApplyColorPreset("#E3AC54", "#BEB6AE", "#0C0E12", "#211D23"); break;
                 case "baki": ApplyColorPreset("#DB9864", "#C54C49", "#110E10", "#282024"); break;
                 case "nogamenolife": ApplyColorPreset("#C975ED", "#52CBE5", "#100D25", "#27203E"); break;
+                case "hellsing": ApplyColorPreset("#C83248", "#C7B7BF", "#10090D", "#26151D"); break;
                 default: ApplyColorPreset("#AE36DB", "#20A5CF", "#111521", "#191D2A"); break;
             }
         }
@@ -138,7 +107,6 @@ namespace RBX_Alt_Manager.Forms
         {
             ThemeEditor.SaveTheme();
             AccountManager.Instance.ApplyTheme();
-            foreach (var update in colorLabels) update();
             Invalidate(true);
         }
     }

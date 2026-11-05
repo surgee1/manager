@@ -107,7 +107,7 @@ class UiSmoke
             Check(((Color)theme.GetField("AccentPrimary").GetValue(null)).ToArgb() == ColorTranslator.FromHtml("#397FFF").ToArgb(), "custom palette applied to live interface");
             Check(File.ReadAllText("RAMTheme.ini").Contains("AccentPrimary=#397FFF"), "custom palette persists to theme file");
             var profileMethod = settings.GetType().GetMethod("ApplyVisualProfile", Flags);
-            foreach (string profile in new[] { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote", "kagami", "ichigo", "baki", "nogamenolife" })
+            foreach (string profile in new[] { "nyan", "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote", "kagami", "ichigo", "baki", "nogamenolife", "hellsing" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 Check((string)theme.GetField("VisualProfile").GetValue(null) == profile, "profile switches: " + profile);
@@ -115,11 +115,11 @@ class UiSmoke
             }
             Check(File.Exists("Themes/kaneki_manga.png"), "illustrated theme assets are bundled");
             var supported = (string[])theme.GetField("SupportedProfiles", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-            Check(supported.Length == 18 && Array.IndexOf(supported, "matrix") < 0 && Array.IndexOf(supported, "manga") < 0 && Array.IndexOf(supported, "sakura") < 0, "removed theme presets are absent from supported catalog");
+            Check(supported.Length == 19 && Array.IndexOf(supported, "hellsing") >= 0 && Array.IndexOf(supported, "matrix") < 0 && Array.IndexOf(supported, "manga") < 0 && Array.IndexOf(supported, "sakura") < 0, "supported catalog includes Hellsing and omits removed presets");
             profileMethod.Invoke(settings, new object[] { "manga" });
             Check((string)theme.GetField("VisualProfile").GetValue(null) == "kaneki_manga", "old removed theme resolves to a supported character profile");
             TabPage portraitColors = null;
-            foreach (TabPage page in tabs.TabPages) if (page.Text == "Цвета") portraitColors = page;
+            foreach (TabPage page in tabs.TabPages) if (page.Text == "Профиль") portraitColors = page;
             tabs.SelectedTab = portraitColors;
             main.Location = new Point(Screen.PrimaryScreen.WorkingArea.Left, Screen.PrimaryScreen.WorkingArea.Top);
             settings.Location = new Point(Screen.PrimaryScreen.WorkingArea.Right - settings.Width, Screen.PrimaryScreen.WorkingArea.Top + 40);
@@ -131,7 +131,7 @@ class UiSmoke
             var portraitHashes = new System.Collections.Generic.HashSet<string>();
             var general = type.GetField("General").GetValue(null);
             general.GetType().GetMethod("Set").Invoke(general, new object[] { "AnimationEconomy", "false", null });
-            foreach (string profile in new[] { "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote", "kagami", "ichigo", "baki", "nogamenolife" })
+            foreach (string profile in new[] { "kaneki", "naruto", "gojo", "kaneki_manga", "uruma", "happyend", "gangsta", "subaru", "alex", "kurapika", "zerotwo", "akame", "deathnote", "kagami", "ichigo", "baki", "nogamenolife", "hellsing" })
             {
                 profileMethod.Invoke(settings, new object[] { profile });
                 using (var first = PortraitFrame(assembly, profile, .4))
@@ -181,8 +181,8 @@ class UiSmoke
             profileMethod.Invoke(settings, new object[] { "futuristic" });
             Capture(settings, "settings-panel.png");
             TabPage colors = null;
-            foreach (TabPage page in tabs.TabPages) if (page.Text == "Цвета") colors = page;
-            Check(colors != null, "color customization page exists");
+            foreach (TabPage page in tabs.TabPages) if (page.Text == "Профиль") colors = page;
+            Check(colors != null, "visual profile page exists");
             tabs.SelectedTab = colors;
             Application.DoEvents();
             Capture(settings, "colors-panel.png");
