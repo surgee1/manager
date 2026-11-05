@@ -91,10 +91,7 @@ class UiSmoke
             Application.DoEvents();
             Capture(settings, "client-launch-settings.png");
             var launch = FindLaunch(launchPage);
-            var teleport = (CheckBox)Field(launch, "TeleportCB");
-            teleport.Checked = true;
-            Check((bool)type.GetField("IsTeleport").GetValue(null), "launch option updates live launcher state");
-            teleport.Checked = false;
+            Check(launch == null, "Legacy teleport, version and join controls removed from settings");
             Capture(settings, "settings-panel.png");
             settings.GetType().GetMethod("ApplyColorPreset", Flags).Invoke(settings, new object[] { "#397FFF", "#23D6AF", "#0B1720", "#152936" });
             var theme = assembly.GetType("RBX_Alt_Manager.Forms.ThemeEditor");

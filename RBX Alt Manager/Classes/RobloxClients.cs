@@ -11,6 +11,8 @@ namespace RBX_Alt_Manager.Classes
     internal static class RobloxClients
     {
         internal const string ExecutableName = "RobloxPlayerBeta.exe";
+        internal static void ApplyDefaults(IniSection general)
+        { if (!general.Exists("EnableMultiRbx")) general.Set("EnableMultiRbx", "true"); }
         internal static string ManagedRoot => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Spectrum Manager", "Roblox-Legit");
         internal static string Prefix(Account account)
         {

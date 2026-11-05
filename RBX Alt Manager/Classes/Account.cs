@@ -514,7 +514,6 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(100000, 175000).ToString() + r.Next(100000, 900000).ToString(); // oh god this is ugly
             }
 
-            try { ClientSettingsPatcher.PatchSettings(clientExecutable == "" ? null : clientExecutable); } catch { Program.Logger.Error("Failed to patch ClientAppSettings for selected client."); }
 
             var csrfReply = await RequestSessionAsync(false);
             if (!csrfReply.Success) return csrfReply.Error;

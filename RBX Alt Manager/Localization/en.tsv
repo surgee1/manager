@@ -442,5 +442,23 @@ Legit готов · 	Legit ready ·\s
 Код подключения	Pairing code
 Код подключения к этому менеджеру	Pairing code for this manager
 Код скопирован	Code copied
+ИНСТРУМЕНТЫ SPECTRUM	SPECTRUM TOOLS
+Включить локальный API Spectrum	Enable Spectrum local API
+Подключение локальных инструментов к менеджеру. Расширение использует отдельный канал. Для изменения нужен перезапуск.	Connect local tools to the manager. The extension uses a separate channel. Restart to apply changes.
+Порт API Spectrum	Spectrum API port
+Канал расширения Spectrum работает отдельно на порту 7964.	The Spectrum extension uses a separate channel on port 7964.
+Проверяет пароль API при каждом обращении к менеджеру.	Checks the API password for every request to the manager.
+Доступ к сессиям аккаунтов через API Spectrum. Расширение подключается отдельно с кодом.	Account session access through the Spectrum API. The extension uses separate code-based pairing.
+Предоставляет подключённым инструментам список аккаунтов.	Provides the account list to connected tools.
+Запускает выбранные аккаунты по команде подключённого инструмента.	Lets connected tools launch selected accounts.
+Разрешает подключённым инструментам редактировать псевдонимы и заметки.	Lets connected tools edit aliases and notes.
+Разрешить сетевые подключения к API	Allow network connections to the API
+По умолчанию выключено. Для расширения Spectrum сетевой доступ не требуется.	Disabled by default. The Spectrum extension does not need network access to the API.
+Пароль API Spectrum	Spectrum API password
+Пароль для подключения инструментов. Это не пароль Roblox и не код расширения.	A password for connected tools, not your Roblox password or extension pairing code.
+Формат названия региона сервера	Server region name format
+Шаблон названия региона: <city> — город, <countryCode> — код страны.	Region name template: <city> is the city; <countryCode> is the country code.
+Запускает несколько аккаунтов одновременно. По умолчанию включено. Для изменения закрой Roblox.	Launch multiple accounts. Enabled by default. Close Roblox before changing this setting.
+Roblox уже запущен. Закрой все его окна и перезапусти Spectrum Manager, чтобы включить несколько клиентов.	Roblox is already running. Close all Roblox windows and restart Spectrum Manager to enable multiple clients.
 Opera GX / браузер по умолчанию\n\n1. Установи расширение из папки Browser Extension (версия 0.4.0+).\n2. Вставь код ниже в расширение.\n3. Для добавления открой Roblox и нажми «Добавить в менеджер».\n4. Для входа выбери аккаунт в расширении или выдели его в менеджере и нажми «Браузер». После обновления файлов перезагрузи расширение в opera://extensions.\n\nПереключение меняет аккаунт во всех вкладках Roblox текущего профиля браузера.	Opera GX / default browser\n\n1. Install the extension from Browser Extension (version 0.4.0+).\n2. Paste the pairing code below into the extension.\n3. To add an account, open Roblox and click Add to manager.\n4. To sign in, select the account in the extension, or select it in the manager and click Browser. Reload the extension in opera://extensions after updating its files.\n\nSwitching changes the account in every Roblox tab in the current browser profile.
 Скопировать код	Copy code

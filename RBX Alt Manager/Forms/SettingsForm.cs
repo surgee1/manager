@@ -192,7 +192,7 @@ namespace RBX_Alt_Manager.Forms
             AccountManager.IniSettings.Save("RAMSettings.ini");
 
             if (!AccountManager.Instance.UpdateMultiRoblox())
-                UiMessageBox.Show("Roblox is currently running, multi roblox will not work if roblox is open.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                UiMessageBox.Show("Roblox уже запущен. Закрой все его окна и перезапусти Spectrum Manager, чтобы включить несколько клиентов.", "Spectrum Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void AutoCookieRefreshCB_CheckedChanged(object sender, EventArgs e)

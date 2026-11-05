@@ -122,6 +122,7 @@ namespace RBX_Alt_Manager
             AccountControl = IniSettings.Section("AccountControl");
             Watcher = IniSettings.Section("Watcher");
             Prompts = IniSettings.Section("Prompts");
+            RobloxClients.ApplyDefaults(General);
 
             if (!General.Exists("CheckForUpdates")) General.Set("CheckForUpdates", "false");
             if (!General.Exists("AccountJoinDelay")) General.Set("AccountJoinDelay", "8");
@@ -657,7 +658,6 @@ namespace RBX_Alt_Manager
             if (UpdateDir.Exists)
                 UpdateDir.RecursiveDelete();
 
-            afform = new ArgumentsForm();
             ServerListForm = new ServerList();
             UtilsForm = new AccountUtils();
             ImportAccountsForm = new ImportForm();
@@ -1116,7 +1116,7 @@ namespace RBX_Alt_Manager
         private void AccountManager_Shown(object sender, EventArgs e)
         {
             if (!UpdateMultiRoblox() && !General.Get<bool>("HideRbxAlert"))
-                UiMessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                UiMessageBox.Show("Roblox уже запущен. Закрой все его окна и перезапусти Spectrum Manager, чтобы включить несколько клиентов.", "Spectrum Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             // Browser login uses the Windows default browser and the companion extension.
             if (AccountControl.Get<bool>("StartOnLaunch"))

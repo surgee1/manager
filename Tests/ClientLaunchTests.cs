@@ -30,6 +30,10 @@ internal static class ClientLaunchTests
         string root = Path.Combine(Path.GetTempPath(), "SpectrumClientTests-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
         try
         {
+            var defaults = new IniSection("General"); RobloxClients.ApplyDefaults(defaults);
+            check(defaults.Get<bool>("EnableMultiRbx"), "Multiple Roblox clients enabled by default");
+            defaults.Set("EnableMultiRbx", "false"); RobloxClients.ApplyDefaults(defaults);
+            check(!defaults.Get<bool>("EnableMultiRbx"), "Explicitly disabled multi-client preference remains respected");
             string legit = Path.Combine(root, "legit", RobloxClients.ExecutableName), cheat = Path.Combine(root, "cheat", RobloxClients.ExecutableName);
             Directory.CreateDirectory(Path.GetDirectoryName(legit)); Directory.CreateDirectory(Path.GetDirectoryName(cheat));
             File.WriteAllText(legit, "original"); File.WriteAllText(cheat, "modified");
