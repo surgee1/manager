@@ -1,7 +1,16 @@
-param([string]$Destination = '', [string]$Version = '6.2.8', [switch]$IncludeSource)
+param([string]$Destination = '', [string]$Version = '6.2.9', [switch]$IncludeSource)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repoRoot = Split-Path $PSScriptRoot -Parent
+$profileSource = [IO.File]::ReadAllText((Join-Path $repoRoot 'RBX Alt Manager\Forms\ThemeEditor.cs'))
+$catalog = [regex]::Match($profileSource, 'SupportedProfiles\s*=\s*\{([^}]+)\}').Groups[1].Value
+if (!$catalog) { throw 'Visual profile catalog not found.' }
+foreach ($profile in [regex]::Matches($catalog, '"([a-z0-9_]+)"')) {
+  $id = $profile.Groups[1].Value
+  if ($id -ne 'nyan' -and !(Test-Path -LiteralPath (Join-Path $repoRoot ('Themes\' + $id + '.png')))) {
+    throw ('Missing visual profile asset: ' + $id)
+  }
+}
 if (!$Destination) { $Destination = Join-Path $repoRoot 'build\artifacts' }
 $null = New-Item -ItemType Directory -Path $Destination -Force
 $Destination = (Resolve-Path $Destination).Path
