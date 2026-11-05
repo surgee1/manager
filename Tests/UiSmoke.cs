@@ -153,7 +153,8 @@ class UiSmoke
                 main.Invalidated += invalidation;
                 var panel = portraitColors.Controls[0];
                 panel.Paint += panelPaint;
-                Pump(450);
+                var repaintDeadline = System.Diagnostics.Stopwatch.StartNew();
+                while ((invalidations < 3 || settingsPaints < 3) && repaintDeadline.ElapsedMilliseconds < 2000) Pump(50);
                 main.Invalidated -= invalidation;
                 main.Paint -= mainPaint;
                 panel.Paint -= panelPaint;
