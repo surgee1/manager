@@ -230,6 +230,7 @@ namespace RBX_Alt_Manager
             };
             glowTimer.Start();
             InitializeAccountPrefixes();
+            InitializeInlineAliases();
             ApplyModernPalette();
             LayoutModernInterface();
             ResumeLayout(false);
@@ -305,6 +306,7 @@ namespace RBX_Alt_Manager
             Put(JoinServer, right - 4, 383, 450, 48);
             Put(ServerList, right - 4, 445, 220, 42);
             Put(advancedButton, right + 224, 445, 222, 42);
+            Put(BrowserButton, right - 4, 503, 450, 42);
             Put(DownloadProgressBar, 24, h - 15, leftWidth, 8);
             Put(DLChromiumLabel, 40, h - 173, leftWidth - 32, 24);
             PasswordPanel.Bounds = ClientRectangle;
@@ -465,11 +467,12 @@ namespace RBX_Alt_Manager
             Put(account, SetAlias, 346, 62, 130, 42);
             Put(account, notesHeading, 22, 124, 450, 26);
             Put(account, DescriptionBox, 22, 166, 450, 130);
-            Put(account, SetDescription, 18, 318, 218, 42);
-            Put(account, BrowserButton, 250, 318, 230, 42);
+            Put(account, SetDescription, 18, 318, 462, 42);
+            Controls.Add(BrowserButton);
             var tools = Page("Инструменты");
-            Put(tools, EditTheme, 18, 26, 462, 44);
-            Put(tools, LaunchNexus, 18, 88, 462, 44);
+            EditTheme.Visible = false;
+            Controls.Remove(EditTheme);
+            Put(tools, LaunchNexus, 18, 26, 462, 44);
             advancedWindow.FormClosing += (sender, e) =>
             {
                 if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; advancedWindow.Hide(); }
@@ -478,7 +481,7 @@ namespace RBX_Alt_Manager
             advancedButton = new NeonButton { Text = "Дополнительно", Font = Font, Cursor = Cursors.Hand,
                 AccessibleName = "Дополнительно" };
             Controls.Add(advancedButton);
-            Hint(advancedButton, "Подключение по нику, сохранение игры, псевдоним, заметки и инструменты аккаунтов.");
+            Hint(advancedButton, "Подключение по нику, сохранение игры, заметки и контроль аккаунтов.");
             advancedButton.Click += (sender, e) =>
             {
                 if (advancedWindow.Visible) advancedWindow.Activate();

@@ -88,6 +88,8 @@ namespace RBX_Alt_Manager
         }
 
         public Account() { }
+        internal void SetAliasValue(string alias)
+        { if (alias == null || alias.Length > 50) throw new ArgumentException("Invalid alias."); _Alias = alias; }
         internal void SetImportedPassword(string password)
         { if (password == null || password.Length > 5000) throw new ArgumentException("Invalid imported password."); _Password = password; }
 

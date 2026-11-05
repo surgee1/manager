@@ -397,6 +397,7 @@
     <Compile Include="Classes\OfficialRobloxInstaller.cs" />
     <Compile Include="AccountManager.Clients.cs" />
     <Compile Include="AccountManager.Prefixes.cs" />
+    <Compile Include="AccountManager.InlineAlias.cs" />
     <Compile Include="AccountManager.UpdateOffers.cs" />
     <Compile Include="AccountManager.Credentials.cs" />
     <Compile Include="Classes\CredentialPairs.cs" />
@@ -522,6 +523,7 @@
     <Compile Include="Forms\AccountUtils.Designer.cs">
       <DependentUpon>AccountUtils.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\AccountUtils.Modern.cs" />
     <Compile Include="Forms\ArgumentsForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -14,7 +14,7 @@ namespace RBX_Alt_Manager
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
-            this.Rescale();
+            InitializeModernUtilities();
         }
 
         public void ApplyTheme()
@@ -22,7 +22,7 @@ namespace RBX_Alt_Manager
             BackColor = ThemeEditor.FormsBackground;
             ForeColor = ThemeEditor.FormsForeground;
 
-            foreach (Control control in this.Controls)
+            foreach (Control control in UtilityControls(this))
             {
                 if (control is Button || control is CheckBox)
                 {
@@ -55,7 +55,7 @@ namespace RBX_Alt_Manager
                 }
                 else if (control is Label)
                 {
-                    control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                    control.BackColor = Color.Transparent;
                     control.ForeColor = ThemeEditor.LabelForeground;
                 }
                 else if (control is ListBox)
@@ -63,46 +63,56 @@ namespace RBX_Alt_Manager
                     control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
+                else if (control is UtilityCard) control.BackColor = Classes.NeonButton.Mix(ThemeEditor.TextBoxesBackground, ThemeEditor.FormsBackground, .35f);
+                else if (control is UtilityInput) control.BackColor = control.Parent.BackColor;
+                else if (control is Panel) control.BackColor = ThemeEditor.FormsBackground;
             }
+            Invalidate(true);
         }
 
         private void AccountUtils_FormClosing(object sender, FormClosingEventArgs e)
         {
-            e.Cancel = true;
-            this.Hide();
+            ClearSensitiveFields();
+            if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); }
         }
 
         private void WhoFollow_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null || WhoFollow.SelectedIndex < 0) return;
 
-            AccountManager.SelectedAccount.SetFollowPrivacy(WhoFollow.SelectedIndex);
+            if (editingAccount.SetFollowPrivacy(WhoFollow.SelectedIndex)) privacyButton.Text = PrivacyChoices[WhoFollow.SelectedIndex];
+            else
+            {
+                WhoFollow.SelectedIndex = -1;
+                privacyButton.Text = "Кто может присоединяться";
+                UiMessageBox.Show(this, "Roblox не применил настройку приватности. Проверь вход и попробуй снова.", "Приватность");
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
-            DialogResult result = UiMessageBox.Show($"Are you sure you want sign out of all other sessions?", "Account Utilities", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            DialogResult result = UiMessageBox.Show(this, "Завершить остальные сеансы этого аккаунта?", "Действия с аккаунтом", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (result == DialogResult.Yes)
-                AccountManager.SelectedAccount.LogOutOfOtherSessions();
+                editingAccount.LogOutOfOtherSessions();
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
-            AccountManager.SelectedAccount.UnlockPin(textBox5.Text);
+            editingAccount.UnlockPin(textBox5.Text);
         }
 
         private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
             if (e.KeyChar == (char)Keys.Enter)
             {
-                AccountManager.SelectedAccount.UnlockPin(textBox5.Text);
+                editingAccount.UnlockPin(textBox5.Text);
                 button7.Focus();
 
                 return;
@@ -118,27 +128,27 @@ namespace RBX_Alt_Manager
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
-            AccountManager.SelectedAccount.ChangePassword(textBox1.Text, textBox2.Text);
+            editingAccount.ChangePassword(textBox1.Text, textBox2.Text);
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
-            AccountManager.SelectedAccount.ChangeEmail(textBox1.Text, textBox3.Text);
+            editingAccount.ChangeEmail(textBox1.Text, textBox3.Text);
         }
 
         private void Block_Click(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
             bool WasUnblocked = false;
 
             try
             {
-                if (AccountManager.SelectedAccount.TogglePlayerBlocked(Username.Text, ref WasUnblocked))
+                if (editingAccount.TogglePlayerBlocked(Username.Text, ref WasUnblocked))
                     UiMessageBox.Show($"{(WasUnblocked ? "Unb" : "B")}locked {Username.Text}");
                 else
                     UiMessageBox.Show($"Failed to {(WasUnblocked ? "Unb" : "B")}lock {Username.Text}");
@@ -148,21 +158,21 @@ namespace RBX_Alt_Manager
 
         private void SetDisplayName_Click(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
             try
             {
-                AccountManager.SelectedAccount.SetDisplayName(DisplayName.Text);
-                UiMessageBox.Show($"Successfully set {AccountManager.SelectedAccount.Username}'s Display Name to {DisplayName.Text}", "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                editingAccount.SetDisplayName(DisplayName.Text);
+                UiMessageBox.Show($"Successfully set {editingAccount.Username}'s Display Name to {DisplayName.Text}", "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception x) { UiMessageBox.Show(x.Message, "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
 
         private void AddFriend_Click(object sender, EventArgs e)
         {
-            if (AccountManager.SelectedAccount == null) return;
+            if (editingAccount == null) return;
 
-            AccountManager.SelectedAccount.SendFriendRequest(Username.Text);
+            editingAccount.SendFriendRequest(Username.Text);
         }
     }
 }

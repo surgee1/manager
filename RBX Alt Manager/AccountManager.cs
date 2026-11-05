@@ -1447,13 +1447,12 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null)
             {
-                UiMessageBox.Show("No Account Selected!");
+                UiMessageBox.Show("Выбери один аккаунт в списке.");
                 return;
             }
 
-            UtilsForm.Show();
-            UtilsForm.WindowState = FormWindowState.Normal;
-            UtilsForm.BringToFront();
+            if (UtilsForm == null || UtilsForm.IsDisposed) UtilsForm = new AccountUtils();
+            UtilsForm.ShowForAccount(SelectedAccount, this);
         }
 
         private void getAuthenticationTicketToolStripMenuItem_Click(object sender, EventArgs e)
