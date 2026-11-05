@@ -19,20 +19,27 @@ namespace RBX_Alt_Manager.Classes
         }
         internal static string FindInstalledDirectory(string id, IEnumerable<string> preferences = null)
         {
+            var matches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (string path in preferences ?? PreferenceFiles())
                 try
                 {
                     if (!File.Exists(path) || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
-                    var entry = JObject.Parse(File.ReadAllText(path))["extensions"]?["settings"]?[id];
-                    if (entry == null || (int?)entry["location"] != 4) continue; // Unpacked extensions only.
-                    string directory = (string)entry["path"];
-                    if (string.IsNullOrWhiteSpace(directory)) continue;
-                    if (!Path.IsPathRooted(directory)) directory = Path.Combine(Path.GetDirectoryName(path), "Extensions", directory);
-                    directory = Path.GetFullPath(directory);
-                    if (IsExtensionFolder(directory)) return directory;
+                    var extensions = JObject.Parse(File.ReadAllText(path))["extensions"];
+                    // Opera GX uses opsettings, including in Default/Secure Preferences.
+                    foreach (string table in new[] { "settings", "opsettings" })
+                    {
+                        var entry = extensions?[table]?[id];
+                        if (entry == null || (int?)entry["location"] != 4) continue; // Unpacked extensions only.
+                        string directory = (string)entry["path"];
+                        if (string.IsNullOrWhiteSpace(directory)) continue;
+                        if (!Path.IsPathRooted(directory)) directory = Path.Combine(Path.GetDirectoryName(path), "Extensions", directory);
+                        directory = Path.GetFullPath(directory);
+                        if (IsExtensionFolder(directory)) matches.Add(directory);
+                    }
                 }
                 catch { /* Browser preferences are read-only; a locked or damaged file is skipped. */ }
-            return null;
+            // Never report success after updating an arbitrary copy of the extension.
+            return matches.Count == 1 ? matches.Single() : null;
         }
         private static IEnumerable<string> PreferenceFiles()
         {

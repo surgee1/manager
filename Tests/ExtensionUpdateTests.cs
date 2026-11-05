@@ -50,6 +50,16 @@ static class ExtensionUpdateTests
         var document = new JObject { ["extensions"] = new JObject { ["settings"] = new JObject { [id] = entry } } };
         File.WriteAllText(preferences, document.ToString()); string original = File.ReadAllText(preferences);
         check(ExtensionUpdates.FindInstalledDirectory(id, new[] { preferences }) == target, "installed unpacked extension path found by exact browser extension ID");
+        var operaPreferences = Path.Combine(root, "Secure Preferences");
+        var operaDocument = new JObject { ["extensions"] = new JObject { ["opsettings"] = new JObject { [id] = entry.DeepClone() } } };
+        File.WriteAllText(operaPreferences, operaDocument.ToString());
+        check(ExtensionUpdates.FindInstalledDirectory(id, new[] { operaPreferences }) == target, "Opera GX opsettings resolves the actual installed extension folder");
+        check(ExtensionUpdates.FindInstalledDirectory(id, new[] { preferences, operaPreferences }) == target, "duplicate records for one installed path remain unambiguous");
+        string otherTarget = Path.Combine(root, "wrong-copy"); Directory.CreateDirectory(otherTarget); File.WriteAllBytes(Path.Combine(otherTarget, "manifest.json"), Manifest("0.3.0"));
+        operaDocument["extensions"]["opsettings"][id]["path"] = otherTarget; File.WriteAllText(operaPreferences, operaDocument.ToString());
+        check(ExtensionUpdates.FindInstalledDirectory(id, new[] { preferences, operaPreferences }) == null, "conflicting installed paths cannot silently update the wrong extension copy");
+        operaDocument["extensions"]["opsettings"][id]["location"] = 1; File.WriteAllText(operaPreferences, operaDocument.ToString());
+        check(ExtensionUpdates.FindInstalledDirectory(id, new[] { operaPreferences }) == null, "Opera web-store managed extensions are not overwritten");
         check(File.ReadAllText(preferences) == original, "browser preferences are never modified while locating extension");
         check(ExtensionUpdates.FindInstalledDirectory(new string('b', 32), new[] { preferences }) == null, "different extension ID cannot select installation path");
         entry["location"] = 1; File.WriteAllText(preferences, document.ToString());

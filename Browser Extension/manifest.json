@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "incognito": "not_allowed",
   "name": "Spectrum Manager",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Добавление и переключение своих аккаунтов Roblox через локальный Spectrum Manager.",
   "permissions": ["cookies", "storage", "activeTab"],
   "host_permissions": ["https://*.roblox.com/*", "http://127.0.0.1/*"],

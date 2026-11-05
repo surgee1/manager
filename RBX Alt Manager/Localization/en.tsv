@@ -560,3 +560,4 @@ Chromium сохраняет пароль, введённый при входе. 
 Включи сохранение паролей в настройках менеджера.	Enable password saving in manager settings.
 Неверные данные формы входа Roblox.	Invalid Roblox login form data.
 Браузер не открыл локальное подключение за 45 секунд. Закрой пустое окно и повтори вход.	The browser did not open its local connection within 45 seconds. Close the empty window and try again.
+Не удалось однозначно определить установленную копию расширения. Перезапусти браузер и повтори обновление. Другая папка не будет изменена.	Could not uniquely identify the installed extension. Restart your browser and try again. No other folder will be changed.

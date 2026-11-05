@@ -1,9 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { importActiveAccount, managerRequest, checkUpdates, validReleaseUrl, MANAGER_URL, handoffNonce, openAccount, listAccounts, updateExtension, loginNonce, loginWithCredentials, takeLoginCredentials, recoverCredentialLogin } from '../Browser Extension/core.js';
+import { importActiveAccount, managerRequest, checkUpdates, validReleaseUrl, MANAGER_URL, handoffNonce, openAccount, listAccounts, updateExtension, verifyExtensionReload, loginNonce, loginWithCredentials, takeLoginCredentials, recoverCredentialLogin } from '../Browser Extension/core.js';
 
 const code = 'a'.repeat(64);
 const loginToken = 'b'.repeat(64);
+test('extension update success is confirmed only after runtime loads the expected version', async () => {
+  for (const [version, updated] of [['0.4.0', false], ['0.6.1', true], ['0.10.0', true]]) {
+    let removed = false;
+    const api = { runtime: { getManifest: () => ({ version }) }, storage: { local: {
+      get: async () => ({ pendingExtensionUpdate: { version: '0.6.1' } }), remove: async key => { assert.equal(key, 'pendingExtensionUpdate'); removed = true; }
+    } } };
+    const result = await verifyExtensionReload(api);
+    assert.equal(result.updated, updated); assert.equal(result.version, version); assert.equal(removed, updated);
+  }
+});
 function credentialFixture(options = {}) {
   const calls = [], sets = [], session = {};
   const old = { name: '.ROBLOSECURITY', value: 'OLD_FIXTURE_SESSION', domain: '.roblox.com', path: '/', secure: true, httpOnly: true, sameSite: 'no_restriction', storeId: 'profile', session: true };

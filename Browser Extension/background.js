@@ -81,6 +81,8 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
         result = await passwordTask(() => finishPasswordLogins(chrome, fetch, Date.now(), tab?.id));
         if (!result) result = await importActiveAccount(chrome);
       }
+      if (message.action === 'install-update' && result.updated)
+        await chrome.storage.local.set({ pendingExtensionUpdate: { version: result.version } });
       respond({ ok: true, result });
       if (message.action === 'install-update' && result.updated) {
         reloading = true;

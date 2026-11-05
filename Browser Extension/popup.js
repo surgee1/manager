@@ -1,4 +1,4 @@
-import { validReleaseUrl } from './core.js';
+import { validReleaseUrl, verifyExtensionReload } from './core.js';
 
 const status = document.getElementById('status');
 const add = document.getElementById('import');
@@ -90,6 +90,11 @@ chrome.storage.local.get('pairingCode').then(({ pairingCode }) => {
 });
 
 document.getElementById('version').textContent = chrome.runtime.getManifest().version;
+verifyExtensionReload(chrome).then(result => {
+  if (!result) return;
+  document.getElementById('update-status').textContent = result.updated ? `Расширение обновлено: ${result.version}.`
+    : `Браузер всё ещё использует ${result.version}, ожидается ${result.expectedVersion}. Перезагрузи расширение на странице расширений браузера.`;
+}).catch(() => {});
 document.getElementById('reload-extension').addEventListener('click', () => chrome.runtime.reload());
 document.getElementById('install-update').addEventListener('click', async () => {
   const button = document.getElementById('install-update');
@@ -99,7 +104,7 @@ document.getElementById('install-update').addEventListener('click', async () => 
   try {
     const response = await chrome.runtime.sendMessage({ action: 'install-update' });
     if (!response?.ok) throw new Error(response?.error || 'Обнови менеджер до 6.2.0 или новее.');
-    text.textContent = response.result.updated ? `Установлена версия ${response.result.version}. Перезагружаем расширение…` : `Уже установлена актуальная версия ${response.result.version}.`;
+    text.textContent = response.result.updated ? `Файлы версии ${response.result.version} обновлены. Перезагружаем расширение…` : `Уже установлена актуальная версия ${response.result.version}.`;
   } catch (error) { text.textContent = error.message; }
   finally { button.disabled = false; setBusy(false); }
 });

@@ -38,6 +38,18 @@ export async function updateExtension(api, fetcher = fetch) {
   const { pairingCode } = await api.storage.local.get('pairingCode');
   return managerRequest('/v1/extension/update', pairingCode, { extensionId: api.runtime.id, version: api.runtime.getManifest().version }, fetcher);
 }
+export async function verifyExtensionReload(api) {
+  const { pendingExtensionUpdate } = await api.storage.local.get('pendingExtensionUpdate');
+  if (!pendingExtensionUpdate?.version) return null;
+  const actual = api.runtime.getManifest().version;
+  const wanted = pendingExtensionUpdate.version.split('.').map(Number), current = actual.split('.').map(Number);
+  let comparison = 0;
+  for (let index = 0; index < Math.max(wanted.length, current.length); index++) {
+    comparison = (current[index] || 0) - (wanted[index] || 0); if (comparison) break;
+  }
+  if (comparison >= 0) await api.storage.local.remove('pendingExtensionUpdate');
+  return { updated: comparison >= 0, version: actual, expectedVersion: pendingExtensionUpdate.version };
+}
 
 export function validReleaseUrl(value) {
   try {
