@@ -91,7 +91,8 @@ namespace RBX_Alt_Manager.Classes
             }
             image = fitted;
             image = PortraitMotion.Render(fitted, key, time, ThemeEditor.AnimationsEnabled);
-            g.DrawImageUnscaled(image, 0, 0);
+            if (image.Size == size) g.DrawImageUnscaled(image, 0, 0);
+            else g.DrawImage(image, new Rectangle(Point.Empty, size));
         }
         private static void Stars(Graphics g, Size size, double time)
         {

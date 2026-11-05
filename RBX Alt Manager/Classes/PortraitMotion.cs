@@ -32,10 +32,18 @@ namespace RBX_Alt_Manager.Classes
             if (!enabled || strength == 0) return source;
             if (!Frames.TryGetValue(key, out Frame frame))
             {
-                frame = new Frame { Source = source.Clone(new Rectangle(Point.Empty, source.Size), PixelFormat.Format32bppPArgb),
-                    Image = source.Clone(new Rectangle(Point.Empty, source.Size), PixelFormat.Format32bppPArgb),
-                    Spare = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppPArgb), Edge = new float[source.Width] };
-                for (int x = 0; x < source.Width; x++) frame.Edge[x] = Smooth(.55f, .78f, (float)x / source.Width);
+                // The dimmed illustration does not need a full-window per-pixel deformation.
+                // Keep UI controls at native resolution and bound only the animation work surface.
+                float scale = Math.Min(1f, Math.Min(720f / source.Width, 360f / source.Height));
+                var size = new Size(Math.Max(1, (int)(source.Width * scale)), Math.Max(1, (int)(source.Height * scale)));
+                var working = size == source.Size ? source.Clone(new Rectangle(Point.Empty, size), PixelFormat.Format32bppPArgb)
+                    : new Bitmap(size.Width, size.Height, PixelFormat.Format32bppPArgb);
+                if (size != source.Size)
+                    using (var canvas = Graphics.FromImage(working))
+                    { canvas.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy; canvas.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear; canvas.DrawImage(source, new Rectangle(Point.Empty, size)); }
+                frame = new Frame { Source = working, Image = working.Clone(new Rectangle(Point.Empty, size), PixelFormat.Format32bppPArgb),
+                    Spare = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppPArgb), Edge = new float[size.Width] };
+                for (int x = 0; x < size.Width; x++) frame.Edge[x] = Smooth(.55f, .78f, (float)x / size.Width);
                 Frames[key] = frame;
             }
             if (frame.Pending?.IsCompleted == true)
@@ -45,7 +53,7 @@ namespace RBX_Alt_Manager.Classes
                 else { var ignored = frame.Pending.Exception; frame.Spare = frame.PendingImage; frame.Tick = -1; }
                 frame.Pending = null; frame.PendingImage = null;
             }
-            long tick = (long)(time * 60);
+            long tick = (long)(time * 30);
             if (frame.Pending == null && (frame.Tick != tick || frame.Strength != strength))
             {
                 var input = frame.Source; var output = frame.Spare; var edge = frame.Edge;

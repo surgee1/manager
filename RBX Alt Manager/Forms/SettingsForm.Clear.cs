@@ -88,13 +88,13 @@ namespace RBX_Alt_Manager.Forms
             ResizeEnd += (sender, e) => { if (dragging) { dragging = false; AnimationCadence.EndInteraction(); } Invalidate(true); };
             FormClosed += (sender, e) => { if (dragging) { dragging = false; AnimationCadence.EndInteraction(); } };
             var animation = new Timer(components) { Interval = 33 };
+            double nextPreviewFrame = 0;
             animation.Tick += (sender, e) =>
             {
-                // Settings share the UI thread with the main window and contain many static controls.
-                // Keep their preview at 30 fps rather than invalidating the whole tree at main-window cadence.
-                animation.Interval = Math.Max(33, AnimationCadence.Interval);
+                animation.Interval = AnimationCadence.Interval;
                 if (AnimationCadence.Interacting) return;
                 if (!Visible || WindowState == FormWindowState.Minimized || !ThemeEditor.AnimationsEnabled) return;
+                if (!AnimationCadence.FrameDue(ref nextPreviewFrame, VisualBackground.Time, 10)) return;
                 SettingsTC.Invalidate();
                 if (SettingsTC.SelectedTab != null)
                     foreach (Control child in SettingsTC.SelectedTab.Controls)
@@ -197,7 +197,8 @@ namespace RBX_Alt_Manager.Forms
                 backdropKey = key;
                 backdropFrame = frame;
             }
-            e.Graphics.DrawImageUnscaled(backdrop, 0, 0);
+            var clip = Rectangle.Intersect(ClientRectangle, e.ClipRectangle);
+            if (clip.Width > 0 && clip.Height > 0) e.Graphics.DrawImage(backdrop, clip, clip, GraphicsUnit.Pixel);
         }
         protected override void OnScroll(ScrollEventArgs e) { scrollingUntil = VisualBackground.Time + .16; base.OnScroll(e); Invalidate(true); }
         protected override void Dispose(bool disposing) { if (disposing) backdrop?.Dispose(); base.Dispose(disposing); }

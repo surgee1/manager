@@ -39,7 +39,8 @@ internal static class PortraitMotionTests
                 check(ReferenceEquals(source, PortraitMotion.Render(source, "worker-test", 3, false)), "disabling animation immediately returns the static portrait");
             }
             var disposableSource = new Bitmap(1120, 640, PixelFormat.Format32bppPArgb);
-            PortraitMotion.Render(disposableSource, "retired-worker", 1, true);
+            var bounded = PortraitMotion.Render(disposableSource, "retired-worker", 1, true);
+            check(bounded.Width <= 720 && bounded.Height <= 360, "large windows keep a bounded illustration work surface instead of deforming every UI pixel");
             Task pending = PortraitMotion.PendingFrame("retired-worker");
             disposableSource.Dispose(); PortraitMotion.Clear();
             await pending;

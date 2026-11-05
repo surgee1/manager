@@ -402,6 +402,15 @@ class UiSmoke
                 long renders = (long)Field(main, "modernSceneRenderCount");
                 for (int i = 0; i < 5; i++) main.DrawToBitmap(scene, new Rectangle(Point.Empty, scene.Size));
                 Check((long)Field(main, "modernSceneRenderCount") == renders, "transparent children reuse one scene instead of repeatedly repainting character");
+                using (var partial = new Bitmap(main.ClientSize.Width, main.ClientSize.Height))
+                using (var graphics = Graphics.FromImage(partial))
+                {
+                    var clip = new Rectangle(780, 155, 35, 30);
+                    graphics.Clear(Color.Magenta); graphics.SetClip(clip);
+                    type.GetMethod("PaintModernInterface", Flags).Invoke(main, new object[] { main, new PaintEventArgs(graphics, clip) });
+                    var cached = (Bitmap)Field(main, "modernScene");
+                    Check(partial.GetPixel(790, 165) == cached.GetPixel(790, 165) && partial.GetPixel(770, 165).ToArgb() == Color.Magenta.ToArgb(), "partial background requests copy the correct cached pixels without repainting outside their clip");
+                }
                 type.GetMethod("OnResizeBegin", Flags).Invoke(main, new object[] { EventArgs.Empty });
                 type.GetMethod("InvalidateModernFrame", Flags).Invoke(main, null);
                 main.DrawToBitmap(scene, new Rectangle(Point.Empty, scene.Size));

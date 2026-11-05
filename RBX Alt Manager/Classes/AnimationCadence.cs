@@ -13,6 +13,14 @@ namespace RBX_Alt_Manager.Classes
         internal static double PausedSeconds => pausedTotal + (Interacting ? InteractionClock.Elapsed.TotalSeconds - pauseStart : 0);
         internal static void BeginInteraction() { if (interactions++ == 0) pauseStart = InteractionClock.Elapsed.TotalSeconds; }
         internal static void EndInteraction() { if (interactions > 0 && --interactions == 0) pausedTotal += InteractionClock.Elapsed.TotalSeconds - pauseStart; }
+        internal static bool FrameDue(ref double next, double now, int framesPerSecond)
+        {
+            if (now < next) return false;
+            double step = 1d / framesPerSecond;
+            // Keep the average rate stable across Windows timer quanta; never replay missed frames.
+            next = (now - next > step ? now : next) + step;
+            return true;
+        }
         internal static int Interval
         {
             get

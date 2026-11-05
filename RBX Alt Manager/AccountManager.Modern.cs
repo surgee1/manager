@@ -17,6 +17,9 @@ namespace RBX_Alt_Manager
         private NeonButton modernUpdateButton;
         private PlacePicker placePicker;
         private Bitmap modernScene;
+        private Bitmap modernBackdrop;
+        private string modernBackdropKey;
+        private long modernBackdropTick = -1;
         private bool modernSceneDirty = true, modernInteractiveMove;
         private long modernSceneRenderCount;
         private void InvalidateModernFrame() { modernSceneDirty = true; Invalidate(); }
@@ -208,7 +211,7 @@ namespace RBX_Alt_Manager
             ResizeBegin += (sender, args) => { if (!modernInteractiveMove) { modernInteractiveMove = true; AnimationCadence.BeginInteraction(); } };
             ResizeEnd += (sender, args) => { if (modernInteractiveMove) { modernInteractiveMove = false; AnimationCadence.EndInteraction(); } InvalidateModernFrame(); };
             Paint += PaintModernInterface;
-            FormClosed += (sender, e) => { placePicker?.Dispose(); modernScene?.Dispose(); modernScene = null; if (modernInteractiveMove) { modernInteractiveMove = false; AnimationCadence.EndInteraction(); } };
+            FormClosed += (sender, e) => { placePicker?.Dispose(); modernScene?.Dispose(); modernBackdrop?.Dispose(); modernScene = modernBackdrop = null; if (modernInteractiveMove) { modernInteractiveMove = false; AnimationCadence.EndInteraction(); } };
             InitializeAdvancedWindow();
             InitializeAccountFolders();
             InitializeShortcuts();
@@ -216,6 +219,7 @@ namespace RBX_Alt_Manager
             InitializeLaunchInputSaving();
             InitializePortableBackups();
             var glowTimer = new Timer(components) { Interval = 33 };
+            double nextSceneFrame = 0, nextButtonFrame = 0;
             glowTimer.Tick += (sender, args) =>
             {
                 glowTimer.Interval = AnimationCadence.Interval;
@@ -223,7 +227,10 @@ namespace RBX_Alt_Manager
                 if (WindowState == FormWindowState.Minimized || !Visible || !ThemeEditor.AnimationsEnabled) return;
                 // Settings can sit beside the manager: both visible backgrounds must keep moving.
                 if (placePicker?.Visible == true) return;
+                double now = VisualBackground.Time;
+                if (!AnimationCadence.FrameDue(ref nextSceneFrame, now, SettingsForm?.Visible == true ? 20 : 30)) return;
                 InvalidateModernFrame();
+                if (!AnimationCadence.FrameDue(ref nextButtonFrame, now, 10)) return;
                 foreach (var button in Controls.OfType<NeonButton>())
                     if (button.Visible) button.Invalidate();
                 if (advancedWindow != null && advancedWindow.Visible) advancedWindow.Invalidate(true);
@@ -378,11 +385,34 @@ namespace RBX_Alt_Manager
             }
             var state = e.Graphics.Save();
             e.Graphics.CompositingMode = CompositingMode.SourceCopy;
-            if (modernScene.Size == ClientSize) e.Graphics.DrawImageUnscaled(modernScene, 0, 0);
+            if (modernScene.Size == ClientSize)
+            {
+                var clip = Rectangle.Intersect(ClientRectangle, e.ClipRectangle);
+                if (clip.Width > 0 && clip.Height > 0) e.Graphics.DrawImage(modernScene, clip, clip, GraphicsUnit.Pixel);
+            }
             else e.Graphics.DrawImage(modernScene, ClientRectangle);
             e.Graphics.Restore(state);
         }
         private void RenderModernScene(Graphics g)
+        {
+            string key = ClientSize + ":" + modernScale + ":" + ThemeEditor.FormsBackground.ToArgb() + ":" + ThemeEditor.AccountBackground.ToArgb() + ":" + ThemeEditor.AccentPrimary.ToArgb() + ":" + ThemeEditor.AccentSecondary.ToArgb() + ":" + ThemeEditor.AnimationsEnabled;
+            long tick = ThemeEditor.AnimationsEnabled ? (long)(VisualBackground.Time * 10) : 0;
+            if (modernBackdrop == null || modernBackdropKey != key || modernBackdropTick != tick)
+            {
+                if (modernBackdrop == null || modernBackdrop.Size != ClientSize)
+                { modernBackdrop?.Dispose(); modernBackdrop = new Bitmap(ClientSize.Width, ClientSize.Height, System.Drawing.Imaging.PixelFormat.Format32bppPArgb); }
+                using (var canvas = Graphics.FromImage(modernBackdrop)) RenderModernBackdrop(canvas);
+                modernBackdropKey = key; modernBackdropTick = tick;
+            }
+            g.DrawImageUnscaled(modernBackdrop, 0, 0);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            VisualBackground.Draw(g, ClientSize);
+            using (var neon = new LinearGradientBrush(new Rectangle(24, Ui(90), Width - 48, 2), ThemeEditor.AccentPrimary, ThemeEditor.AccentSecondary, 0f))
+            using (var pen = new Pen(neon, 2f))
+                g.DrawLine(pen, Ui(24), Ui(90), ClientSize.Width - Ui(24), Ui(90));
+            PaintModernFields(g);
+        }
+        private void RenderModernBackdrop(Graphics g)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             int right = (int)(ClientSize.Width / modernScale) - 480;
@@ -410,13 +440,6 @@ namespace RBX_Alt_Manager
                     g.FillPath(fill, path);
                     g.DrawPath(pen, path);
                 }
-            VisualBackground.Draw(g, ClientSize);
-            using (var neon = new LinearGradientBrush(new Rectangle(24, Ui(90), Width - 48, 2), ThemeEditor.AccentPrimary, ThemeEditor.AccentSecondary, 0f))
-            using (var pen = new Pen(neon, 2f))
-                g.DrawLine(pen, Ui(24), Ui(90), ClientSize.Width - Ui(24), Ui(90));
-            // Transparent child labels can ask the parent to paint many times per frame.
-            // Field borders belong to the cached scene, not each child background request.
-            PaintModernFields(g);
         }
         private void PaintModernFields(Graphics g)
         {
