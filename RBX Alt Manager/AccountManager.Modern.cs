@@ -136,8 +136,8 @@ namespace RBX_Alt_Manager
             foreach (var field in Controls.OfType<TextBoxBase>())
             {
                 field.BorderStyle = BorderStyle.None;
-                field.Enter += (sender, e) => Invalidate();
-                field.Leave += (sender, e) => Invalidate();
+                field.Enter += (sender, e) => InvalidateModernFrame();
+                field.Leave += (sender, e) => InvalidateModernFrame();
             }
             AccountsView.BorderStyle = BorderStyle.None;
             AccountsView.RowHeight = Ui(38);
@@ -381,7 +381,6 @@ namespace RBX_Alt_Manager
             if (modernScene.Size == ClientSize) e.Graphics.DrawImageUnscaled(modernScene, 0, 0);
             else e.Graphics.DrawImage(modernScene, ClientRectangle);
             e.Graphics.Restore(state);
-            PaintModernFields(e.Graphics);
         }
         private void RenderModernScene(Graphics g)
         {
@@ -415,6 +414,9 @@ namespace RBX_Alt_Manager
             using (var neon = new LinearGradientBrush(new Rectangle(24, Ui(90), Width - 48, 2), ThemeEditor.AccentPrimary, ThemeEditor.AccentSecondary, 0f))
             using (var pen = new Pen(neon, 2f))
                 g.DrawLine(pen, Ui(24), Ui(90), ClientSize.Width - Ui(24), Ui(90));
+            // Transparent child labels can ask the parent to paint many times per frame.
+            // Field borders belong to the cached scene, not each child background request.
+            PaintModernFields(g);
         }
         private void PaintModernFields(Graphics g)
         {

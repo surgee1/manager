@@ -90,7 +90,9 @@ namespace RBX_Alt_Manager.Forms
             var animation = new Timer(components) { Interval = 33 };
             animation.Tick += (sender, e) =>
             {
-                animation.Interval = AnimationCadence.Interval;
+                // Settings share the UI thread with the main window and contain many static controls.
+                // Keep their preview at 30 fps rather than invalidating the whole tree at main-window cadence.
+                animation.Interval = Math.Max(33, AnimationCadence.Interval);
                 if (AnimationCadence.Interacting) return;
                 if (!Visible || WindowState == FormWindowState.Minimized || !ThemeEditor.AnimationsEnabled) return;
                 SettingsTC.Invalidate();

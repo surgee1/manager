@@ -75,25 +75,23 @@ namespace RBX_Alt_Manager.Classes
                 if (FittedImages.Count >= 4) { foreach (var old in FittedImages.Values) old.Dispose(); FittedImages.Clear(); PortraitMotion.Clear(); }
                 fitted = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppPArgb);
                 using (var canvas = Graphics.FromImage(fitted))
+                using (var attributes = new ImageAttributes())
                 {
                     canvas.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.38f });
                     if (profile == "ichigo")
                     {
                         float ratio = Math.Min(size.Width * .64f / image.Width, (float)size.Height / image.Height);
                         int width = (int)(image.Width * ratio), height = (int)(image.Height * ratio);
-                        canvas.DrawImage(image, new Rectangle(size.Width - width, (size.Height - height) / 2, width, height));
+                        canvas.DrawImage(image, new Rectangle(size.Width - width, (size.Height - height) / 2, width, height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
                     }
-                    else canvas.DrawImage(image, new Rectangle(Point.Empty, size));
+                    else canvas.DrawImage(image, new Rectangle(Point.Empty, size), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
                 }
                 FittedImages[key] = fitted;
             }
             image = fitted;
             image = PortraitMotion.Render(fitted, key, time, ThemeEditor.AnimationsEnabled);
-            using (var attributes = new ImageAttributes())
-            {
-                attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.38f });
-                g.DrawImage(image, new Rectangle(Point.Empty, size), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
-            }
+            g.DrawImageUnscaled(image, 0, 0);
         }
         private static void Stars(Graphics g, Size size, double time)
         {

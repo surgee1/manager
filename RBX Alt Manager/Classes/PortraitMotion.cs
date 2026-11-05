@@ -2,35 +2,60 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Threading.Tasks;
 
 namespace RBX_Alt_Manager.Classes
 {
     // Continuous bilinear deformation: the face and background stay anchored.
     internal static class PortraitMotion
     {
-        private sealed class Frame
+        private sealed class Frame : IDisposable
         {
-            public Bitmap Image;
+            public Bitmap Image, Source, Spare, PendingImage;
+            public Task Pending;
             public long Tick = -1;
             public int Strength = -1;
             public float[] Edge;
+            public void Dispose()
+            {
+                Image.Dispose(); Spare?.Dispose();
+                // The worker owns its source and destination until it has finished with LockBits.
+                if (Pending != null) { var source = Source; var pendingImage = PendingImage; _ = Pending.ContinueWith(task => { var ignored = task.Exception; source.Dispose(); pendingImage.Dispose(); }, TaskScheduler.Default); }
+                else Source.Dispose();
+            }
         }
         private static readonly Dictionary<string, Frame> Frames = new Dictionary<string, Frame>();
-        public static void Clear() { foreach (var frame in Frames.Values) frame.Image.Dispose(); Frames.Clear(); }
+        public static void Clear() { foreach (var frame in Frames.Values) frame.Dispose(); Frames.Clear(); }
         public static Bitmap Render(Bitmap source, string key, double time, bool enabled)
         {
             int strength = Forms.ThemeEditor.CharacterMotion;
             if (!enabled || strength == 0) return source;
             if (!Frames.TryGetValue(key, out Frame frame))
             {
-                frame = new Frame { Image = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppPArgb), Edge = new float[source.Width] };
+                frame = new Frame { Source = source.Clone(new Rectangle(Point.Empty, source.Size), PixelFormat.Format32bppPArgb),
+                    Image = source.Clone(new Rectangle(Point.Empty, source.Size), PixelFormat.Format32bppPArgb),
+                    Spare = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppPArgb), Edge = new float[source.Width] };
                 for (int x = 0; x < source.Width; x++) frame.Edge[x] = Smooth(.55f, .78f, (float)x / source.Width);
                 Frames[key] = frame;
             }
-            long tick = (long)(time * 30);
-            if (frame.Tick != tick || frame.Strength != strength) { Warp(source, frame.Image, frame.Edge, time, strength); frame.Tick = tick; frame.Strength = strength; }
+            if (frame.Pending?.IsCompleted == true)
+            {
+                if (frame.Pending.Status == TaskStatus.RanToCompletion)
+                { frame.Spare = frame.Image; frame.Image = frame.PendingImage; }
+                else { var ignored = frame.Pending.Exception; frame.Spare = frame.PendingImage; frame.Tick = -1; }
+                frame.Pending = null; frame.PendingImage = null;
+            }
+            long tick = (long)(time * 60);
+            if (frame.Pending == null && (frame.Tick != tick || frame.Strength != strength))
+            {
+                var input = frame.Source; var output = frame.Spare; var edge = frame.Edge;
+                frame.PendingImage = output; frame.Spare = null; frame.Tick = tick; frame.Strength = strength;
+                frame.Pending = Task.Run(() => Warp(input, output, edge, time, strength));
+            }
             return frame.Image;
         }
+        // Export and validation can await completion; the UI always draws the last completed bitmap.
+        internal static Task PendingFrame(string key) => Frames.TryGetValue(key, out var frame) ? frame.Pending ?? Task.CompletedTask : Task.CompletedTask;
         private static float Smooth(float a, float b, float x)
         { float t = Math.Max(0, Math.Min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
         private static uint Blend(uint a, uint b, int fraction)
@@ -60,13 +85,16 @@ namespace RBX_Alt_Manager.Classes
                     float hair = 1 - Smooth(.20f, .40f, yn);
                     float head = (1 - Smooth(.48f, .64f, yn)) * Smooth(-.05f, .08f, yn);
                     float wind = (float)(Math.Sin(time * .85 + yn * 5) + .2 * Math.Sin(time * 1.35 + yn * 9));
+                    float horizontal = hair * wind * 2.5f + head * sway * .9f;
+                    float bodyScale = body * breath * 6f;
+                    float vertical = body * breath * 4.5f + hair * wind * .45f + head * breath * .9f;
                     uint* row = (uint*)(target + y * dst.Stride);
                     for (int x = (int)(width * .55f); x < width - 1; x++)
                     {
                         float xn = (float)x / width;
                         float edge = edges[x];
-                        float dx = amplitude * edge * (hair * wind * 2.5f + body * breath * (xn - .83f) * 6f + head * sway * .9f);
-                        float dy = amplitude * edge * (body * breath * 4.5f + hair * wind * .45f + head * breath * .9f);
+                        float dx = amplitude * edge * (horizontal + bodyScale * (xn - .83f));
+                        float dy = amplitude * edge * vertical;
                         float sx = Math.Max(0, Math.Min(width - 2, x - dx));
                         float sy = Math.Max(0, Math.Min(height - 2, y - dy));
                         int ix = (int)sx, iy = (int)sy;

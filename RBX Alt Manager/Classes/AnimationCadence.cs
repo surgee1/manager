@@ -19,7 +19,8 @@ namespace RBX_Alt_Manager.Classes
             {
                 bool economy = AccountManager.General == null || !AccountManager.General.Exists("AnimationEconomy") || AccountManager.General.Get<bool>("AnimationEconomy");
                 // Any manager dialog counts as active, so main and settings animate together.
-                return economy && Form.ActiveForm == null ? 200 : 33;
+                // 15 ms fits one normal Windows timer quantum; 33 ms often becomes ~47 ms.
+                return economy && Form.ActiveForm == null ? 200 : 15;
             }
         }
     }

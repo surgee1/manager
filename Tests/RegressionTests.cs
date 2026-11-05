@@ -43,6 +43,7 @@ class RegressionTests
     {
         PortableBackupChecks();
         PrefixRenderingTests.Run(Check);
+        await PortraitMotionTests.Run(Check);
         await CredentialTests.Run(Check, Reject);
         BrowserBridgeTests.Run(Check, Reject);
         ExtensionUpdateTests.Run(Check, Reject);

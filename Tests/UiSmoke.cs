@@ -37,8 +37,15 @@ class UiSmoke
     {
         var bitmap = new Bitmap(800, 480);
         using (var graphics = Graphics.FromImage(bitmap))
+        {
             assembly.GetType("RBX_Alt_Manager.Classes.VisualBackground").GetMethod("Portrait", BindingFlags.NonPublic | BindingFlags.Static)
                 .Invoke(null, new object[] { graphics, bitmap.Size, time, profile });
+            var pending = assembly.GetType("RBX_Alt_Manager.Classes.PortraitMotion").GetMethod("PendingFrame", BindingFlags.NonPublic | BindingFlags.Static);
+            ((System.Threading.Tasks.Task)pending.Invoke(null, new object[] { profile + ":800x480" })).GetAwaiter().GetResult();
+            graphics.Clear(Color.Transparent);
+            assembly.GetType("RBX_Alt_Manager.Classes.VisualBackground").GetMethod("Portrait", BindingFlags.NonPublic | BindingFlags.Static)
+                .Invoke(null, new object[] { graphics, bitmap.Size, time, profile });
+        }
         return bitmap;
     }
     [STAThread]
@@ -361,7 +368,7 @@ class UiSmoke
             Check(((ListView)view).Items.Count == 1, "restored objects appear immediately in account list");
             main.Show(); main.Activate(); Pump(50);
             var cadence = assembly.GetType("RBX_Alt_Manager.Classes.AnimationCadence");
-            Check((int)cadence.GetProperty("Interval", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null, null) == 33, "active manager retains smooth animation cadence");
+            Check((int)cadence.GetProperty("Interval", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null, null) == 15, "active manager uses a single timer quantum for smooth animation");
             general.GetType().GetMethod("Set").Invoke(general, new object[] { "AnimationEconomy", "true", null });
             main.Hide(); Pump(80);
             Check((int)cadence.GetProperty("Interval", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null, null) == 200, "inactive manager reduces animation cadence to five frames per second");
